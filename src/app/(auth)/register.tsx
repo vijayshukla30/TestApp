@@ -1,12 +1,14 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { TextInput, Button, Surface, HelperText } from "react-native-paper";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
+import { api } from "../../services/api";
+import AuthCard from "../../components/auth/AuthCard";
 
 export default function Register() {
   const { theme } = useTheme();
@@ -41,8 +43,22 @@ export default function Register() {
 
     try {
       setLoading(true);
-      await new Promise((r) => setTimeout(r, 1200));
-      showMessage("Registration successful");
+      const res = await api.register({
+        name,
+        email,
+        phoneNumber: phone,
+        password,
+        roles: "CONSUMER",
+      });
+
+      if (res?.uuid) {
+        showMessage(res.message);
+
+        router.push({
+          pathname: "/(auth)/verify",
+          params: { email },
+        });
+      }
     } catch {
       showMessage("Registration failed");
     } finally {
@@ -60,112 +76,116 @@ export default function Register() {
 
   return (
     <Screen>
-      <Surface
-        style={[
-          styles.card,
-          {
-            backgroundColor: "rgba(15, 20, 35, 0.9)",
-            borderColor: "rgba(255,255,255,0.08)",
-          },
-        ]}
-        elevation={4}
-      >
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../../assets/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.brand}>gennie</Text>
-        </View>
-
-        {/* Title */}
-        <Text style={[styles.title, { color: theme.text }]}>
-          Create Account
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.subText }]}>
-          Sign up to get started
-        </Text>
-
-        {/* Name */}
-        <TextInput
-          label="Full Name"
-          value={name}
-          onChangeText={setName}
-          mode="outlined"
-          error={!!errors.name}
-          style={styles.input}
-        />
-        <HelperText type="error" visible={!!errors.name}>
-          {errors.name}
-        </HelperText>
-
-        {/* Email */}
-        <TextInput
-          label="Email address"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          mode="outlined"
-          error={!!errors.email}
-          style={styles.input}
-        />
-        <HelperText type="error" visible={!!errors.email}>
-          {errors.email}
-        </HelperText>
-
-        {/* Password */}
-        <TextInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          error={!!errors.password}
-          style={styles.input}
-        />
-        <HelperText type="error" visible={!!errors.password}>
-          {errors.password}
-        </HelperText>
-
-        {/* Phone */}
-        <TextInput
-          label="Phone Number"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          mode="outlined"
-          error={!!errors.phone}
-          style={styles.input}
-        />
-        <HelperText type="error" visible={!!errors.phone}>
-          {errors.phone}
-        </HelperText>
-
-        {/* Submit */}
-        <Button
-          mode="contained"
-          onPress={onRegister}
-          loading={loading}
-          disabled={loading}
-          style={styles.button}
+      <AuthCard>
+        <Surface
+          style={[
+            styles.card,
+            {
+              backgroundColor: "rgba(15, 20, 35, 0.9)",
+              borderColor: "rgba(255,255,255,0.08)",
+            },
+          ]}
+          elevation={4}
         >
-          Create Account
-        </Button>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../../assets/logo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.brand}>gennie</Text>
+          </View>
 
-        <View style={styles.footer}>
-          <Text style={{ color: theme.subText }}>Already have an account?</Text>
-          <Link
-            href="/(auth)/login"
-            style={[styles.link, { color: theme.primary }]}
+          {/* Title */}
+          <Text style={[styles.title, { color: theme.text }]}>
+            Create Account
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.subText }]}>
+            Sign up to get started
+          </Text>
+
+          {/* Name */}
+          <TextInput
+            label="Full Name"
+            value={name}
+            onChangeText={setName}
+            mode="outlined"
+            error={!!errors.name}
+            style={styles.input}
+          />
+          <HelperText type="error" visible={!!errors.name}>
+            {errors.name}
+          </HelperText>
+
+          {/* Email */}
+          <TextInput
+            label="Email address"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            mode="outlined"
+            error={!!errors.email}
+            style={styles.input}
+          />
+          <HelperText type="error" visible={!!errors.email}>
+            {errors.email}
+          </HelperText>
+
+          {/* Password */}
+          <TextInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            mode="outlined"
+            error={!!errors.password}
+            style={styles.input}
+          />
+          <HelperText type="error" visible={!!errors.password}>
+            {errors.password}
+          </HelperText>
+
+          {/* Phone */}
+          <TextInput
+            label="Phone Number"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            mode="outlined"
+            error={!!errors.phone}
+            style={styles.input}
+          />
+          <HelperText type="error" visible={!!errors.phone}>
+            {errors.phone}
+          </HelperText>
+
+          {/* Submit */}
+          <Button
+            mode="contained"
+            onPress={onRegister}
+            loading={loading}
+            disabled={loading}
+            style={styles.button}
           >
-            {" "}
-            Sign in
-          </Link>
-        </View>
-      </Surface>
+            Create Account
+          </Button>
+
+          <View style={styles.footer}>
+            <Text style={{ color: theme.subText }}>
+              Already have an account?
+            </Text>
+            <Link
+              href="/(auth)/login"
+              style={[styles.link, { color: theme.primary }]}
+            >
+              {" "}
+              Sign in
+            </Link>
+          </View>
+        </Surface>
+      </AuthCard>
     </Screen>
   );
 }

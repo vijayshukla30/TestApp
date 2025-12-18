@@ -1,43 +1,58 @@
 import React, { Children, createContext, useEffect, useState } from "react";
-
-export type User = {
-  id: string;
-  email: string;
-};
+import { getSession, saveSession, clearSession } from "../services/session";
 
 type AuthContextType = {
-  user: User | null;
+  user: null;
+  token: string | null;
   loading: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  login: (token: string, user: any) => Promise<void>;
+  logout: () => Promise<void>;
 };
 
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  login: () => {},
-  logout: () => {},
-});
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Later: restore session from SecureStore
-    setLoading(false);
+    async function restoreSession() {
+      const session = await getSession();
+
+      if (session) {
+        setUser(session.user);
+        setToken(session.token);
+      }
+
+      setLoading(false);
+    }
+
+    restoreSession();
   }, []);
 
-  const login = (user: User) => {
+  const login = async (token: string, user: any) => {
+    await saveSession(token, user);
+    setToken(token);
     setUser(user);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await clearSession();
+    setToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

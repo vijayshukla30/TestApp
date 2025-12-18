@@ -1,0 +1,26 @@
+import * as SecureStore from "expo-secure-store";
+
+const TOKEN_KEY = "AUTH_TOKEN";
+const USER_KEY = "AUTH_USER";
+
+export async function saveSession(token: string, user: any) {
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
+  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+}
+
+export async function getSession() {
+  const token = await SecureStore.getItemAsync(TOKEN_KEY);
+  const userStr = await SecureStore.getItemAsync(USER_KEY);
+
+  if (!token || !userStr) return null;
+
+  return {
+    token,
+    user: JSON.parse(userStr),
+  };
+}
+
+export async function clearSession() {
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  await SecureStore.deleteItemAsync(USER_KEY);
+}

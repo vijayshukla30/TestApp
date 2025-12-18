@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { TextInput, Button, Surface } from "react-native-paper";
 
 import Screen from "../../components/Screen";
@@ -8,6 +8,7 @@ import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
 import AuthCard from "../../components/auth/AuthCard";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
+import { api } from "../../services/api";
 
 export default function Login() {
   const { theme } = useTheme();
@@ -26,8 +27,24 @@ export default function Login() {
     try {
       setLoading(true);
       // API later
-      await new Promise((r) => setTimeout(r, 1200));
-      showMessage("Login clicked");
+      const res = await api.login(email, password);
+      if (res?.message === "Invalid credentials") {
+        showMessage("Invalid email or password");
+        return;
+      }
+      // ⚠️ Account not verified
+      if (res?.message === "Account not verified. OTP resent to email.") {
+        showMessage("OTP sent to your email");
+
+        router.replace({
+          pathname: "/(auth)/verify",
+          params: { email: res.email || email },
+        });
+        return;
+      }
+
+      // 🔜 success handling later
+      showMessage("Login success");
     } finally {
       setLoading(false);
     }
