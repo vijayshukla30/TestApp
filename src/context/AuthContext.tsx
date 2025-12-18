@@ -18,19 +18,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("AuthContext: restoreSession start");
+
     async function restoreSession() {
-      const session = await getSession();
+      try {
+        const session = await getSession();
+        console.log("AuthContext: session =", session);
 
-      if (session) {
-        setUser(session.user);
-        setToken(session.token);
+        if (session) {
+          setUser(session.user);
+          setToken(session.token);
+        }
+      } catch (error) {
+        console.log("AuthContext error:", error);
+      } finally {
+        console.log("AuthContext: setLoading(false)");
+        setLoading(false); // ⛔ MUST RUN
       }
-
-      setLoading(false);
     }
 
     restoreSession();
   }, []);
+
+  useEffect(() => {
+    console.log("Auth loading:", loading);
+  }, [loading]);
 
   const login = async (token: string, user: User) => {
     await saveSession(token, user);
