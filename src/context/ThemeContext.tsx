@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
+import { Appearance } from "react-native";
 import light from "../theme/light";
 import dark from "../theme/dark";
 import { saveTheme, getTheme } from "../utils/storage";
@@ -13,7 +14,10 @@ type ThemeContextType = {
 export const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(dark);
+  const systemMode = Appearance.getColorScheme();
+  const [theme, setTheme] = useState<Theme>(
+    systemMode === "light" ? light : dark
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
