@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "gennie",
-    "slug": "gennie",
+    "name": "TestGennie",
+    "slug": "testgennie",
     "scheme": ["gennie"],
     "platforms": ["ios", "android"],
     "version": "1.0.0",
