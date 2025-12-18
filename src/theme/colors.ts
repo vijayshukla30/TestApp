@@ -1,5 +1,5 @@
 export const colors = {
-  primary: "#6366F1", // Indigo-500
+  primary: "#7FE9F5",
   primaryDark: "#4F46E5", // Indigo-600
   background: "#F9FAFB", // Gray-50
   surface: "#FFFFFF",

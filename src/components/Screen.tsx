@@ -1,38 +1,30 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, View } from "react-native";
-import { useContext } from "react";
-import { ThemeContext } from "../context/ThemeContext";
 
-export default function Screen({
-  children,
-  center = false,
-}: {
-  children: React.ReactNode;
-  center?: boolean;
-}) {
-  const themeContext = useContext(ThemeContext);
-  if (!themeContext) return null;
-
-  const { theme } = themeContext;
-
+export default function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
-      <View style={[styles.container, center && styles.center]}>
-        {children}
-      </View>
-    </SafeAreaView>
+    <LinearGradient
+      colors={["#0B1020", "#141A2E", "#0B1020"]}
+      style={styles.gradient}
+    >
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.centerContainer}>{children}</View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   safe: {
     flex: 1,
   },
-  container: {
+  centerContainer: {
     flex: 1,
-    padding: 24,
-  },
-  center: {
     justifyContent: "center",
+    padding: 20,
   },
 });

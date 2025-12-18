@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
 import { Link } from "expo-router";
-import { TextInput, Button } from "react-native-paper";
+import { TextInput, Button, Surface } from "react-native-paper";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
@@ -13,126 +13,152 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
 
-  const onLogin = () => {
+  const onLogin = async () => {
     if (!email || !password) {
       showMessage("Please enter email and password");
       return;
     }
-    showMessage("Login clicked (API later)");
+
+    try {
+      setLoading(true);
+      // API later
+      await new Promise((r) => setTimeout(r, 1200));
+      showMessage("Login clicked");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Screen center>
-      {/* Logo */}
-      <View style={styles.logoContainer}>
-        <View
-          style={[
-            styles.logoWrapper,
-            {
-              backgroundColor: theme.surface,
-              borderColor: theme.border,
-            },
-          ]}
-        >
+    <Screen>
+      <Surface
+        style={[
+          styles.card,
+          {
+            backgroundColor: "rgba(15, 20, 35, 0.9)",
+            borderColor: "rgba(255,255,255,0.08)",
+          },
+        ]}
+        elevation={4}
+      >
+        {/* Logo */}
+        <View style={styles.logoContainer}>
           <Image
             source={require("../../../assets/logo.png")}
             style={styles.logo}
             resizeMode="contain"
           />
+          <Text style={styles.brand}>gennie</Text>
         </View>
-      </View>
 
-      <Text style={[styles.title, { color: theme.text }]}>Log In</Text>
-      <Text style={[styles.subtitle, { color: theme.subText }]}>
-        Login to your account to continue
-      </Text>
+        {/* Title */}
+        <Text style={[styles.title, { color: theme.text }]}>Sign In</Text>
+        <Text style={[styles.subtitle, { color: theme.subText }]}>
+          Get access to your account
+        </Text>
 
-      {/* Inputs */}
-      <TextInput
-        label="Email or Username"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-      />
+        {/* Inputs */}
+        <TextInput
+          label="Email address"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          autoCapitalize="none"
+          style={styles.input}
+        />
 
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        mode="outlined"
-        style={styles.input}
-      />
+        <TextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          mode="outlined"
+          style={styles.input}
+        />
 
-      <Button
-        mode="contained"
-        onPress={onLogin}
-        loading={loading}
-        disabled={loading}
-      >
-        Login
-      </Button>
+        <View style={styles.forgot}>
+          <Link
+            href="/(auth)/forgot-password"
+            style={[styles.link, { color: theme.primary }]}
+          >
+            Forgot Password?
+          </Link>
+        </View>
 
-      {/* Links */}
-      <View style={styles.links}>
-        <Link href="/(auth)/forgot-password">Forgot password?</Link>
-      </View>
+        {/* Button */}
+        <Button
+          mode="contained"
+          onPress={onLogin}
+          loading={loading}
+          disabled={loading}
+          style={styles.button}
+        >
+          Sign In
+        </Button>
 
-      <View style={styles.footer}>
-        <Text style={{ color: theme.subText }}>Don’t have an account?</Text>
-        <Link href="/(auth)/register" style={styles.link}>
-          {" "}
-          Register
-        </Link>
-      </View>
+        <View style={styles.footer}>
+          <Text style={{ color: theme.subText }}>Don’t have an account?</Text>
+          <Link
+            href="/(auth)/register"
+            style={[styles.link, { color: theme.primary }]}
+          >
+            {" "}
+            Create an account
+          </Link>
+        </View>
+      </Surface>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    borderRadius: 18,
+    padding: 24,
+    borderWidth: 1,
+  },
   logoContainer: {
     alignItems: "center",
-    marginBottom: 32,
-  },
-  logoWrapper: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 6,
+    marginBottom: 16,
   },
   logo: {
-    width: 90,
-    height: 90,
-  },
-  input: {
-    marginBottom: 12,
-  },
-  links: {
-    marginTop: 12,
-    alignItems: "flex-end",
-  },
-  footer: {
-    marginTop: 24,
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  link: {
-    color: "#6366F1",
-    fontWeight: "600",
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
+    width: 56,
+    height: 56,
     marginBottom: 6,
   },
+  brand: {
+    color: "#E5E7EB",
+    fontSize: 18,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 12,
+  },
   subtitle: {
+    textAlign: "center",
     marginBottom: 24,
+  },
+  input: {
+    marginBottom: 14,
+  },
+  forgot: {
+    alignItems: "flex-end",
+    marginBottom: 20,
+  },
+  button: {
+    borderRadius: 8,
+  },
+  footer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  link: {
+    fontWeight: "600",
   },
 });

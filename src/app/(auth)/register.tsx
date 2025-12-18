@@ -1,7 +1,13 @@
-import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
 import { Link } from "expo-router";
-import { TextInput, Button, Menu, HelperText } from "react-native-paper";
+import {
+  TextInput,
+  Button,
+  Surface,
+  Menu,
+  HelperText,
+} from "react-native-paper";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
@@ -15,33 +21,29 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState("");
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const roles = [
+    { label: "User", value: "user" },
+    { label: "Admin", value: "admin" },
+  ];
 
   const validate = () => {
     const e: Record<string, string> = {};
 
     if (!name.trim()) e.name = "Name is required";
+    if (!email.trim()) e.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "Invalid email";
 
-    if (!email.trim()) {
-      e.email = "Email is required";
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      e.email = "Invalid email address";
-    }
+    if (!password) e.password = "Password is required";
+    else if (password.length < 6) e.password = "Minimum 6 characters";
 
-    if (!password) {
-      e.password = "Password is required";
-    } else if (password.length < 6) {
-      e.password = "Password must be at least 6 characters";
-    }
-
-    if (!phone.trim()) {
-      e.phone = "Phone number is required";
-    } else if (!/^\d{10}$/.test(phone)) {
-      e.phone = "Enter a valid 10-digit number";
-    }
+    if (!phone.trim()) e.phone = "Phone number required";
+    if (!role) e.role = "Select a role";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -52,12 +54,9 @@ export default function Register() {
 
     try {
       setLoading(true);
-
-      // 🔜 API call later
-      await new Promise((res) => setTimeout(res, 1200));
-
+      await new Promise((r) => setTimeout(r, 1200));
       showMessage("Registration successful");
-    } catch (err) {
+    } catch {
       showMessage("Registration failed");
     } finally {
       setLoading(false);
@@ -66,26 +65,27 @@ export default function Register() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <Surface
+        style={[
+          styles.card,
+          {
+            backgroundColor: "rgba(15, 20, 35, 0.9)",
+            borderColor: "rgba(255,255,255,0.08)",
+          },
+        ]}
+        elevation={4}
+      >
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <View
-            style={[
-              styles.logoWrapper,
-              {
-                backgroundColor: theme.surface,
-                borderColor: theme.border,
-              },
-            ]}
-          >
-            <Image
-              source={require("../../../assets/logo.png")}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
+          <Image
+            source={require("../../../assets/logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.brand}>gennie</Text>
         </View>
 
+        {/* Title */}
         <Text style={[styles.title, { color: theme.text }]}>
           Create Account
         </Text>
@@ -100,6 +100,7 @@ export default function Register() {
           onChangeText={setName}
           mode="outlined"
           error={!!errors.name}
+          style={styles.input}
         />
         <HelperText type="error" visible={!!errors.name}>
           {errors.name}
@@ -107,13 +108,14 @@ export default function Register() {
 
         {/* Email */}
         <TextInput
-          label="Email"
+          label="Email address"
           value={email}
           onChangeText={setEmail}
-          mode="outlined"
           autoCapitalize="none"
           keyboardType="email-address"
+          mode="outlined"
           error={!!errors.email}
+          style={styles.input}
         />
         <HelperText type="error" visible={!!errors.email}>
           {errors.email}
@@ -127,6 +129,7 @@ export default function Register() {
           secureTextEntry
           mode="outlined"
           error={!!errors.password}
+          style={styles.input}
         />
         <HelperText type="error" visible={!!errors.password}>
           {errors.password}
@@ -140,9 +143,41 @@ export default function Register() {
           keyboardType="phone-pad"
           mode="outlined"
           error={!!errors.phone}
+          style={styles.input}
         />
         <HelperText type="error" visible={!!errors.phone}>
           {errors.phone}
+        </HelperText>
+
+        {/* Role */}
+        <Menu
+          visible={menuOpen}
+          onDismiss={() => setMenuOpen(false)}
+          anchor={
+            <Button
+              mode="outlined"
+              onPress={() => setMenuOpen(true)}
+              style={styles.input}
+            >
+              {role
+                ? roles.find((r) => r.value === role)?.label
+                : "Select Role"}
+            </Button>
+          }
+        >
+          {roles.map((r) => (
+            <Menu.Item
+              key={r.value}
+              title={r.label}
+              onPress={() => {
+                setRole(r.value);
+                setMenuOpen(false);
+              }}
+            />
+          ))}
+        </Menu>
+        <HelperText type="error" visible={!!errors.role}>
+          {errors.role}
         </HelperText>
 
         {/* Submit */}
@@ -151,57 +186,69 @@ export default function Register() {
           onPress={onRegister}
           loading={loading}
           disabled={loading}
-          style={{ marginTop: 12 }}
+          style={styles.button}
         >
-          Register
+          Create Account
         </Button>
 
-        {/* Footer */}
         <View style={styles.footer}>
           <Text style={{ color: theme.subText }}>Already have an account?</Text>
-          <Link href="/(auth)/login" style={styles.link}>
+          <Link
+            href="/(auth)/login"
+            style={[styles.link, { color: theme.primary }]}
+          >
             {" "}
-            Login
+            Sign in
           </Link>
         </View>
-      </ScrollView>
+      </Surface>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    borderRadius: 18,
+    padding: 24,
+    borderWidth: 1,
+  },
   logoContainer: {
     alignItems: "center",
-    marginVertical: 24,
-  },
-  logoWrapper: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 5,
+    marginBottom: 12,
   },
   logo: {
-    width: 80,
-    height: 80,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
+    width: 56,
+    height: 56,
     marginBottom: 6,
   },
+  brand: {
+    color: "#E5E7EB",
+    fontSize: 18,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 12,
+  },
   subtitle: {
-    marginBottom: 24,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  input: {
+    marginBottom: 10,
+  },
+  button: {
+    marginTop: 10,
+    borderRadius: 8,
   },
   footer: {
-    marginTop: 24,
-    flexDirection: "row",
-    justifyContent: "center",
+    marginTop: 20,
+    alignItems: "center",
   },
   link: {
-    color: "#6366F1",
     fontWeight: "600",
   },
 });
