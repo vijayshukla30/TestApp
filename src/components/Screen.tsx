@@ -10,7 +10,10 @@ export default function Screen({
   children: React.ReactNode;
   center?: boolean;
 }) {
-  const { theme } = useContext(ThemeContext);
+  const themeContext = useContext(ThemeContext);
+  if (!themeContext) return null;
+
+  const { theme } = themeContext;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>

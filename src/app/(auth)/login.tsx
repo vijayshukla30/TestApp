@@ -11,13 +11,24 @@ import { ThemeContext } from "../../context/ThemeContext";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { theme } = useContext(ThemeContext);
+  const themeContext = useContext(ThemeContext);
+  if (!themeContext) return null;
+
+  const { theme } = themeContext;
 
   return (
     <Screen center>
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <View style={[styles.logoWrapper, { backgroundColor: theme.surface }]}>
+        <View
+          style={[
+            styles.logoWrapper,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+            },
+          ]}
+        >
           <Image
             source={require("../../../assets/logo.png")}
             style={styles.logo}
@@ -70,9 +81,19 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: "#4f46e5", // or light gray
     alignItems: "center",
     justifyContent: "center",
+
+    // visual separation
+    borderWidth: 1,
+
+    // subtle depth
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+
+    elevation: 6, // Android
   },
   logo: {
     width: 90,
