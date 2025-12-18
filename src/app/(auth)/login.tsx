@@ -9,6 +9,7 @@ import { UIContext } from "../../context/UIContext";
 import AuthCard from "../../components/auth/AuthCard";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
 import { api } from "../../services/api";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function Login() {
   const { theme } = useTheme();
@@ -17,6 +18,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { login } = useContext(AuthContext)!;
 
   const onLogin = async () => {
     if (!email || !password) {
@@ -43,8 +45,19 @@ export default function Login() {
         return;
       }
 
-      // 🔜 success handling later
-      showMessage("Login success");
+      if (res?.token) {
+        const user = {
+          uuid: res.uuid,
+          email: res.email,
+          name: res.name,
+          role: res.role,
+          phoneNumber: res.phoneNumber,
+        };
+
+        await login(res.token, user);
+        router.replace("/(tabs)/home");
+        return;
+      }
     } finally {
       setLoading(false);
     }

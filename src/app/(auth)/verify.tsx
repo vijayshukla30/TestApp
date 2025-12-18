@@ -9,6 +9,7 @@ import { UIContext } from "../../context/UIContext";
 import { AuthContext } from "../../context/AuthContext";
 import { api } from "../../services/api";
 import AuthCard from "../../components/auth/AuthCard";
+import { VerifyOtpResponse } from "../../types/auth";
 
 export default function Verify() {
   const { theme } = useTheme();
@@ -29,23 +30,28 @@ export default function Verify() {
     try {
       setLoading(true);
 
-      const res = await api.verifyOtp({
+      const res: VerifyOtpResponse = await api.verifyOtp({
         email,
         otp,
       });
 
+      console.log("res :>> ", res);
+
+      const user = {
+        uuid: res.uuid,
+        email: res.email,
+        name: res.name,
+        role: res.role,
+        phoneNumber: res.phoneNumber,
+      };
+
       // ✅ Auto login
-      await login(res.token, res.user);
+      await login(res.token, user);
 
       showMessage("Account verified");
       router.replace("/(tabs)/home");
     } catch (err: any) {
-      /**
-       * Backend controls expiry.
-       * On expired / invalid OTP → force re-login
-       */
       showMessage("OTP expired or invalid. Please login again.");
-
       router.replace("/(auth)/login");
     } finally {
       setLoading(false);
