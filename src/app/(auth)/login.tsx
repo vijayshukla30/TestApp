@@ -1,20 +1,28 @@
-import { View, Text, StyleSheet, Image, Pressable } from "react-native";
-import { useState } from "react";
+import { View, Text, StyleSheet, Image } from "react-native";
+import { useState, useContext } from "react";
 import { Link } from "expo-router";
-import { useContext } from "react";
+import { TextInput, Button } from "react-native-paper";
 
 import Screen from "../../components/Screen";
-import Input from "../../components/Input";
-import Button from "../../components/Button";
-import { ThemeContext } from "../../context/ThemeContext";
+import useTheme from "../../hooks/useTheme";
+import { UIContext } from "../../context/UIContext";
 
 export default function Login() {
+  const { theme } = useTheme();
+  const { showMessage } = useContext(UIContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const themeContext = useContext(ThemeContext);
-  if (!themeContext) return null;
 
-  const { theme } = themeContext;
+  const [loading, setLoading] = useState(false);
+
+  const onLogin = () => {
+    if (!email || !password) {
+      showMessage("Please enter email and password");
+      return;
+    }
+    showMessage("Login clicked (API later)");
+  };
 
   return (
     <Screen center>
@@ -37,36 +45,49 @@ export default function Login() {
         </View>
       </View>
 
-      {/* Form */}
-      <View style={styles.form}>
-        <Input
-          placeholder="Email or Username"
-          value={email}
-          onChangeText={setEmail}
-        />
+      <Text style={[styles.title, { color: theme.text }]}>Log In</Text>
+      <Text style={[styles.subtitle, { color: theme.subText }]}>
+        Login to your account to continue
+      </Text>
 
-        <Input
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+      {/* Inputs */}
+      <TextInput
+        label="Email or Username"
+        value={email}
+        onChangeText={setEmail}
+        mode="outlined"
+        style={styles.input}
+      />
 
-        <Button title="Login" onPress={() => {}} />
+      <TextInput
+        label="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        mode="outlined"
+        style={styles.input}
+      />
 
-        <Pressable style={styles.forgot}>
-          <Link style={styles.link} href="/(auth)/forgot-password">
-            Forgot password?
-          </Link>
-        </Pressable>
+      <Button
+        mode="contained"
+        onPress={onLogin}
+        loading={loading}
+        disabled={loading}
+      >
+        Login
+      </Button>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don’t have an account?</Text>
-          <Link href="/(auth)/register" style={styles.link}>
-            {" "}
-            Register
-          </Link>
-        </View>
+      {/* Links */}
+      <View style={styles.links}>
+        <Link href="/(auth)/forgot-password">Forgot password?</Link>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={{ color: theme.subText }}>Don’t have an account?</Text>
+        <Link href="/(auth)/register" style={styles.link}>
+          {" "}
+          Register
+        </Link>
       </View>
     </Screen>
   );
@@ -81,41 +102,37 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-
-    // visual separation
-    borderWidth: 1,
-
-    // subtle depth
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-
-    elevation: 6, // Android
+    elevation: 6,
   },
   logo: {
     width: 90,
     height: 90,
   },
-  form: {
-    width: "100%",
+  input: {
+    marginBottom: 12,
   },
-  forgot: {
+  links: {
     marginTop: 12,
     alignItems: "flex-end",
   },
   footer: {
+    marginTop: 24,
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 24,
-  },
-  footerText: {
-    color: "#444",
   },
   link: {
-    color: "#4f46e5",
+    color: "#6366F1",
     fontWeight: "600",
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  subtitle: {
+    marginBottom: 24,
   },
 });

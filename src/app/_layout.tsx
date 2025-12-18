@@ -2,9 +2,13 @@ import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useContext } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { PaperProvider } from "react-native-paper";
 
 import { AuthProvider, AuthContext } from "../context/AuthContext";
-import { ThemeProvider, ThemeContext } from "../context/ThemeContext";
+import { ThemeProvider } from "../context/ThemeContext";
+import { UIProvider } from "../context/UIContext";
+import useTheme from "../hooks/useTheme";
+import { createPaperTheme } from "../theme/paperTheme";
 
 function RootNavigator() {
   const { user, loading } = useContext(AuthContext);
@@ -19,8 +23,16 @@ function RootNavigator() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {user ? <Stack.Screen name="(tabs)" /> : <Stack.Screen name="(auth)" />}
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(tabs)" />
     </Stack>
+  );
+}
+
+function PaperWrapper({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  return (
+    <PaperProvider theme={createPaperTheme(theme)}>{children}</PaperProvider>
   );
 }
 
@@ -28,9 +40,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
+        <PaperWrapper>
+          <UIProvider>
+            <AuthProvider>
+              <RootNavigator />
+            </AuthProvider>
+          </UIProvider>
+        </PaperWrapper>
       </ThemeProvider>
     </SafeAreaProvider>
   );
