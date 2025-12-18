@@ -6,6 +6,8 @@ import { TextInput, Button, Surface } from "react-native-paper";
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
+import AuthCard from "../../components/auth/AuthCard";
+import AuthSkeleton from "../../components/auth/AuthSkeleton";
 
 export default function Login() {
   const { theme } = useTheme();
@@ -31,84 +33,94 @@ export default function Login() {
     }
   };
 
+  if (loading) {
+    return (
+      <Screen>
+        <AuthSkeleton />
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
-      <Surface
-        style={[
-          styles.card,
-          {
-            backgroundColor: "rgba(15, 20, 35, 0.9)",
-            borderColor: "rgba(255,255,255,0.08)",
-          },
-        ]}
-        elevation={4}
-      >
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../../assets/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.brand}>gennie</Text>
-        </View>
-
-        {/* Title */}
-        <Text style={[styles.title, { color: theme.text }]}>Sign In</Text>
-        <Text style={[styles.subtitle, { color: theme.subText }]}>
-          Get access to your account
-        </Text>
-
-        {/* Inputs */}
-        <TextInput
-          label="Email address"
-          value={email}
-          onChangeText={setEmail}
-          mode="outlined"
-          autoCapitalize="none"
-          style={styles.input}
-        />
-
-        <TextInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          style={styles.input}
-        />
-
-        <View style={styles.forgot}>
-          <Link
-            href="/(auth)/forgot-password"
-            style={[styles.link, { color: theme.primary }]}
-          >
-            Forgot Password?
-          </Link>
-        </View>
-
-        {/* Button */}
-        <Button
-          mode="contained"
-          onPress={onLogin}
-          loading={loading}
-          disabled={loading}
-          style={styles.button}
+      <AuthCard>
+        <Surface
+          style={[
+            styles.card,
+            {
+              backgroundColor: "rgba(15, 20, 35, 0.9)",
+              borderColor: "rgba(255,255,255,0.08)",
+            },
+          ]}
+          elevation={4}
         >
-          Sign In
-        </Button>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../../assets/logo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.brand}>gennie</Text>
+          </View>
 
-        <View style={styles.footer}>
-          <Text style={{ color: theme.subText }}>Don’t have an account?</Text>
-          <Link
-            href="/(auth)/register"
-            style={[styles.link, { color: theme.primary }]}
+          {/* Title */}
+          <Text style={[styles.title, { color: theme.text }]}>Sign In</Text>
+          <Text style={[styles.subtitle, { color: theme.subText }]}>
+            Get access to your account
+          </Text>
+
+          {/* Inputs */}
+          <TextInput
+            label="Email address"
+            value={email}
+            onChangeText={setEmail}
+            mode="outlined"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+
+          <TextInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            mode="outlined"
+            style={styles.input}
+          />
+
+          <View style={styles.forgot}>
+            <Link
+              href="/(auth)/forgot-password"
+              style={[styles.link, { color: theme.primary }]}
+            >
+              Forgot Password?
+            </Link>
+          </View>
+
+          {/* Button */}
+          <Button
+            mode="contained"
+            onPress={onLogin}
+            loading={loading}
+            disabled={loading}
+            style={styles.button}
           >
-            {" "}
-            Create an account
-          </Link>
-        </View>
-      </Surface>
+            Sign In
+          </Button>
+
+          <View style={styles.footer}>
+            <Text style={{ color: theme.subText }}>Don’t have an account?</Text>
+            <Link
+              href="/(auth)/register"
+              style={[styles.link, { color: theme.primary }]}
+            >
+              {" "}
+              Create an account
+            </Link>
+          </View>
+        </Surface>
+      </AuthCard>
     </Screen>
   );
 }

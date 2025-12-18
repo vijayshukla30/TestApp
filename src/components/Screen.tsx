@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, KeyboardAvoidingView, Platform } from "react-native";
 
 export default function Screen({ children }: { children: React.ReactNode }) {
   return (
@@ -9,7 +9,12 @@ export default function Screen({ children }: { children: React.ReactNode }) {
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safe}>
-        <View style={styles.centerContainer}>{children}</View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.centerContainer}>{children}</View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );

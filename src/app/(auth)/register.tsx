@@ -1,17 +1,12 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
 import { Link } from "expo-router";
-import {
-  TextInput,
-  Button,
-  Surface,
-  Menu,
-  HelperText,
-} from "react-native-paper";
+import { TextInput, Button, Surface, HelperText } from "react-native-paper";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
+import AuthSkeleton from "../../components/auth/AuthSkeleton";
 
 export default function Register() {
   const { theme } = useTheme();
@@ -21,16 +16,9 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState("");
 
-  const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const roles = [
-    { label: "User", value: "user" },
-    { label: "Admin", value: "admin" },
-  ];
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -43,7 +31,6 @@ export default function Register() {
     else if (password.length < 6) e.password = "Minimum 6 characters";
 
     if (!phone.trim()) e.phone = "Phone number required";
-    if (!role) e.role = "Select a role";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -62,6 +49,14 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Screen>
+        <AuthSkeleton />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -147,37 +142,6 @@ export default function Register() {
         />
         <HelperText type="error" visible={!!errors.phone}>
           {errors.phone}
-        </HelperText>
-
-        {/* Role */}
-        <Menu
-          visible={menuOpen}
-          onDismiss={() => setMenuOpen(false)}
-          anchor={
-            <Button
-              mode="outlined"
-              onPress={() => setMenuOpen(true)}
-              style={styles.input}
-            >
-              {role
-                ? roles.find((r) => r.value === role)?.label
-                : "Select Role"}
-            </Button>
-          }
-        >
-          {roles.map((r) => (
-            <Menu.Item
-              key={r.value}
-              title={r.label}
-              onPress={() => {
-                setRole(r.value);
-                setMenuOpen(false);
-              }}
-            />
-          ))}
-        </Menu>
-        <HelperText type="error" visible={!!errors.role}>
-          {errors.role}
         </HelperText>
 
         {/* Submit */}
