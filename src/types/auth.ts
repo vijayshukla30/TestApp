@@ -7,3 +7,11 @@ export type VerifyOtpResponse = {
   phoneNumber: string[];
   message: string;
 };
+
+export type User = {
+  uuid: string;
+  email: string;
+  name: string;
+  role: "CONSUMER" | "ADMIN" | string;
+  phoneNumber: string[];
+};

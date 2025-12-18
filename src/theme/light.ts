@@ -1,5 +1,5 @@
 import { colors } from "./colors";
-import { Theme } from "./types";
+import { Theme } from "../types/theme";
 
 const light: Theme = {
   mode: "light",

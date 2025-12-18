@@ -2,10 +2,11 @@ import React, { createContext, useEffect, useState } from "react";
 import light from "../theme/light";
 import dark from "../theme/dark";
 import { saveTheme, getTheme } from "../utils/storage";
-import { Theme } from "../theme/types";
+import { Theme, ThemeMode } from "../types/theme";
 
 type ThemeContextType = {
   theme: Theme;
+  mode: ThemeMode;
   toggleTheme: () => void;
 };
 
@@ -27,13 +28,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = async () => {
     const next = theme.mode === "light" ? dark : light;
     setTheme(next);
-    await saveTheme(next.mode); // ✅ ThemeMode now
+    await saveTheme(next.mode);
   };
 
   if (loading) return null;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        mode: theme.mode, // ✅ FIXED
+        toggleTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
