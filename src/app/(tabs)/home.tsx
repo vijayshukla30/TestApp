@@ -1,14 +1,16 @@
-import { View, Text, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { useContext } from "react";
-import { Surface } from "react-native-paper";
+import { Surface, Button } from "react-native-paper";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { AuthContext } from "../../context/AuthContext";
+import { useAsanaAuth } from "../../hooks/useAsanaAuth";
 
 export default function Home() {
   const { theme } = useTheme();
   const { user } = useContext(AuthContext)!;
+  const { connectAsana } = useAsanaAuth();
 
   return (
     <Screen>
@@ -27,10 +29,15 @@ export default function Home() {
         <Text style={[styles.subtitle, { color: theme.subText }]}>
           {user?.name}
         </Text>
-
-        <Text style={{ color: theme.subText, marginTop: 12 }}>
-          Role: {user?.role}
-        </Text>
+        <Button
+          mode="contained"
+          onPress={connectAsana}
+          style={styles.asanaButton}
+          contentStyle={styles.asanaContent}
+          labelStyle={styles.asanaLabel}
+        >
+          Connect Asana
+        </Button>
       </Surface>
     </Screen>
   );
@@ -50,5 +57,19 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     marginTop: 6,
+  },
+  /* Asana button styles */
+  asanaButton: {
+    marginTop: 24,
+    backgroundColor: "#F06A6A", // Asana brand
+    borderRadius: 10,
+  },
+  asanaContent: {
+    paddingVertical: 6,
+  },
+  asanaLabel: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 15,
   },
 });
