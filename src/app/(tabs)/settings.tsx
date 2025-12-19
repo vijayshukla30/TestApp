@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { AuthContext } from "../../context/AuthContext";
+import AppCard from "../../components/ui/AppCard";
 
 export default function Settings() {
   const { theme, mode, toggleTheme } = useTheme();
@@ -18,16 +19,7 @@ export default function Settings() {
 
   return (
     <Screen>
-      <Surface
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.surface,
-            borderColor: theme.border,
-          },
-        ]}
-        elevation={2}
-      >
+      <AppCard>
         <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
 
         {/* Theme Toggle */}
@@ -45,7 +37,7 @@ export default function Settings() {
         <Button mode="contained" onPress={onLogout} style={{ marginTop: 20 }}>
           Logout
         </Button>
-      </Surface>
+      </AppCard>
     </Screen>
   );
 }

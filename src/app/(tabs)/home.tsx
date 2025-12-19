@@ -6,6 +6,7 @@ import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { AuthContext } from "../../context/AuthContext";
 import { useAsanaAuth } from "../../hooks/useAsanaAuth";
+import AppCard from "../../components/ui/AppCard";
 
 export default function Home() {
   const { theme } = useTheme();
@@ -14,16 +15,7 @@ export default function Home() {
 
   return (
     <Screen>
-      <Surface
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.surface,
-            borderColor: theme.border,
-          },
-        ]}
-        elevation={2}
-      >
+      <AppCard>
         <Text style={[styles.title, { color: theme.text }]}>Welcome 👋</Text>
 
         <Text style={[styles.subtitle, { color: theme.subText }]}>
@@ -38,7 +30,7 @@ export default function Home() {
         >
           Connect Asana
         </Button>
-      </Surface>
+      </AppCard>
     </Screen>
   );
 }

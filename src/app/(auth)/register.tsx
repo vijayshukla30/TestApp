@@ -9,6 +9,7 @@ import { UIContext } from "../../context/UIContext";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
 import { api } from "../../services/api";
 import AuthCard from "../../components/auth/AuthCard";
+import AppCard from "../../components/ui/AppCard";
 
 export default function Register() {
   const { theme } = useTheme();
@@ -77,16 +78,7 @@ export default function Register() {
   return (
     <Screen>
       <AuthCard>
-        <Surface
-          style={[
-            styles.card,
-            {
-              backgroundColor: "rgba(15, 20, 35, 0.9)",
-              borderColor: "rgba(255,255,255,0.08)",
-            },
-          ]}
-          elevation={4}
-        >
+        <AppCard variant="auth">
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
@@ -184,7 +176,7 @@ export default function Register() {
               Sign in
             </Link>
           </View>
-        </Surface>
+        </AppCard>
       </AuthCard>
     </Screen>
   );

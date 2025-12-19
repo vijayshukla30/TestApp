@@ -10,6 +10,7 @@ import AuthCard from "../../components/auth/AuthCard";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
 import { api } from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
+import AppCard from "../../components/ui/AppCard";
 
 export default function Login() {
   const { theme } = useTheme();
@@ -74,16 +75,7 @@ export default function Login() {
   return (
     <Screen>
       <AuthCard>
-        <Surface
-          style={[
-            styles.card,
-            {
-              backgroundColor: "rgba(15, 20, 35, 0.9)",
-              borderColor: "rgba(255,255,255,0.08)",
-            },
-          ]}
-          elevation={4}
-        >
+        <AppCard variant="auth">
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
@@ -149,7 +141,7 @@ export default function Login() {
               Create an account
             </Link>
           </View>
-        </Surface>
+        </AppCard>
       </AuthCard>
     </Screen>
   );

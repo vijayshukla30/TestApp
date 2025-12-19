@@ -10,6 +10,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { api } from "../../services/api";
 import AuthCard from "../../components/auth/AuthCard";
 import { VerifyOtpResponse } from "../../types/auth";
+import AppCard from "../../components/ui/AppCard";
 
 export default function Verify() {
   const { theme } = useTheme();
@@ -61,16 +62,7 @@ export default function Verify() {
   return (
     <Screen>
       <AuthCard>
-        <Surface
-          style={[
-            styles.card,
-            {
-              backgroundColor: "rgba(15,20,35,0.9)",
-              borderColor: "rgba(255,255,255,0.08)",
-            },
-          ]}
-          elevation={4}
-        >
+        <AppCard variant="auth">
           <Text style={[styles.title, { color: theme.text }]}>Verify OTP</Text>
 
           <Text style={[styles.subtitle, { color: theme.subText }]}>
@@ -102,7 +94,7 @@ export default function Verify() {
               Login again
             </Button>
           </View>
-        </Surface>
+        </AppCard>
       </AuthCard>
     </Screen>
   );
