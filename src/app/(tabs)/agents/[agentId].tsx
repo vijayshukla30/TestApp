@@ -29,26 +29,24 @@ export default function AgentDetails() {
     );
   }
 
-  const phoneNumber = agent.phoneId?.phoneNumber || "Not assigned";
-  const countryCode = agent?.phoneId?.countryCode || "";
+  const rawPhone = agent.phoneId?.phoneNumber;
+  const countryCode = agent.phoneId?.countryCode ?? "";
   const isConnected = Boolean(agent.platform);
 
-  const localDigits = extractUSLocalNumber(phoneNumber);
+  const localDigits = extractUSLocalNumber(rawPhone);
   const formattedLocal = formatPhoneNumberUS(localDigits);
 
-  const displayPhone = `${countryCode} ${formattedLocal}`;
+  const displayPhone =
+    formattedLocal && countryCode
+      ? `${countryCode} ${formattedLocal}`
+      : rawPhone || "Not assigned";
 
   return (
     <>
-      {/* 🔹 Header title */}
-      <Stack.Screen
-        options={{
-          title: agent.agentName,
-        }}
-      />
+      <Stack.Screen options={{ title: agent.agentName }} />
 
       <Screen>
-        {/* 🔹 Top icon + name */}
+        {/* ---------- Header ---------- */}
         <View style={styles.header}>
           <Image
             source={getPlatformImage(agent.platform?.type)}
@@ -60,39 +58,38 @@ export default function AgentDetails() {
           </Text>
         </View>
 
-        {/* 📞 Phone + 🟢 Status */}
-        <View style={styles.rowCards}>
-          <AppCard style={styles.halfCard}>
-            <View style={styles.iconRow}>
-              <MaterialIcons name="phone" size={16} color={theme.subText} />
-              <Text style={[styles.label, { color: theme.subText }]}>
-                Phone
-              </Text>
-            </View>
-            <Text style={[styles.value, { color: theme.text }]}>
-              {displayPhone}
-            </Text>
-          </AppCard>
+        {/* ---------- PHONE ---------- */}
+        <Text style={[styles.sectionLabel, { color: theme.subText }]}>
+          Phone
+        </Text>
 
-          <AppCard style={styles.halfCard}>
-            <Text style={[styles.label, { color: theme.subText }]}>Status</Text>
-            <View style={styles.statusRow}>
-              <View
-                style={[
-                  styles.statusDot,
-                  {
-                    backgroundColor: isConnected ? "#22C55E" : "#EF4444",
-                  },
-                ]}
-              />
-              <Text style={[styles.value, { color: theme.text }]}>
-                {isConnected ? "Active" : "Inactive"}
-              </Text>
-            </View>
-          </AppCard>
-        </View>
+        <AppCard style={styles.infoCard}>
+          <MaterialIcons name="phone" size={22} color={theme.primary} />
+          <Text style={[styles.infoValue, { color: theme.text }]}>
+            {displayPhone}
+          </Text>
+        </AppCard>
 
-        {/* 🔗 Platform Connection */}
+        {/* ---------- STATUS ---------- */}
+        <Text style={[styles.sectionLabel, { color: theme.subText }]}>
+          Status
+        </Text>
+
+        <AppCard style={styles.infoCard}>
+          <View
+            style={[
+              styles.statusDot,
+              {
+                backgroundColor: isConnected ? "#22C55E" : "#EF4444",
+              },
+            ]}
+          />
+          <Text style={[styles.infoValue, { color: theme.text }]}>
+            {isConnected ? "Active" : "Inactive"}
+          </Text>
+        </AppCard>
+
+        {/* ---------- PLATFORM CONNECTION ---------- */}
         <AppCard style={styles.connectionCard}>
           <MaterialIcons
             name={isConnected ? "link-off" : "link"}
@@ -123,10 +120,12 @@ export default function AgentDetails() {
   );
 }
 
+/* ---------- styles ---------- */
+
 const styles = StyleSheet.create({
   header: {
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 20,
   },
 
   icon: {
@@ -140,43 +139,29 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  rowCards: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 12,
+  sectionLabel: {
+    fontSize: 12,
+    marginBottom: 6,
+    marginLeft: 4,
   },
 
-  halfCard: {
-    flex: 1,
-    paddingVertical: 14,
-  },
-  iconRow: {
+  infoCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
+    gap: 12,
+    paddingVertical: 14,
+    marginBottom: 16,
   },
 
-  label: {
-    fontSize: 12,
-    marginBottom: 4,
-  },
-
-  value: {
-    fontSize: 12,
+  infoValue: {
+    fontSize: 16,
     fontWeight: "600",
   },
 
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-
   statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
 
   connectionCard: {
