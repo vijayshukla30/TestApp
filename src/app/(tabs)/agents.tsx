@@ -5,9 +5,10 @@ import {
   FlatList,
   Image,
   TextInput,
-  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { useEffect, useState } from "react";
+import NetInfo from "@react-native-community/netinfo";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
@@ -16,6 +17,7 @@ import { api } from "../../services/api";
 
 import { Agent } from "../../types/agent";
 import AppCard from "../../components/ui/AppCard";
+import AgentCardSkeleton from "../../components/skeltons/AgentCardSkeleton";
 
 export default function Agents() {
   const { theme } = useTheme();
@@ -25,25 +27,43 @@ export default function Agents() {
   const [uniqueAssistants, setUniqueAssistants] = useState<Agent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOnline(!!state.isConnected);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const fetchAgents = async () => {
+    if (!isOnline) return;
+    try {
+      if (!user?.uuid || !token) return;
+
+      const data = await api.getAgentsByConsumer(user.uuid, token);
+      setOrganizations(data.organizations || []);
+    } catch (error) {
+      console.log("Agents API error:", error);
+    }
+  };
 
   // 🔹 Load organizations
   useEffect(() => {
-    async function loadAgents() {
-      try {
-        if (!user?.uuid || !token) return;
+    setLoading(true);
 
-        const data = await api.getAgentsByConsumer(user.uuid, token);
-
-        setOrganizations(data.organizations || []);
-      } catch (error) {
-        console.log("Agents API error:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadAgents();
+    fetchAgents().finally(() => {
+      setLoading(false);
+    });
   }, [user?.uuid, token]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAgents();
+    setRefreshing(false);
+  };
 
   // 🔹 WEBSITE LOGIC (UNCHANGED)
   useEffect(() => {
@@ -92,14 +112,6 @@ export default function Agents() {
 
   return (
     <Screen>
-      {loading && (
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" color={theme.primary} />
-          <Text style={{ color: theme.subText, marginTop: 8 }}>
-            Loading agents…
-          </Text>
-        </View>
-      )}
       <Text style={[styles.title, { color: theme.text }]}>Agents</Text>
 
       {/* 🔍 Search */}
@@ -118,6 +130,23 @@ export default function Agents() {
         ]}
       />
 
+      {!isOnline && (
+        <Text style={{ color: theme.subText, marginBottom: 12 }}>
+          You’re offline. Showing last loaded data.
+        </Text>
+      )}
+
+      {loading && (
+        <FlatList
+          data={[1, 2, 3, 4]}
+          keyExtractor={(i) => i.toString()}
+          numColumns={2}
+          columnWrapperStyle={{ gap: 12 }}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          renderItem={() => <AgentCardSkeleton />}
+        />
+      )}
+
       {!loading && uniqueAssistants.length === 0 && (
         <Text style={{ color: theme.subText, marginTop: 20 }}>
           No agents found
@@ -131,6 +160,14 @@ export default function Agents() {
         columnWrapperStyle={{ gap: 12 }}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         contentContainerStyle={{ paddingBottom: 24 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.primary]} // Android
+            tintColor={theme.primary} // iOS
+          />
+        }
         renderItem={({ item }) => (
           <AppCard style={styles.agentCard}>
             <Image
