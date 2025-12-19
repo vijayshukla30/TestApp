@@ -7,6 +7,13 @@ export type Agent = {
     name: string;
     type: string; // asana | slack | etc
   } | null;
+  phoneId?: {
+    uuid?: string;
+    phoneNumber?: string;
+    countryCode?: string;
+    accountId?: string;
+  };
+  accountId?: string;
 };
 
 export type AgentsApiResponse = {

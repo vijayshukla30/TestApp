@@ -13,12 +13,20 @@ export default function Screen({ children, center }: Props) {
   const isDark = theme.mode === "dark";
 
   const Content = (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
+    <SafeAreaView
+      style={[styles.safe, !isDark && { backgroundColor: theme.background }]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <View style={[styles.container, center && styles.centerContainer]}>
+        <View
+          style={[
+            styles.container,
+            center && styles.centerContainer,
+            center && { paddingBottom: 0 },
+          ]}
+        >
           {children}
         </View>
       </KeyboardAvoidingView>

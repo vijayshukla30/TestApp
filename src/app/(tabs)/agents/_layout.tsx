@@ -15,6 +15,8 @@ export default function AgentsLayout() {
           fontWeight: "600",
         },
         headerShadowVisible: false,
+        animation: "slide_from_right",
+        animationDuration: 220,
       }}
     >
       <Stack.Screen
