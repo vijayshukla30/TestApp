@@ -70,10 +70,16 @@ export default function Verify() {
           </Text>
 
           <TextInput
-            label="OTP"
+            label="6-digit code"
             value={otp}
             onChangeText={setOtp}
             keyboardType="number-pad"
+            autoComplete="one-time-code"
+            textContentType="oneTimeCode"
+            returnKeyType="done"
+            onSubmitEditing={onVerify}
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             mode="outlined"
             style={{ marginBottom: 16 }}
           />

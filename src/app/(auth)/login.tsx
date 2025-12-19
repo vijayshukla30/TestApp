@@ -99,6 +99,11 @@ export default function Login() {
             onChangeText={setEmail}
             mode="outlined"
             autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             style={styles.input}
           />
 
@@ -108,6 +113,10 @@ export default function Login() {
             onChangeText={setPassword}
             secureTextEntry
             mode="outlined"
+            autoComplete="password"
+            textContentType="password"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             style={styles.input}
           />
 

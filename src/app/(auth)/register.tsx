@@ -97,12 +97,15 @@ export default function Register() {
             Sign up to get started
           </Text>
 
-          {/* Name */}
           <TextInput
             label="Full Name"
             value={name}
             onChangeText={setName}
             mode="outlined"
+            autoCapitalize="words"
+            textContentType="name"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             error={!!errors.name}
             style={styles.input}
           />
@@ -110,14 +113,17 @@ export default function Register() {
             {errors.name}
           </HelperText>
 
-          {/* Email */}
           <TextInput
             label="Email address"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
             mode="outlined"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             error={!!errors.email}
             style={styles.input}
           />
@@ -125,13 +131,16 @@ export default function Register() {
             {errors.email}
           </HelperText>
 
-          {/* Password */}
           <TextInput
             label="Password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            autoComplete="password"
+            textContentType="password"
             mode="outlined"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             error={!!errors.password}
             style={styles.input}
           />
@@ -139,13 +148,16 @@ export default function Register() {
             {errors.password}
           </HelperText>
 
-          {/* Phone */}
           <TextInput
             label="Phone Number"
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
+            autoComplete="tel"
+            textContentType="telephoneNumber"
             mode="outlined"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             error={!!errors.phone}
             style={styles.input}
           />
