@@ -4,14 +4,12 @@ import { useContext } from "react";
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { AuthContext } from "../../context/AuthContext";
-import { useAsanaAuth } from "../../hooks/useAsanaAuth";
 import { Button } from "react-native-paper";
 import AppCard from "../../components/ui/AppCard";
 
 export default function Home() {
   const { theme } = useTheme();
   const { user } = useContext(AuthContext)!;
-  const { connectAsana } = useAsanaAuth();
 
   return (
     <Screen>
@@ -36,16 +34,6 @@ export default function Home() {
         <Text style={[styles.cardSubtitle, { color: theme.subText }]}>
           Integrate your workflow tools to automate tasks and stay in sync.
         </Text>
-
-        <Button
-          mode="contained"
-          onPress={connectAsana}
-          style={styles.asanaButton}
-          contentStyle={styles.asanaContent}
-          labelStyle={styles.asanaLabel}
-        >
-          Connect Asana
-        </Button>
       </AppCard>
 
       {/* Empty state */}
@@ -90,22 +78,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 6,
     lineHeight: 20,
-  },
-
-  asanaButton: {
-    marginTop: 20,
-    backgroundColor: "#F06A6A",
-    borderRadius: 12,
-  },
-
-  asanaContent: {
-    paddingVertical: 2,
-  },
-
-  asanaLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FFFFFF",
   },
 
   emptyState: {

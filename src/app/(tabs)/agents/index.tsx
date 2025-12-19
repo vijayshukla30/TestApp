@@ -12,15 +12,15 @@ import { useEffect, useState } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import { router } from "expo-router";
 
-import Screen from "../../components/Screen";
-import useTheme from "../../hooks/useTheme";
-import useAuth from "../../hooks/useAuth";
-import { api } from "../../services/api";
+import Screen from "../../../components/Screen";
+import useTheme from "../../../hooks/useTheme";
+import useAuth from "../../../hooks/useAuth";
+import { api } from "../../../services/api";
 
-import { Agent } from "../../types/agent";
-import AppCard from "../../components/ui/AppCard";
-import AgentCardSkeleton from "../../components/skeltons/AgentCardSkeleton";
-import { getPlatformImage } from "../../utils/platformImage";
+import { Agent } from "../../../types/agent";
+import AppCard from "../../../components/ui/AppCard";
+import AgentCardSkeleton from "../../../components/skeltons/AgentCardSkeleton";
+import { getPlatformImage } from "../../../utils/platformImage";
 
 export default function Agents() {
   const { theme } = useTheme();

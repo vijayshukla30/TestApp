@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, Image } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Text, StyleSheet, Image } from "react-native";
+import { useLocalSearchParams, Stack } from "expo-router";
 
 import Screen from "../../../components/Screen";
 import useTheme from "../../../hooks/useTheme";
@@ -24,33 +24,40 @@ export default function AgentDetails() {
   }
 
   return (
-    <Screen>
-      <AppCard style={styles.card}>
-        <Image
-          source={getPlatformImage(agent.platform?.type)}
-          style={styles.image}
-          resizeMode="contain"
-        />
+    <>
+      <Stack.Screen
+        options={{
+          title: agent.agentName,
+        }}
+      />
+      <Screen>
+        <AppCard style={styles.card}>
+          <Image
+            source={getPlatformImage(agent.platform?.type)}
+            style={styles.image}
+            resizeMode="contain"
+          />
 
-        <Text style={[styles.name, { color: theme.text }]}>
-          {agent.agentName}
-        </Text>
-
-        {agent.platform?.name && (
-          <Text style={[styles.platform, { color: theme.subText }]}>
-            Platform: {agent.platform.name}
+          <Text style={[styles.name, { color: theme.text }]}>
+            {agent.agentName}
           </Text>
-        )}
 
-        <Text style={[styles.meta, { color: theme.subText }]}>
-          Visibility: {agent.isPublic ? "Public" : "Private"}
-        </Text>
+          {agent.platform?.name && (
+            <Text style={[styles.platform, { color: theme.subText }]}>
+              Platform: {agent.platform.name}
+            </Text>
+          )}
 
-        <Text style={[styles.meta, { color: theme.subText }]}>
-          Agent ID: {agent.uuid}
-        </Text>
-      </AppCard>
-    </Screen>
+          <Text style={[styles.meta, { color: theme.subText }]}>
+            Visibility: {agent.isPublic ? "Public" : "Private"}
+          </Text>
+
+          <Text style={[styles.meta, { color: theme.subText }]}>
+            Agent ID: {agent.uuid}
+          </Text>
+        </AppCard>
+      </Screen>
+    </>
   );
 }
 
