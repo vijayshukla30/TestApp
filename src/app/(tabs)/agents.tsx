@@ -6,9 +6,11 @@ import {
   Image,
   TextInput,
   RefreshControl,
+  Pressable,
 } from "react-native";
 import { useEffect, useState } from "react";
 import NetInfo from "@react-native-community/netinfo";
+import { router } from "expo-router";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
@@ -18,6 +20,7 @@ import { api } from "../../services/api";
 import { Agent } from "../../types/agent";
 import AppCard from "../../components/ui/AppCard";
 import AgentCardSkeleton from "../../components/skeltons/AgentCardSkeleton";
+import { getPlatformImage } from "../../utils/platformImage";
 
 export default function Agents() {
   const { theme } = useTheme();
@@ -96,20 +99,6 @@ export default function Agents() {
     setUniqueAssistants(filtered);
   }, [organizations, searchTerm]);
 
-  // 🔹 Platform image mapper
-  const platformImage = (type?: string) => {
-    switch (type) {
-      case "asana":
-        return require("../../../assets/platforms/asana.png");
-      case "slack":
-        return require("../../../assets/platforms/slack.png");
-      case "trello":
-        return require("../../../assets/platforms/trello.png");
-      default:
-        return require("../../../assets/platforms/customPlatform.png");
-    }
-  };
-
   return (
     <Screen>
       <Text style={[styles.title, { color: theme.text }]}>Agents</Text>
@@ -169,26 +158,38 @@ export default function Agents() {
           />
         }
         renderItem={({ item }) => (
-          <AppCard style={styles.agentCard}>
-            <Image
-              source={platformImage(item.platform?.type)}
-              style={styles.platformImage}
-              resizeMode="contain"
-            />
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: "/agents/[agentId]",
+                params: {
+                  agentId: item.uuid,
+                  agent: JSON.stringify(item),
+                },
+              })
+            }
+          >
+            <AppCard style={styles.agentCard}>
+              <Image
+                source={getPlatformImage(item.platform?.type)}
+                style={styles.platformImage}
+                resizeMode="contain"
+              />
 
-            <Text
-              style={[styles.agentName, { color: theme.text }]}
-              numberOfLines={2}
-            >
-              {item.agentName}
-            </Text>
-
-            {item.platform?.name && (
-              <Text style={[styles.platform, { color: theme.subText }]}>
-                {item.platform.name}
+              <Text
+                style={[styles.agentName, { color: theme.text }]}
+                numberOfLines={2}
+              >
+                {item.agentName}
               </Text>
-            )}
-          </AppCard>
+
+              {item.platform?.name && (
+                <Text style={[styles.platform, { color: theme.subText }]}>
+                  {item.platform.name}
+                </Text>
+              )}
+            </AppCard>
+          </Pressable>
         )}
       />
     </Screen>
