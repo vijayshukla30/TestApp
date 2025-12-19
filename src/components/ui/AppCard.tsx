@@ -1,4 +1,4 @@
-import { StyleSheet, ViewStyle } from "react-native";
+import { StyleSheet, ViewStyle, StyleProp } from "react-native";
 import { Surface } from "react-native-paper";
 import useTheme from "../../hooks/useTheme";
 
@@ -8,7 +8,7 @@ type CardElevation = 0 | 1 | 2 | 3 | 4 | 5;
 type Props = {
   children: React.ReactNode;
   variant?: CardVariant;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   elevation?: CardElevation;
 };
 

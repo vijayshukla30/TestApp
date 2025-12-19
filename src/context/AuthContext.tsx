@@ -1,11 +1,13 @@
 import React, { createContext, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+
 import { getSession, saveSession, clearSession } from "../services/session";
-import { User } from "../types/auth";
+import { User, JwtPayload } from "../types/auth";
 
 export type AuthContextType = {
   user: User | null;
   token: string | null;
-  loading: boolean; // ✅ ADD THIS
+  loading: boolean;
   login: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -18,36 +20,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("AuthContext: restoreSession start");
-
     async function restoreSession() {
       try {
         const session = await getSession();
-        console.log("AuthContext: session =", session);
 
-        if (session) {
-          setUser(session.user);
+        if (session?.token) {
+          const decoded = jwtDecode<JwtPayload>(session.token);
+
+          setUser({
+            ...session.user,
+            uuid: decoded.uuid,
+            email: decoded.email,
+            role: decoded.role,
+          });
           setToken(session.token);
         }
       } catch (error) {
-        console.log("AuthContext error:", error);
+        console.log("AuthContext restore error:", error);
       } finally {
-        console.log("AuthContext: setLoading(false)");
-        setLoading(false); // ⛔ MUST RUN
+        setLoading(false);
       }
     }
 
     restoreSession();
   }, []);
 
-  useEffect(() => {
-    console.log("Auth loading:", loading);
-  }, [loading]);
-
   const login = async (token: string, user: User) => {
-    await saveSession(token, user);
+    const decoded = jwtDecode<JwtPayload>(token);
+
+    const enrichedUser: User = {
+      ...user,
+      uuid: decoded.uuid,
+      email: decoded.email,
+      role: decoded.role,
+    };
+
+    await saveSession(token, enrichedUser);
     setToken(token);
-    setUser(user);
+    setUser(enrichedUser);
   };
 
   const logout = async () => {
@@ -61,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         token,
-        loading, // ✅ PROVIDED
+        loading,
         login,
         logout,
       }}

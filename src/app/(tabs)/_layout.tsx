@@ -1,13 +1,10 @@
 import { Tabs } from "expo-router";
-import { useContext } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 
-import { AuthContext } from "../../context/AuthContext";
 import useTheme from "../../hooks/useTheme";
 
 export default function TabsLayout() {
   const { theme } = useTheme();
-  const { user } = useContext(AuthContext)!;
 
   return (
     <Tabs
@@ -29,9 +26,19 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
+          title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="agents"
+        options={{
+          title: "Agents",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="group" size={size} color={color} />
           ),
         }}
       />
