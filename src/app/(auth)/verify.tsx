@@ -60,7 +60,7 @@ export default function Verify() {
   };
 
   return (
-    <Screen>
+    <Screen center>
       <AuthCard>
         <AppCard variant="auth">
           <Text style={[styles.title, { color: theme.text }]}>Verify OTP</Text>

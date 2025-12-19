@@ -76,7 +76,7 @@ export default function Register() {
   }
 
   return (
-    <Screen>
+    <Screen center>
       <AuthCard>
         <AppCard variant="auth">
           {/* Logo */}

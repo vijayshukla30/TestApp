@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
+import { Switch, Button, Divider } from "react-native-paper";
 import { useContext } from "react";
-import { Button, Switch, Surface } from "react-native-paper";
 import { router } from "expo-router";
 
 import Screen from "../../components/Screen";
@@ -9,8 +9,10 @@ import { AuthContext } from "../../context/AuthContext";
 import AppCard from "../../components/ui/AppCard";
 
 export default function Settings() {
-  const { theme, mode, toggleTheme } = useTheme();
-  const { logout, user } = useContext(AuthContext)!;
+  const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useContext(AuthContext)!;
+
+  const isDark = theme.mode === "dark";
 
   const onLogout = async () => {
     await logout();
@@ -19,23 +21,47 @@ export default function Settings() {
 
   return (
     <Screen>
+      {/* Section title */}
+      <Text style={[styles.sectionTitle, { color: theme.subText }]}>
+        Account
+      </Text>
+
       <AppCard>
-        <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
-
-        {/* Theme Toggle */}
-        <View style={styles.row}>
-          <Text style={{ color: theme.text }}>Dark Theme</Text>
-          <Switch value={mode === "dark"} onValueChange={toggleTheme} />
-        </View>
-
-        {/* User Info */}
-        <Text style={[styles.info, { color: theme.subText }]}>
-          Logged in as {user?.email}
+        <Text style={[styles.label, { color: theme.subText }]}>
+          Signed in as
         </Text>
+        <Text style={[styles.value, { color: theme.text }]}>{user?.email}</Text>
+      </AppCard>
 
-        {/* Logout */}
-        <Button mode="contained" onPress={onLogout} style={{ marginTop: 20 }}>
-          Logout
+      {/* Preferences */}
+      <Text
+        style={[styles.sectionTitle, { color: theme.subText, marginTop: 28 }]}
+      >
+        Preferences
+      </Text>
+
+      <AppCard>
+        <View style={styles.row}>
+          <Text style={{ color: theme.text, fontSize: 16 }}>Dark theme</Text>
+          <Switch value={isDark} onValueChange={toggleTheme} />
+        </View>
+      </AppCard>
+
+      {/* Danger zone */}
+      <Text
+        style={[styles.sectionTitle, { color: theme.subText, marginTop: 28 }]}
+      >
+        Danger Zone
+      </Text>
+
+      <AppCard>
+        <Button
+          mode="contained"
+          onPress={onLogout}
+          style={styles.logoutButton}
+          contentStyle={{ paddingVertical: 2 }}
+        >
+          Sign out
         </Button>
       </AppCard>
     </Screen>
@@ -43,23 +69,31 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    marginTop: 20,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
+  sectionTitle: {
+    fontSize: 13,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 10,
   },
-  title: {
-    fontSize: 22,
+
+  label: {
+    fontSize: 13,
+  },
+
+  value: {
+    fontSize: 16,
     fontWeight: "600",
-    marginBottom: 20,
+    marginTop: 4,
   },
+
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
   },
-  info: {
-    marginTop: 12,
+
+  logoutButton: {
+    backgroundColor: "#EF4444", // danger red
+    borderRadius: 10,
   },
 });
