@@ -1,44 +1,82 @@
-import React, { Children, createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
-export type User = {
-  id: string;
-  email: string;
-};
+import { getSession, saveSession, clearSession } from "../services/session";
+import { User, JwtPayload } from "../types/auth";
 
-type AuthContextType = {
+export type AuthContextType = {
   user: User | null;
+  token: string | null;
   loading: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  login: (token: string, user: User) => Promise<void>;
+  logout: () => Promise<void>;
 };
 
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  login: () => {},
-  logout: () => {},
-});
+export const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Later: restore session from SecureStore
-    setLoading(false);
+    async function restoreSession() {
+      try {
+        const session = await getSession();
+
+        if (session?.token) {
+          const decoded = jwtDecode<JwtPayload>(session.token);
+
+          setUser({
+            ...session.user,
+            uuid: decoded.uuid,
+            email: decoded.email,
+            role: decoded.role,
+          });
+          setToken(session.token);
+        }
+      } catch (error) {
+        console.log("AuthContext restore error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    restoreSession();
   }, []);
 
-  const login = (user: User) => {
-    setUser(user);
+  const login = async (token: string, user: User) => {
+    const decoded = jwtDecode<JwtPayload>(token);
+
+    const enrichedUser: User = {
+      ...user,
+      uuid: decoded.uuid,
+      email: decoded.email,
+      role: decoded.role,
+    };
+
+    await saveSession(token, enrichedUser);
+    setToken(token);
+    setUser(enrichedUser);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await clearSession();
     setUser(null);
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
+}

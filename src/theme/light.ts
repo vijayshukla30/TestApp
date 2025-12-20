@@ -1,9 +1,9 @@
 import { colors } from "./colors";
-import { Theme } from "./types";
+import { Theme } from "../types/theme";
 
 const light: Theme = {
   mode: "light",
-  background: "#F9FAFB",
+  background: "#F8FAFC",
   surface: "#FFFFFF",
   text: "#111827",
   subText: "#6B7280",

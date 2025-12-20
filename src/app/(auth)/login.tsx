@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { TextInput, Button, Surface } from "react-native-paper";
 
 import Screen from "../../components/Screen";
@@ -8,6 +8,9 @@ import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
 import AuthCard from "../../components/auth/AuthCard";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
+import { api } from "../../services/api";
+import { AuthContext } from "../../context/AuthContext";
+import AppCard from "../../components/ui/AppCard";
 
 export default function Login() {
   const { theme } = useTheme();
@@ -16,6 +19,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { login } = useContext(AuthContext)!;
 
   const onLogin = async () => {
     if (!email || !password) {
@@ -26,8 +30,35 @@ export default function Login() {
     try {
       setLoading(true);
       // API later
-      await new Promise((r) => setTimeout(r, 1200));
-      showMessage("Login clicked");
+      const res = await api.login(email, password);
+      if (res?.message === "Invalid credentials") {
+        showMessage("Invalid email or password");
+        return;
+      }
+      // ⚠️ Account not verified
+      if (res?.message === "Account not verified. OTP resent to email.") {
+        showMessage("OTP sent to your email");
+
+        router.replace({
+          pathname: "/(auth)/verify",
+          params: { email: res.email || email },
+        });
+        return;
+      }
+
+      if (res?.token) {
+        const user = {
+          uuid: res.uuid,
+          email: res.email,
+          name: res.name,
+          role: res.role,
+          phoneNumber: res.phoneNumber,
+        };
+
+        await login(res.token, user);
+        router.replace("/(tabs)/home");
+        return;
+      }
     } finally {
       setLoading(false);
     }
@@ -42,18 +73,9 @@ export default function Login() {
   }
 
   return (
-    <Screen>
+    <Screen center>
       <AuthCard>
-        <Surface
-          style={[
-            styles.card,
-            {
-              backgroundColor: "rgba(15, 20, 35, 0.9)",
-              borderColor: "rgba(255,255,255,0.08)",
-            },
-          ]}
-          elevation={4}
-        >
+        <AppCard variant="auth">
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
@@ -77,6 +99,11 @@ export default function Login() {
             onChangeText={setEmail}
             mode="outlined"
             autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             style={styles.input}
           />
 
@@ -86,6 +113,10 @@ export default function Login() {
             onChangeText={setPassword}
             secureTextEntry
             mode="outlined"
+            autoComplete="password"
+            textContentType="password"
+            activeOutlineColor={theme.primary}
+            outlineColor={theme.border}
             style={styles.input}
           />
 
@@ -119,7 +150,7 @@ export default function Login() {
               Create an account
             </Link>
           </View>
-        </Surface>
+        </AppCard>
       </AuthCard>
     </Screen>
   );
