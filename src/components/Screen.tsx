@@ -1,18 +1,42 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, View, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  StyleSheet,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
 import useTheme from "../hooks/useTheme";
 
 type Props = {
   children: React.ReactNode;
-  center?: boolean; // ✅ for auth
+  scroll?: boolean;
+  center?: boolean;
 };
 
-export default function Screen({ children, center }: Props) {
+export default function Screen({ children, center, scroll = false }: Props) {
   const { theme } = useTheme();
   const isDark = theme.mode === "dark";
 
-  const Content = (
+  const content = scroll ? (
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        center && styles.centerContainer,
+      ]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {children}
+    </ScrollView>
+  ) : (
+    <View style={[styles.container, center && styles.centerContainer]}>
+      {children}
+    </View>
+  );
+
+  const body = (
     <SafeAreaView
       style={[styles.safe, !isDark && { backgroundColor: theme.background }]}
     >
@@ -20,15 +44,7 @@ export default function Screen({ children, center }: Props) {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <View
-          style={[
-            styles.container,
-            center && styles.centerContainer,
-            center && { paddingBottom: 0 },
-          ]}
-        >
-          {children}
-        </View>
+        {content}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -39,12 +55,12 @@ export default function Screen({ children, center }: Props) {
         colors={["#0B1020", "#141A2E", "#0B1020"]}
         style={{ flex: 1 }}
       >
-        {Content}
+        {body}
       </LinearGradient>
     );
   }
 
-  return Content;
+  return body;
 }
 
 const styles = StyleSheet.create({
@@ -53,14 +69,12 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    flex: 1,
+    flexGrow: 1, // ✅ REQUIRED for ScrollView
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
 
-  // ✅ TRUE vertical centering
   centerContainer: {
     justifyContent: "center",
-    paddingTop: 0,
   },
 });

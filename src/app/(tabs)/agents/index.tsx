@@ -7,8 +7,10 @@ import {
   TextInput,
   RefreshControl,
   Pressable,
+  Dimensions,
+  ListRenderItemInfo,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import { router } from "expo-router";
 
@@ -16,18 +18,27 @@ import Screen from "../../../components/Screen";
 import useTheme from "../../../hooks/useTheme";
 import useAuth from "../../../hooks/useAuth";
 import { api } from "../../../services/api";
-
 import { Agent } from "../../../types/agent";
 import AppCard from "../../../components/ui/AppCard";
 import AgentCardSkeleton from "../../../components/skeltons/AgentCardSkeleton";
-import { getPlatformImage } from "../../../utils/platformImage";
+import { getPlatformImage } from "../../../utils/platform";
+
+// FIXED: More precise responsive constants for iPhone
+const HORIZONTAL_PADDING = 20; // Increased for safe areas
+const GAP = 16; // Slightly larger horizontal gap
+const ROW_GAP = 16; // NEW: Vertical spacing between rows
+const NUM_COLUMNS = 2;
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CARD_WIDTH = Math.floor(
+  (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - GAP) / NUM_COLUMNS
+); // Math.floor prevents fractional pixels
 
 export default function Agents() {
   const { theme } = useTheme();
   const { user, token } = useAuth();
 
   const [organizations, setOrganizations] = useState<any[]>([]);
-  const [uniqueAssistants, setUniqueAssistants] = useState<Agent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,17 +46,14 @@ export default function Agents() {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
-      setIsOnline(!!state.isConnected);
+      setIsOnline(!!state?.isConnected);
     });
-
     return () => unsubscribe();
   }, []);
 
   const fetchAgents = async () => {
-    if (!isOnline) return;
+    if (!isOnline || !user?.uuid || !token) return;
     try {
-      if (!user?.uuid || !token) return;
-
       const data = await api.getAgentsByConsumer(user.uuid, token);
       setOrganizations(data.organizations || []);
     } catch (error) {
@@ -53,14 +61,10 @@ export default function Agents() {
     }
   };
 
-  // 🔹 Load organizations
   useEffect(() => {
     setLoading(true);
-
-    fetchAgents().finally(() => {
-      setLoading(false);
-    });
-  }, [user?.uuid, token]);
+    fetchAgents().finally(() => setLoading(false));
+  }, [user?.uuid, token, isOnline]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -68,49 +72,76 @@ export default function Agents() {
     setRefreshing(false);
   };
 
-  // 🔹 WEBSITE LOGIC (UNCHANGED)
-  useEffect(() => {
-    if (!organizations?.length) {
-      setUniqueAssistants([]);
-      return;
-    }
+  const uniqueAssistants = useMemo<Agent[]>(() => {
+    if (!organizations.length) return [];
 
-    // 1️⃣ Flatten assistants
-    const orgAssistants = organizations.flatMap((o) => o.assistants || []);
-
-    // 2️⃣ Deduplicate by platform
+    const assistants = organizations.flatMap((org) => org.assistants || []);
     const platformMap = new Map<string, Agent>();
 
-    orgAssistants.forEach((a: Agent) => {
-      if (!a) return;
+    console.log("assistants :>> ", assistants);
 
-      const platformName = a.platform?.type?.toLowerCase()?.trim();
-
-      if (platformName && !platformMap.has(platformName)) {
-        platformMap.set(platformName, a);
+    assistants.forEach((agent: Agent) => {
+      if (!agent) return;
+      const key = agent.platform?.type?.toLowerCase()?.trim();
+      if (key && !platformMap.has(key)) {
+        platformMap.set(key, agent);
       }
     });
 
-    // 3️⃣ Search filter
-    const filtered = Array.from(platformMap.values()).filter((a) =>
-      a.agentName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const list = Array.from(platformMap.values());
 
-    setUniqueAssistants(filtered);
+    if (!searchTerm.trim()) return list;
+
+    return list.filter((agent) =>
+      agent.agentName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   }, [organizations, searchTerm]);
+
+  const renderAgentItem = ({ item }: ListRenderItemInfo<Agent>) => (
+    <Pressable
+      onPress={() =>
+        router.push({
+          pathname: "/agents/[agentId]",
+          params: {
+            agentId: item.uuid,
+            agent: JSON.stringify(item),
+          },
+        })
+      }
+      style={styles.cardContainer}
+    >
+      <AppCard variant="default" style={styles.agentCard}>
+        <Image
+          source={getPlatformImage(item.platform?.type)}
+          style={styles.platformImage}
+          resizeMode="contain"
+        />
+        <Text
+          style={[styles.agentName, { color: theme.text }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={12}
+        >
+          {item.agentName}
+        </Text>
+      </AppCard>
+    </Pressable>
+  );
+
+  // NEW: Vertical row separator
+  const ItemSeparator = () => <View style={{ height: ROW_GAP }} />;
 
   return (
     <Screen>
       <Text style={[styles.title, { color: theme.text }]}>Agents</Text>
 
-      {/* 🔍 Search */}
       <TextInput
         placeholder="Search agents"
         placeholderTextColor={theme.subText}
         value={searchTerm}
         onChangeText={setSearchTerm}
         style={[
-          styles.search,
+          styles.searchInput,
           {
             backgroundColor: theme.surface,
             color: theme.text,
@@ -120,110 +151,112 @@ export default function Agents() {
       />
 
       {!isOnline && (
-        <Text style={{ color: theme.subText, marginBottom: 12 }}>
-          You’re offline. Showing last loaded data.
+        <Text style={[styles.offlineText, { color: theme.subText }]}>
+          You're offline. Showing last loaded data.
         </Text>
       )}
 
-      {loading && (
-        <FlatList
-          data={[1, 2, 3, 4]}
-          keyExtractor={(i) => i.toString()}
-          numColumns={2}
-          columnWrapperStyle={{ gap: 12 }}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-          renderItem={() => <AgentCardSkeleton />}
-        />
-      )}
-
       {!loading && uniqueAssistants.length === 0 && (
-        <Text style={{ color: theme.subText, marginTop: 20 }}>
+        <Text style={[styles.emptyText, { color: theme.subText }]}>
           No agents found
         </Text>
       )}
 
-      <FlatList
-        data={uniqueAssistants}
-        keyExtractor={(item) => item.uuid}
-        numColumns={2}
-        columnWrapperStyle={{ gap: 12 }}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        contentContainerStyle={{ paddingBottom: 24 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[theme.primary]} // Android
-            tintColor={theme.primary} // iOS
-          />
-        }
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() =>
-              router.push({
-                pathname: "/agents/[agentId]",
-                params: {
-                  agentId: item.uuid,
-                  agent: JSON.stringify(item),
-                },
-              })
-            }
-          >
-            <AppCard style={styles.agentCard}>
-              <Image
-                source={getPlatformImage(item.platform?.type)}
-                style={styles.platformImage}
-                resizeMode="contain"
-              />
+      {/* Skeleton */}
+      {loading && (
+        <FlatList
+          data={[1, 2, 3, 4]}
+          keyExtractor={(item) => `skeleton-${item}`}
+          numColumns={NUM_COLUMNS}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={ItemSeparator}
+          renderItem={() => (
+            <View style={styles.cardContainer}>
+              <AgentCardSkeleton />
+            </View>
+          )}
+        />
+      )}
 
-              <Text
-                style={[styles.agentName, { color: theme.text }]}
-                numberOfLines={2}
-              >
-                {item.agentName}
-              </Text>
-            </AppCard>
-          </Pressable>
-        )}
-      />
+      {/* Real List */}
+      {!loading && (
+        <FlatList
+          data={uniqueAssistants}
+          keyExtractor={(item) => item.uuid}
+          numColumns={NUM_COLUMNS}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={ItemSeparator} // ← FIXES vertical spacing
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.primary]}
+              tintColor={theme.primary}
+            />
+          }
+          renderItem={renderAgentItem}
+        />
+      )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "600",
     marginBottom: 16,
+    paddingHorizontal: HORIZONTAL_PADDING,
   },
-  search: {
-    height: 44,
-    borderRadius: 10,
+  searchInput: {
+    height: 48,
+    borderRadius: 12,
     borderWidth: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    marginBottom: 20, // Increased
+    marginHorizontal: HORIZONTAL_PADDING,
+    fontSize: 16,
+  },
+  offlineText: {
     marginBottom: 16,
+    fontSize: 14,
+    textAlign: "center",
+    paddingHorizontal: HORIZONTAL_PADDING,
+  },
+  emptyText: {
+    marginTop: 60,
+    fontSize: 16,
+    textAlign: "center",
+    paddingHorizontal: HORIZONTAL_PADDING,
+  },
+  listContent: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingBottom: 40,
+  },
+  columnWrapper: {
+    gap: GAP,
+    justifyContent: "space-between", // Perfect even distribution
+  },
+  cardContainer: {
+    flexBasis: "48%", // ← PERFECT FIX: 48% + gap = perfect fit
   },
   agentCard: {
-    flexBasis: "48%",
+    width: "100%",
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 28, // Slightly more vertical padding
   },
   platformImage: {
-    width: 42,
-    height: 42,
-    marginBottom: 12,
+    width: 56, // Slightly larger
+    height: 56,
+    marginBottom: 16,
   },
   agentName: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 20,
+    fontWeight: "700",
     textAlign: "center",
-  },
-  platform: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  loader: {
-    marginTop: 40,
-    alignItems: "center",
+    paddingHorizontal: 8, // Give breathing room on sides
   },
 });
