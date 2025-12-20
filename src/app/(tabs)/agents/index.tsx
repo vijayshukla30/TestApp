@@ -182,12 +182,6 @@ export default function Agents() {
               >
                 {item.agentName}
               </Text>
-
-              {item.platform?.name && (
-                <Text style={[styles.platform, { color: theme.subText }]}>
-                  {item.platform.name}
-                </Text>
-              )}
             </AppCard>
           </Pressable>
         )}

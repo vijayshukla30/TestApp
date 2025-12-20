@@ -21,6 +21,7 @@ export default function Settings() {
 
   return (
     <Screen>
+      <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
       {/* Section title */}
       <Text style={[styles.sectionTitle, { color: theme.subText }]}>
         Account
@@ -69,6 +70,11 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 13,
     letterSpacing: 1,
