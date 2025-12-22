@@ -1,15 +1,13 @@
 import { View, Text, StyleSheet } from "react-native";
-import { useContext } from "react";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
-import { AuthContext } from "../../context/AuthContext";
-import { Button } from "react-native-paper";
 import AppCard from "../../components/ui/AppCard";
+import useAuth from "../../hooks/useAuth";
 
 export default function Home() {
   const { theme } = useTheme();
-  const { user } = useContext(AuthContext)!;
+  const { user } = useAuth()!;
 
   return (
     <Screen>
