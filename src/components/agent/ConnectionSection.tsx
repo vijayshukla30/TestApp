@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   card: {
     alignItems: "center",
     paddingVertical: 26,
-    marginTop: 24,
+    marginBottom: 24,
   },
 
   iconWrap: {
