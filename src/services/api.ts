@@ -1,7 +1,7 @@
 import { AgentsApiResponse } from "../types/agent";
 import { RequestOptions } from "../types/request";
 
-const API_BASE_URL = "https://api.heygennie.com/api/v1"; // change later
+const API_BASE_URL = process.env.EXPO_API_BASE_URL;
 
 async function request<T>(url: string, options: RequestOptions): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${url}`, {
@@ -46,4 +46,10 @@ export const api = {
         Authorization: `Bearer ${token}`,
       },
     }),
+
+  fetchAuthProfile: (state: string) =>
+    request<{ profile?: any }>(
+      `/general-auth/profile?state=${encodeURIComponent(state)}`,
+      { method: "GET" }
+    ),
 };
