@@ -122,8 +122,12 @@ export default function AgentDetails() {
             </Text>
           </AppCard>
 
-          <GennieTools platformName={platformName} />
           <ConnectionSection onConnect={onConnect} />
+
+          <GennieTools
+            platformName={platformName}
+            agentName={agent.agentName}
+          />
         </ScrollView>
       </Screen>
     </>

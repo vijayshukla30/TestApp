@@ -6,16 +6,16 @@ import { useLocalSearchParams, router } from "expo-router";
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
-import { AuthContext } from "../../context/AuthContext";
 import { api } from "../../services/api";
 import AuthCard from "../../components/auth/AuthCard";
 import { VerifyOtpResponse } from "../../types/auth";
 import AppCard from "../../components/ui/AppCard";
+import useAuth from "../../hooks/useAuth";
 
 export default function Verify() {
   const { theme } = useTheme();
   const { showMessage } = useContext(UIContext);
-  const { login } = useContext(AuthContext)!;
+  const { login } = useAuth()!;
 
   const { email } = useLocalSearchParams<{ email: string }>();
 

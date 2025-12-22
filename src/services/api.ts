@@ -1,5 +1,10 @@
 import { AgentsApiResponse } from "../types/agent";
 import { RequestOptions } from "../types/request";
+import {
+  LoginResponse,
+  RegisterResponse,
+  VerifyOtpResponse,
+} from "../types/auth";
 
 const API_BASE_URL = "https://api.heygennie.com/api/v1"; // change later
 
@@ -23,7 +28,10 @@ async function request<T>(url: string, options: RequestOptions): Promise<T> {
 
 export const api = {
   login: (email: string, password: string) =>
-    request("/user/login", { method: "POST", body: { email, password } }),
+    request<LoginResponse>("/user/login", {
+      method: "POST",
+      body: { email, password },
+    }),
 
   register: (payload: {
     name: string;
@@ -31,10 +39,17 @@ export const api = {
     phoneNumber: string;
     password: string;
     roles: string;
-  }) => request("/user/register", { method: "POST", body: payload }),
+  }) =>
+    request<RegisterResponse>("/user/register", {
+      method: "POST",
+      body: payload,
+    }),
 
   verifyOtp: (payload: { email: string; otp: string }) =>
-    request("/verify-otp", { method: "POST", body: payload }),
+    request<VerifyOtpResponse>("/verify-otp", {
+      method: "POST",
+      body: payload,
+    }),
 
   resendOtp: (email: string) =>
     request("/resend-otp", { method: "POST", body: { email } }),
