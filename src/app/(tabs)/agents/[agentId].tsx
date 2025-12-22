@@ -1,15 +1,7 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  Pressable,
-} from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Button } from "react-native-paper";
 
 import Screen from "../../../components/Screen";
 import useTheme from "../../../hooks/useTheme";
@@ -23,14 +15,12 @@ import {
   extractUSLocalNumber,
   formatPhoneNumberUS,
 } from "../../../utils/format";
-import ToolChip from "../../../components/ui/ToolChip";
+import ConnectionSection from "../../../components/agent/ConnectionSection";
+import GennieTools from "../../../components/agent/GennieTools";
 
 export default function AgentDetails() {
   const { theme } = useTheme();
   const params = useLocalSearchParams();
-
-  const [showAvailable, setShowAvailable] = useState(true);
-  const [showUnavailable, setShowUnavailable] = useState(false);
 
   const agent: Agent | null = params.agent
     ? JSON.parse(params.agent as string)
@@ -59,31 +49,12 @@ export default function AgentDetails() {
       : rawPhone || "Not assigned";
 
   const platformName = agent.platform?.type?.toLowerCase();
-  const capabilities = getPlatformCapabilities(platformName);
 
-  const available = capabilities.filter((t) => t.available);
-  const unavailable = capabilities.filter((t) => !t.available);
+  const onConnect = () => {
+    console.log("Connect platform clicked for:", agent.agentName);
+  };
 
   /* ---------- UI helpers ---------- */
-
-  const SectionHeader = ({
-    title,
-    open,
-    onPress,
-  }: {
-    title: string;
-    open: boolean;
-    onPress: () => void;
-  }) => (
-    <Pressable onPress={onPress} style={styles.sectionHeader}>
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
-      <MaterialIcons
-        name={open ? "expand-less" : "expand-more"}
-        size={20}
-        color={theme.subText}
-      />
-    </Pressable>
-  );
 
   return (
     <>
@@ -151,91 +122,13 @@ export default function AgentDetails() {
             </Text>
           </AppCard>
 
-          {/* ---------- Tools ---------- */}
-          <AppCard style={styles.toolsCard}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Asana Tools
-            </Text>
-
-            <Text style={[styles.sectionDesc, { color: theme.subText }]}>
-              Create, update, delete, and manage tasks using this agent with
-              authentication.
-            </Text>
-
-            {available.length > 0 && (
-              <>
-                <SectionHeader
-                  title={`Available (${available.length})`}
-                  open={showAvailable}
-                  onPress={() => setShowAvailable((v) => !v)}
-                />
-
-                {showAvailable && (
-                  <View style={styles.chipsWrap}>
-                    {available.map((tool) => (
-                      <ToolChip key={tool.name} label={tool.name} available />
-                    ))}
-                  </View>
-                )}
-              </>
-            )}
-
-            {unavailable.length > 0 && (
-              <>
-                <SectionHeader
-                  title={`Unavailable (${unavailable.length})`}
-                  open={showUnavailable}
-                  onPress={() => setShowUnavailable((v) => !v)}
-                />
-
-                {showUnavailable && (
-                  <View style={styles.chipsWrap}>
-                    {unavailable.map((tool) => (
-                      <ToolChip
-                        key={tool.name}
-                        label={tool.name}
-                        available={false}
-                      />
-                    ))}
-                  </View>
-                )}
-              </>
-            )}
-          </AppCard>
-
-          {/* ---------- Platform Connection ---------- */}
-          <AppCard style={styles.connectionCard}>
-            <MaterialIcons
-              name={isConnected ? "link-off" : "link"}
-              size={48}
-              color={theme.primary}
-            />
-
-            <Text style={[styles.connectionTitle, { color: theme.text }]}>
-              Platform Connection
-            </Text>
-
-            <Text style={[styles.connectionSubtitle, { color: theme.subText }]}>
-              Connect your platform to get started
-            </Text>
-
-            <Button
-              mode={isConnected ? "outlined" : "contained"}
-              style={{ marginTop: 14 }}
-              onPress={() => {
-                // TODO: connect / disconnect
-              }}
-            >
-              {isConnected ? "Disconnect" : "Connect"}
-            </Button>
-          </AppCard>
+          <GennieTools platformName={platformName} />
+          <ConnectionSection onConnect={onConnect} />
         </ScrollView>
       </Screen>
     </>
   );
 }
-
-/* ---------- Styles ---------- */
 
 const styles = StyleSheet.create({
   stickyHeader: {
@@ -301,51 +194,5 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-  },
-
-  toolsCard: {
-    paddingVertical: 18,
-  },
-
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 18,
-    marginBottom: 10,
-  },
-
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  sectionDesc: {
-    fontSize: 13,
-    marginBottom: 14,
-  },
-
-  chipsWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-
-  connectionCard: {
-    alignItems: "center",
-    paddingVertical: 24,
-    marginTop: 24,
-  },
-
-  connectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 12,
-  },
-
-  connectionSubtitle: {
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 6,
   },
 });

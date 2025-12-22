@@ -36,8 +36,6 @@ export default function Verify() {
         otp,
       });
 
-      console.log("res :>> ", res);
-
       const user = {
         uuid: res.uuid,
         email: res.email,

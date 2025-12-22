@@ -78,8 +78,6 @@ export default function Agents() {
     const assistants = organizations.flatMap((org) => org.assistants || []);
     const platformMap = new Map<string, Agent>();
 
-    console.log("assistants :>> ", assistants);
-
     assistants.forEach((agent: Agent) => {
       if (!agent) return;
       const key = agent.platform?.type?.toLowerCase()?.trim();
