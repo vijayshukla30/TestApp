@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
 import { Link, router } from "expo-router";
-import { TextInput, Button, Surface } from "react-native-paper";
+import { TextInput, Button } from "react-native-paper";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
@@ -9,17 +9,18 @@ import { UIContext } from "../../context/UIContext";
 import AuthCard from "../../components/auth/AuthCard";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
 import { api } from "../../services/api";
-import { AuthContext } from "../../context/AuthContext";
 import AppCard from "../../components/ui/AppCard";
+import useAuth from "../../hooks/useAuth";
+import { isAuthSuccess } from "../../utils/authGaurds";
 
 export default function Login() {
   const { theme } = useTheme();
+  const { login } = useAuth();
   const { showMessage } = useContext(UIContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useContext(AuthContext)!;
 
   const onLogin = async () => {
     if (!email || !password) {
@@ -31,32 +32,34 @@ export default function Login() {
       setLoading(true);
       // API later
       const res = await api.login(email, password);
-      if (res?.message === "Invalid credentials") {
+      if (isAuthSuccess(res)) {
+        await login(res.token, {
+          uuid: res.uuid,
+          email: res.email,
+          name: res.name,
+          role: res.role,
+          phoneNumber: res.phoneNumber,
+        });
+
+        router.replace("/(tabs)/home");
+        return;
+      }
+
+      /**
+       * ❌ ERROR CASES
+       */
+      if (res.message === "Invalid credentials") {
         showMessage("Invalid email or password");
         return;
       }
-      // ⚠️ Account not verified
-      if (res?.message === "Account not verified. OTP resent to email.") {
+
+      if (res.message === "Account not verified. OTP resent to email.") {
         showMessage("OTP sent to your email");
 
         router.replace({
           pathname: "/(auth)/verify",
           params: { email: res.email || email },
         });
-        return;
-      }
-
-      if (res?.token) {
-        const user = {
-          uuid: res.uuid,
-          email: res.email,
-          name: res.name,
-          role: res.role,
-          phoneNumber: res.phoneNumber,
-        };
-
-        await login(res.token, user);
-        router.replace("/(tabs)/home");
         return;
       }
     } finally {

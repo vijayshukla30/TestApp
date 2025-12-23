@@ -7,9 +7,10 @@ import ToolDetails from "./ToolDetails";
 
 type Props = {
   platformName: string | any;
+  agentName: string | any;
 };
 
-const GennieTools = ({ platformName }: Props) => {
+const GennieTools = ({ platformName, agentName }: Props) => {
   const { theme } = useTheme();
   const capabilities = getPlatformCapabilities(platformName);
 
@@ -22,7 +23,7 @@ const GennieTools = ({ platformName }: Props) => {
   return (
     <AppCard style={styles.toolsCard}>
       <Text style={[styles.sectionTitle, { color: theme.text }]}>
-        Asana Tools
+        {agentName} Tools
       </Text>
 
       <Text style={[styles.sectionDesc, { color: theme.subText }]}>

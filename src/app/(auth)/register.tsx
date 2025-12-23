@@ -52,14 +52,14 @@ export default function Register() {
         roles: "CONSUMER",
       });
 
-      if (res?.uuid) {
-        showMessage(res.message);
-
-        router.push({
+      if ("uuid" in res) {
+        router.replace({
           pathname: "/(auth)/verify",
-          params: { email },
+          params: { email: res.email },
         });
+        return;
       }
+      showMessage(res.message);
     } catch {
       showMessage("Registration failed");
     } finally {

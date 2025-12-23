@@ -1,16 +1,15 @@
 import { View, Text, StyleSheet } from "react-native";
-import { Switch, Button, Divider } from "react-native-paper";
-import { useContext } from "react";
+import { Switch, Button } from "react-native-paper";
 import { router } from "expo-router";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
-import { AuthContext } from "../../context/AuthContext";
 import AppCard from "../../components/ui/AppCard";
+import useAuth from "../../hooks/useAuth";
 
 export default function Settings() {
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useContext(AuthContext)!;
+  const { user, logout } = useAuth()!;
 
   const isDark = theme.mode === "dark";
 

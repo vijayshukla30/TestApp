@@ -1,12 +1,16 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAppSelector } from "./useAppSelector";
+import { login, logout } from "../features/auth/authActions";
+import useAppDispatch from "./useAppDispatch";
 
 export default function useAuth() {
-  const context = useContext(AuthContext);
+  const { user, token, loading } = useAppSelector((s) => s.auth);
+  const dispatch = useAppDispatch();
 
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-
-  return context;
+  return {
+    user,
+    token,
+    loading,
+    login: (token: string, user: any) => dispatch(login(token, user)),
+    logout: () => dispatch(logout()),
+  };
 }

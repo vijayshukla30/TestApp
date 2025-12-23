@@ -7,21 +7,22 @@ import {
   TextInput,
   RefreshControl,
   Pressable,
-  Dimensions,
   ListRenderItemInfo,
 } from "react-native";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import NetInfo from "@react-native-community/netinfo";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import Screen from "../../../components/Screen";
 import useTheme from "../../../hooks/useTheme";
 import useAuth from "../../../hooks/useAuth";
-import { api } from "../../../services/api";
+import useAppDispatch from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
 import { Agent } from "../../../types/agent";
 import AppCard from "../../../components/ui/AppCard";
 import AgentCardSkeleton from "../../../components/skeltons/AgentCardSkeleton";
 import { getPlatformImage } from "../../../utils/platform";
+import { fetchAgents } from "../../../features/agent/agentsSlice";
 
 // FIXED: More precise responsive constants for iPhone
 const HORIZONTAL_PADDING = 20; // Increased for safe areas
@@ -29,20 +30,16 @@ const GAP = 16; // Slightly larger horizontal gap
 const ROW_GAP = 16; // NEW: Vertical spacing between rows
 const NUM_COLUMNS = 2;
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = Math.floor(
-  (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - GAP) / NUM_COLUMNS
-); // Math.floor prevents fractional pixels
-
 export default function Agents() {
   const { theme } = useTheme();
   const { user, token } = useAuth();
+  const dispatch = useAppDispatch();
 
-  const [organizations, setOrganizations] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+
+  const { list: agents, loading } = useAppSelector((s) => s.agents);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -51,35 +48,27 @@ export default function Agents() {
     return () => unsubscribe();
   }, []);
 
-  const fetchAgents = async () => {
-    if (!isOnline || !user?.uuid || !token) return;
-    try {
-      const data = await api.getAgentsByConsumer(user.uuid, token);
-      setOrganizations(data.organizations || []);
-    } catch (error) {
-      console.log("Agents API error:", error);
-    }
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    fetchAgents().finally(() => setLoading(false));
-  }, [user?.uuid, token, isOnline]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.uuid || !token || agents.length > 0) return;
+      dispatch(fetchAgents({ consumerUuid: user.uuid, token }));
+    }, [user?.uuid, token, agents.length])
+  );
 
   const onRefresh = async () => {
+    if (!user?.uuid || !token) return;
+
     setRefreshing(true);
-    await fetchAgents();
+    await dispatch(fetchAgents({ consumerUuid: user.uuid, token })).unwrap();
     setRefreshing(false);
   };
 
   const uniqueAssistants = useMemo<Agent[]>(() => {
-    if (!organizations.length) return [];
+    if (!agents.length) return [];
 
-    const assistants = organizations.flatMap((org) => org.assistants || []);
     const platformMap = new Map<string, Agent>();
 
-    assistants.forEach((agent: Agent) => {
-      if (!agent) return;
+    agents.forEach((agent) => {
       const key = agent.platform?.type?.toLowerCase()?.trim();
       if (key && !platformMap.has(key)) {
         platformMap.set(key, agent);
@@ -93,7 +82,7 @@ export default function Agents() {
     return list.filter((agent) =>
       agent.agentName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [organizations, searchTerm]);
+  }, [agents, searchTerm]);
 
   const renderAgentItem = ({ item }: ListRenderItemInfo<Agent>) => (
     <Pressable
