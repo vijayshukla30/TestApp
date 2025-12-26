@@ -1,6 +1,13 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
-import { useLocalSearchParams, Stack } from "expo-router";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  Pressable,
+} from "react-native";
+import { useLocalSearchParams, Stack, router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import Screen from "../../../components/Screen";
@@ -76,11 +83,25 @@ export default function AgentDetails() {
     }
   };
 
-  /* ---------- UI helpers ---------- */
-
   return (
     <>
-      <Stack.Screen options={{ title: agent.agentName }} />
+      <Stack.Screen
+        options={{
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                if ((params.from = "home")) {
+                  router.replace("/(tabs)/home");
+                } else {
+                  router.back();
+                }
+              }}
+            >
+              <MaterialIcons name="arrow-back" size={24} />
+            </Pressable>
+          ),
+        }}
+      />
 
       <Screen>
         <ScrollView
@@ -88,7 +109,6 @@ export default function AgentDetails() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
-          {/* ---------- Sticky Header ---------- */}
           <View
             style={[styles.stickyHeader, { backgroundColor: theme.background }]}
           >
@@ -104,7 +124,6 @@ export default function AgentDetails() {
             </Text>
           </View>
 
-          {/* ---------- Hero Header ---------- */}
           <View style={styles.heroHeader}>
             <Image
               source={getPlatformImage(agent.platform?.type)}
@@ -115,7 +134,6 @@ export default function AgentDetails() {
             </Text>
           </View>
 
-          {/* ---------- Phone ---------- */}
           <Text style={[styles.sectionLabel, { color: theme.subText }]}>
             Phone
           </Text>

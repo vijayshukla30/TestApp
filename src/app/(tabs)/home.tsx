@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, router } from "expo-router";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
@@ -9,6 +9,7 @@ import useAppDispatch from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { fetchUserActivity } from "../../features/activity/activitySlice";
 import AgentGrid from "../../components/agent/AgentGrid";
+import HomeAgentCard from "../../components/agent/HomeAgentCard";
 
 export default function Home() {
   const { theme } = useTheme();
@@ -48,7 +49,30 @@ export default function Home() {
         refreshing={refreshing}
         onRefresh={onRefresh}
         getId={(item) => item.assistantId.uuid}
-        getAgent={(item) => item.assistantId}
+        renderItem={(item) => (
+          <HomeAgentCard
+            agent={item.assistantId}
+            onOpenDetail={() =>
+              router.push({
+                pathname: "/agents/[agentId]",
+                params: {
+                  agentId: item.assistantId.uuid,
+                  agent: JSON.stringify(item.assistantId),
+                  from: "home",
+                },
+              })
+            }
+            onUseNow={() =>
+              router.push({
+                pathname: "/agents/[agentId]/use",
+                params: {
+                  agentId: item.assistantId.uuid,
+                  agent: JSON.stringify(item.assistantId),
+                },
+              })
+            }
+          />
+        )}
       />
     </Screen>
   );

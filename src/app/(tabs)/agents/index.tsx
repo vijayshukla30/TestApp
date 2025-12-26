@@ -1,7 +1,7 @@
 import { Text, StyleSheet, TextInput } from "react-native";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import NetInfo from "@react-native-community/netinfo";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, router } from "expo-router";
 
 import Screen from "../../../components/Screen";
 import useTheme from "../../../hooks/useTheme";
@@ -11,6 +11,7 @@ import { useAppSelector } from "../../../hooks/useAppSelector";
 import { Agent } from "../../../types/agent";
 import { fetchAgents } from "../../../features/agent/agentsSlice";
 import AgentGrid from "../../../components/agent/AgentGrid";
+import AgentCard from "../../../components/agent/AgentCard";
 
 // FIXED: More precise responsive constants for iPhone
 const HORIZONTAL_PADDING = 20; // Increased for safe areas
@@ -104,8 +105,22 @@ export default function Agents() {
         loading={loading}
         refreshing={refreshing}
         onRefresh={onRefresh}
-        getId={(item) => item.uuid}
-        getAgent={(item) => item}
+        getId={(agent) => agent.uuid}
+        renderItem={(agent) => (
+          <AgentCard
+            agent={agent}
+            onOpenDetail={() =>
+              router.push({
+                pathname: "/agents/[agentId]",
+                params: {
+                  agentId: agent.uuid,
+                  agent: JSON.stringify(agent),
+                  from: "agents",
+                },
+              })
+            }
+          />
+        )}
       />
     </Screen>
   );
