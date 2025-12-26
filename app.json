@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "NSMicrophoneUsageDescription": "We need microphone access to record your voice"
       },
       "bundleIdentifier": "com.vijay-drapcode.heygennie"
     },

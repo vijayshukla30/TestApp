@@ -22,7 +22,9 @@ export default function AgentUse() {
 
   useEffect(() => {
     return () => {
-      recording?.stopAndUnloadAsync();
+      if (recording) {
+        recording.stopAndUnloadAsync().catch(() => {});
+      }
     };
   }, [recording]);
 
@@ -35,6 +37,7 @@ export default function AgentUse() {
   }
 
   const startRecording = async () => {
+    console.log("start");
     try {
       await Audio.requestPermissionsAsync();
       await Audio.setAudioModeAsync({
@@ -42,11 +45,14 @@ export default function AgentUse() {
         playsInSilentModeIOS: true,
       });
 
-      const { recording } = await Audio.Recording.createAsync(
+      const rec = new Audio.Recording();
+      await rec.prepareToRecordAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
 
-      setRecording(recording);
+      await rec.startAsync();
+
+      setRecording(rec);
       setIsRecording(true);
     } catch (err) {
       console.error("Failed to start recording", err);
@@ -60,37 +66,38 @@ export default function AgentUse() {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
 
-      setIsRecording(false);
-      setRecording(null);
-
       if (uri) {
         uploadAudio(uri);
       }
     } catch (err) {
       console.error("Failed to stop recording", err);
+    } finally {
+      setIsRecording(false);
+      setRecording(null);
     }
   };
 
   const uploadAudio = async (uri: string) => {
     const formData = new FormData();
-
+    console.log("uri :>> ", uri);
     formData.append("audio", {
       uri,
       name: "voice.m4a",
       type: "audio/m4a",
     } as any);
+    console.log("formData :>> ", formData);
 
-    try {
-      await fetch("https://api.heygennie.com/api/v1/voice", {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: formData,
-      });
-    } catch (err) {
-      console.error("Upload failed", err);
-    }
+    // try {
+    //   await fetch("https://api.heygennie.com/api/v1/voice", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "multipart/form-data",
+    //     },
+    //     body: formData,
+    //   });
+    // } catch (err) {
+    //   console.error("Upload failed", err);
+    // }
   };
 
   return (
