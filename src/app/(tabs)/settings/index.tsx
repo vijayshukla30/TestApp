@@ -1,11 +1,10 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Switch, Button } from "react-native-paper";
 import { router } from "expo-router";
-
-import Screen from "../../components/Screen";
-import useTheme from "../../hooks/useTheme";
-import AppCard from "../../components/ui/AppCard";
-import useAuth from "../../hooks/useAuth";
+import Screen from "../../../components/Screen";
+import AppCard from "../../../components/ui/AppCard";
+import useTheme from "../../../hooks/useTheme";
+import useAuth from "../../../hooks/useAuth";
 
 export default function Settings() {
   const { theme, toggleTheme } = useTheme();

@@ -1,15 +1,14 @@
 import { useCallback, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useFocusEffect, router } from "expo-router";
-
-import Screen from "../../components/Screen";
-import useTheme from "../../hooks/useTheme";
-import useAuth from "../../hooks/useAuth";
-import useAppDispatch from "../../hooks/useAppDispatch";
-import { useAppSelector } from "../../hooks/useAppSelector";
-import { fetchUserActivity } from "../../features/activity/activitySlice";
-import AgentGrid from "../../components/agent/AgentGrid";
-import HomeAgentCard from "../../components/agent/HomeAgentCard";
+import useTheme from "../../../hooks/useTheme";
+import useAuth from "../../../hooks/useAuth";
+import useAppDispatch from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import { fetchUserActivity } from "../../../features/activity/activitySlice";
+import Screen from "../../../components/Screen";
+import AgentGrid from "../../../components/agent/AgentGrid";
+import HomeAgentCard from "../../../components/agent/HomeAgentCard";
 
 export default function Home() {
   const { theme } = useTheme();
@@ -64,7 +63,7 @@ export default function Home() {
             }
             onUseNow={() =>
               router.push({
-                pathname: "/agents/[agentId]/use",
+                pathname: "/home/use/[agentId]",
                 params: {
                   agentId: item.assistantId.uuid,
                   agent: JSON.stringify(item.assistantId),
