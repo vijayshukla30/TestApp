@@ -9,6 +9,16 @@ export const UIContext = createContext<UIContextType>({
   showMessage: () => {},
 });
 
+let externalShowMessage: ((msg: string) => void) | null = null;
+
+export const setExternalShowMessage = (fn: (msg: string) => void) => {
+  externalShowMessage = fn;
+};
+
+export const showGlobalMessage = (message: string) => {
+  externalShowMessage?.(message);
+};
+
 export function UIProvider({ children }: { children: React.ReactNode }) {
   const [snackbar, setSnackbar] = useState({
     visible: false,
@@ -18,6 +28,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const showMessage = (message: string) => {
     setSnackbar({ visible: true, message });
   };
+  setExternalShowMessage(showMessage);
 
   return (
     <UIContext.Provider value={{ showMessage }}>

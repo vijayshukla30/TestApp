@@ -2,13 +2,8 @@
   "expo": {
     "name": "TestGennie",
     "slug": "testgennie",
-    "scheme": [
-      "gennie"
-    ],
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "scheme": ["gennie"],
+    "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +15,12 @@
       "backgroundColor": "#0B1020"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {

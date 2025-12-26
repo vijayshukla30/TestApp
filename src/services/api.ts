@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { AgentsApiResponse } from "../types/agent";
 import { RequestOptions } from "../types/request";
 import {
@@ -5,6 +6,9 @@ import {
   RegisterResponse,
   VerifyOtpResponse,
 } from "../types/auth";
+import { store } from "../store";
+import { logoutSuccess } from "../features/auth/authSlice";
+import { showGlobalMessage } from "../context/UIContext";
 
 const API_BASE_URL = process.env.EXPO_API_BASE_URL;
 
@@ -18,11 +22,21 @@ async function request<T>(url: string, options: RequestOptions): Promise<T> {
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
+  if (res.status === 401) {
+    showGlobalMessage("Session expired. Please login again.");
+    store.dispatch(logoutSuccess());
+    setTimeout(() => {
+      router.replace("/(auth)/login");
+    });
+    throw new Error("Session Expired.");
+  }
+
   if (!res.ok) {
     const error = await res.text();
     throw new Error(error || "API request failed");
   }
 
+  console.log("res :>> ", res);
   return res.json() as Promise<T>;
 }
 
@@ -67,4 +81,11 @@ export const api = {
       `/general-auth/profile?state=${encodeURIComponent(state)}`,
       { method: "GET" }
     ),
+  getUserActivity: (token: string) =>
+    request<{ activities: any[] }>("/user/activity", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
 };

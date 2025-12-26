@@ -1,14 +1,26 @@
+import { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 import Screen from "../../components/Screen";
 import useTheme from "../../hooks/useTheme";
 import AppCard from "../../components/ui/AppCard";
 import useAuth from "../../hooks/useAuth";
+import useAppDispatch from "../../hooks/useAppDispatch";
+import { useAppSelector } from "../../hooks/useAppSelector";
+import { fetchUserActivity } from "../../features/activity/activitySlice";
 
 export default function Home() {
   const { theme } = useTheme();
-  const { user } = useAuth()!;
+  const { user, token } = useAuth()!;
+  const dispatch = useAppDispatch();
+  const { list, loading } = useAppSelector((s) => s.activity);
 
+  useEffect(() => {
+    dispatch(fetchUserActivity({ token }));
+  }, []);
+
+  const installed = list.filter((x) => x.isInstalled);
+  console.log("installed :>> ", installed);
   return (
     <Screen>
       {/* Greeting */}
