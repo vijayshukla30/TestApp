@@ -8,6 +8,7 @@ import Screen from "../../../../components/Screen";
 import useTheme from "../../../../hooks/useTheme";
 import AppCard from "../../../../components/ui/AppCard";
 import { Agent } from "../../../../types/agent";
+import VoiceRecorder from "../../../../components/voice/VoiceRecorder";
 
 export default function AgentUse() {
   const { theme } = useTheme();
@@ -17,17 +18,6 @@ export default function AgentUse() {
     ? JSON.parse(params.agent as string)
     : null;
 
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      if (recording) {
-        recording.stopAndUnloadAsync().catch(() => {});
-      }
-    };
-  }, [recording]);
-
   if (!agent) {
     return (
       <Screen>
@@ -36,68 +26,22 @@ export default function AgentUse() {
     );
   }
 
-  const startRecording = async () => {
-    console.log("start");
-    try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const rec = new Audio.Recording();
-      await rec.prepareToRecordAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-
-      await rec.startAsync();
-
-      setRecording(rec);
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Failed to start recording", err);
-    }
-  };
-
-  const stopRecording = async () => {
-    try {
-      if (!recording) return;
-
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-
-      if (uri) {
-        uploadAudio(uri);
-      }
-    } catch (err) {
-      console.error("Failed to stop recording", err);
-    } finally {
-      setIsRecording(false);
-      setRecording(null);
-    }
-  };
-
-  const uploadAudio = async (uri: string) => {
+  const sendAudio = async (uri: string) => {
     const formData = new FormData();
     console.log("uri :>> ", uri);
-    formData.append("audio", {
+    formData.append("file", {
       uri,
-      name: "voice.m4a",
-      type: "audio/m4a",
+      name: "voice.mp3",
+      type: "audio/mpeg",
     } as any);
-    console.log("formData :>> ", formData);
 
-    // try {
-    //   await fetch("https://api.heygennie.com/api/v1/voice", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "multipart/form-data",
-    //     },
-    //     body: formData,
-    //   });
-    // } catch (err) {
-    //   console.error("Upload failed", err);
-    // }
+    // await fetch("YOUR_API_URL", {
+    //   method: "POST",
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    //   body: formData,
+    // });
   };
 
   return (
@@ -106,25 +50,7 @@ export default function AgentUse() {
         {agent.agentName}
       </Text>
 
-      <AppCard style={styles.micCard}>
-        <Pressable
-          onPress={isRecording ? stopRecording : startRecording}
-          style={[
-            styles.micButton,
-            { backgroundColor: isRecording ? "#EF4444" : theme.primary },
-          ]}
-        >
-          <MaterialIcons
-            name={isRecording ? "stop" : "mic"}
-            size={56}
-            color="#fff"
-          />
-        </Pressable>
-
-        <Text style={[styles.micText, { color: theme.subText }]}>
-          {isRecording ? "Listening..." : "Tap to speak"}
-        </Text>
-      </AppCard>
+      <VoiceRecorder onSend={sendAudio} />
     </Screen>
   );
 }
