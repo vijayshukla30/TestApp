@@ -17,19 +17,11 @@ import useAuth from "../../../../hooks/useAuth";
 import { Agent } from "../../../../types/agent";
 import Screen from "../../../../components/Screen";
 
-/* ================= CONFIG ================= */
-
-const WS_BASE_URL = "wss://YOUR_WS_BASE_URL"; // same as web (no protocol mismatch)
-
-/* ================= TYPES ================= */
-
 type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
 };
-
-/* ================= SCREEN ================= */
 
 export default function AgentUse() {
   const { theme } = useTheme();
@@ -38,24 +30,17 @@ export default function AgentUse() {
 
   const agent: Agent = params.agent ? JSON.parse(params.agent as string) : null;
 
-  /* ---------- STATE ---------- */
-
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
-  /* ---------- AUDIO ---------- */
-
   const recordingRef = useRef<Audio.Recording | null>(null);
-
-  /* ---------- WS ---------- */
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectingRef = useRef(false);
   const unmountedRef = useRef(false);
   const shouldReconnectRef = useRef(true);
-  /* ================= WEBSOCKET ================= */
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -114,7 +99,6 @@ export default function AgentUse() {
       console.log("⚠️ WS closed");
       wsRef.current = null;
       if (shouldReconnectRef.current) {
-        // reconnect lazily (only on next user action)
         console.log("ℹ️ will reconnect on next action");
       }
     };
@@ -145,8 +129,6 @@ export default function AgentUse() {
     ws.send(payload);
   };
 
-  /* ================= TEXT ================= */
-
   const sendText = async () => {
     if (!input.trim()) return;
 
@@ -166,8 +148,6 @@ export default function AgentUse() {
 
     setInput("");
   };
-
-  /* ================= AUDIO ================= */
 
   const startRecording = async () => {
     try {
@@ -213,8 +193,6 @@ export default function AgentUse() {
     }
   };
 
-  /* ================= LIFECYCLE ================= */
-
   useEffect(() => {
     connectWebSocket();
 
@@ -225,15 +203,12 @@ export default function AgentUse() {
     };
   }, []);
 
-  /* ================= UI ================= */
-
   return (
     <Screen>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* CHAT */}
         <FlatList
           data={messages}
           keyExtractor={(i) => i.id}
@@ -262,7 +237,6 @@ export default function AgentUse() {
           </Text>
         )}
 
-        {/* INPUT */}
         <View style={[styles.inputBar, { borderTopColor: theme.border }]}>
           <TextInput
             multiline
@@ -310,8 +284,6 @@ export default function AgentUse() {
     </Screen>
   );
 }
-
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   chat: {

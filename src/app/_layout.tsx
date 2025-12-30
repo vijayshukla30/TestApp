@@ -11,7 +11,6 @@ import { store } from "../store";
 import useAppDispatch from "../hooks/useAppDispatch";
 import { restoreSession } from "../features/auth/authSlice";
 
-// Prevent auto hide ONCE
 SplashScreen.preventAutoHideAsync();
 
 function Bootstrap() {

@@ -1,4 +1,3 @@
-// components/agent/HomeAgentCard.tsx
 import { Pressable, Image, Text, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import AppCard from "../ui/AppCard";
@@ -21,7 +20,6 @@ export default function HomeAgentCard({
 
   return (
     <AppCard style={styles.card}>
-      {/* Settings */}
       <Pressable style={styles.settings} onPress={onOpenDetail}>
         <MaterialIcons name="settings" size={20} color={theme.primary} />
       </Pressable>

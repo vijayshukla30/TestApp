@@ -15,9 +15,6 @@ const initialState: AuthState = {
   loading: true,
 };
 
-/**
- * Restore session on app start
- */
 export const restoreSession = createAsyncThunk(
   "auth/restoreSession",
   async () => {

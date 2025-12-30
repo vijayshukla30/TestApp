@@ -16,9 +16,6 @@ const initialState: ConsumerState = {
   byAgentId: {},
 };
 
-/**
- * Fetch consumer for agent (lazy)
- */
 export const fetchConsumerByAgent = createAsyncThunk(
   "consumer/fetchByAgent",
   async (

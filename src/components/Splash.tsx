@@ -1,11 +1,10 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { Text, StyleSheet, Image } from "react-native";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 export default function Splash() {
   useEffect(() => {
-    // Prevent auto hide until we decide
     SplashScreen.preventAutoHideAsync();
   }, []);
 

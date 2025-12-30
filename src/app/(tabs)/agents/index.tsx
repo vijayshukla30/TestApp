@@ -13,8 +13,7 @@ import { fetchAgents } from "../../../features/agent/agentsSlice";
 import AgentGrid from "../../../components/agent/AgentGrid";
 import AgentCard from "../../../components/agent/AgentCard";
 
-// FIXED: More precise responsive constants for iPhone
-const HORIZONTAL_PADDING = 20; // Increased for safe areas
+const HORIZONTAL_PADDING = 20;
 
 export default function Agents() {
   const { theme } = useTheme();

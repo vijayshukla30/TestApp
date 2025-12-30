@@ -41,7 +41,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     <ThemeContext.Provider
       value={{
         theme,
-        mode: theme.mode, // ✅ FIXED
+        mode: theme.mode,
         toggleTheme,
       }}
     >

@@ -32,7 +32,6 @@ export default function Settings() {
         <Text style={[styles.value, { color: theme.text }]}>{user?.email}</Text>
       </AppCard>
 
-      {/* Preferences */}
       <Text
         style={[styles.sectionTitle, { color: theme.subText, marginTop: 28 }]}
       >
@@ -46,7 +45,6 @@ export default function Settings() {
         </View>
       </AppCard>
 
-      {/* Danger zone */}
       <Text
         style={[styles.sectionTitle, { color: theme.subText, marginTop: 28 }]}
       >
@@ -97,7 +95,7 @@ const styles = StyleSheet.create({
   },
 
   logoutButton: {
-    backgroundColor: "#EF4444", // danger red
+    backgroundColor: "#EF4444",
     borderRadius: 10,
   },
 });

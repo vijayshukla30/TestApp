@@ -5,7 +5,7 @@ export type Agent = {
   isPublic: boolean;
   platform?: {
     name: string;
-    type: string; // asana | slack | etc
+    type: string;
   } | null;
   phoneId?: {
     uuid?: string;

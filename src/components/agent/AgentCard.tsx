@@ -1,4 +1,3 @@
-// components/agent/AgentCard.tsx
 import { Pressable, Image, Text, StyleSheet } from "react-native";
 import AppCard from "../ui/AppCard";
 import { getPlatformImage } from "../../utils/platform";

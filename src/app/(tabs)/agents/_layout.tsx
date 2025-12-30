@@ -23,7 +23,7 @@ export default function AgentsLayout() {
         name="index"
         options={{
           title: "Agents",
-          headerShown: false, // keep your custom header
+          headerShown: false,
         }}
       />
       <Stack.Screen

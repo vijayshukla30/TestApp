@@ -45,9 +45,6 @@ export default function Login() {
         return;
       }
 
-      /**
-       * ❌ ERROR CASES
-       */
       if (res.message === "Invalid credentials") {
         showMessage("Invalid email or password");
         return;
@@ -79,7 +76,6 @@ export default function Login() {
     <Screen center>
       <AuthCard>
         <AppCard variant="auth">
-          {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
               source={require("../../../assets/logo.png")}
@@ -89,13 +85,11 @@ export default function Login() {
             <Text style={styles.brand}>gennie</Text>
           </View>
 
-          {/* Title */}
           <Text style={[styles.title, { color: theme.text }]}>Sign In</Text>
           <Text style={[styles.subtitle, { color: theme.subText }]}>
             Get access to your account
           </Text>
 
-          {/* Inputs */}
           <TextInput
             label="Email address"
             value={email}
@@ -132,7 +126,6 @@ export default function Login() {
             </Link>
           </View>
 
-          {/* Button */}
           <Button
             mode="contained"
             onPress={onLogin}
@@ -149,7 +142,6 @@ export default function Login() {
               href="/(auth)/register"
               style={[styles.link, { color: theme.primary }]}
             >
-              {" "}
               Create an account
             </Link>
           </View>

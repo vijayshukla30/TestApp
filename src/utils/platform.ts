@@ -18,7 +18,6 @@ export function getPlatformImage(type?: string) {
       return require("../../assets/platforms/trello.png");
 
     default:
-      // Composite / fallback image
       return require("../../assets/platforms/customPlatform.png");
   }
 }

@@ -13,10 +13,6 @@ const initialState: AgentsState = {
   loading: false,
 };
 
-/**
- * Fetch agents for logged-in user
- * (consumerUuid = user.uuid)
- */
 export const fetchAgents = createAsyncThunk(
   "agents/fetchAgents",
   async (
@@ -29,7 +25,6 @@ export const fetchAgents = createAsyncThunk(
       }
       const res = await api.getAgentsByConsumer(consumerUuid, token);
 
-      // flatten assistants
       const agents: Agent[] = res.organizations.flatMap(
         (org) => org.assistants || []
       );

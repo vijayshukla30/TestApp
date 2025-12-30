@@ -1,4 +1,3 @@
-import { colors } from "./colors";
 import { Theme } from "../types/theme";
 
 const light: Theme = {

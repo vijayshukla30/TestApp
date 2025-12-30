@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   View,
   Text,
@@ -13,10 +12,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Screen from "../../../components/Screen";
 import useTheme from "../../../hooks/useTheme";
 import { Agent } from "../../../types/agent";
-import {
-  getPlatformCapabilities,
-  getPlatformImage,
-} from "../../../utils/platform";
+import { getPlatformImage } from "../../../utils/platform";
 import AppCard from "../../../components/ui/AppCard";
 import {
   extractUSLocalNumber,
@@ -43,8 +39,6 @@ export default function AgentDetails() {
       </Screen>
     );
   }
-
-  /* ---------- Derived values ---------- */
 
   const rawPhone = agent.phoneId?.phoneNumber;
   const countryCode = agent.phoneId?.countryCode ?? "";
@@ -145,7 +139,6 @@ export default function AgentDetails() {
             </Text>
           </AppCard>
 
-          {/* ---------- Status ---------- */}
           <Text style={[styles.sectionLabel, { color: theme.subText }]}>
             Status
           </Text>

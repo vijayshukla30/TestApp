@@ -7,13 +7,12 @@ import ToolChip from "../ui/ToolChip";
 type Tool = {
   name: string;
   available: boolean;
-  // add other fields if needed
 };
 
 type Props = {
   title: string;
   tools: Tool[];
-  isAvailableSection: boolean; // true = available tools, false = unavailable
+  isAvailableSection: boolean;
   open: boolean;
   onToggle: () => void;
 };

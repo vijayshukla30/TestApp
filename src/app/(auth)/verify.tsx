@@ -91,7 +91,6 @@ export default function Verify() {
             Verify
           </Button>
 
-          {/* 🔁 Re-login hint */}
           <View style={styles.footer}>
             <Text style={{ color: theme.subText }}>OTP expired?</Text>
             <Button mode="text" onPress={() => router.replace("/(auth)/login")}>
