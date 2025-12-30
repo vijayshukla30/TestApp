@@ -24,6 +24,9 @@ export const fetchAgents = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      if (!token) {
+        return rejectWithValue("Token is expired. Login again");
+      }
       const res = await api.getAgentsByConsumer(consumerUuid, token);
 
       // flatten assistants

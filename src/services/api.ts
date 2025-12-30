@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { AgentsApiResponse } from "../types/agent";
 import { RequestOptions } from "../types/request";
 import {
@@ -5,10 +6,15 @@ import {
   RegisterResponse,
   VerifyOtpResponse,
 } from "../types/auth";
+import { store } from "../store";
+import { logoutSuccess } from "../features/auth/authSlice";
+import { showGlobalMessage } from "../context/UIContext";
 
-const API_BASE_URL = "https://api.heygennie.com/api/v1"; // change later
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 async function request<T>(url: string, options: RequestOptions): Promise<T> {
+  console.log("API_BASE_URL :>> ", API_BASE_URL);
+  console.log("url :>> ", url);
   const res = await fetch(`${API_BASE_URL}${url}`, {
     method: options.method,
     headers: {
@@ -18,12 +24,23 @@ async function request<T>(url: string, options: RequestOptions): Promise<T> {
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
+  if (res.status === 401) {
+    showGlobalMessage("Session expired. Please login again.");
+    store.dispatch(logoutSuccess());
+    setTimeout(() => {
+      router.replace("/(auth)/login");
+    });
+    throw new Error("Session Expired.");
+  }
+
   if (!res.ok) {
     const error = await res.text();
     throw new Error(error || "API request failed");
   }
 
-  return res.json() as Promise<T>;
+  console.log("res :>> ", res);
+  const data = await res.json();
+  return data as T;
 }
 
 export const api = {
@@ -56,6 +73,19 @@ export const api = {
 
   getAgentsByConsumer: (consumerUuid: string, token: string) =>
     request<AgentsApiResponse>(`/organization/${consumerUuid}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
+
+  fetchAuthProfile: (state: string) =>
+    request<{ profile?: any }>(
+      `/general-auth/profile?state=${encodeURIComponent(state)}`,
+      { method: "GET" }
+    ),
+  getUserActivity: (token: string) =>
+    request<{ activities: any[] }>("/user/activity", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

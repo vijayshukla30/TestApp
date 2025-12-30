@@ -1,14 +1,9 @@
 {
   "expo": {
-    "name": "TestGennie",
-    "slug": "testgennie",
-    "scheme": [
-      "gennie"
-    ],
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "name": "HeyGennie",
+    "slug": "heygennie",
+    "scheme": ["gennie"],
+    "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +15,14 @@
       "backgroundColor": "#0B1020"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "NSMicrophoneUsageDescription": "We need microphone access to record your voice"
+      },
+      "bundleIdentifier": "com.vijay-drapcode.heygennie"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +31,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.vijay_drapcode.testgennie"
+      "package": "com.vijay_drapcode.heygennie"
     },
     "web": {
       "favicon": "./assets/favicon.png"
