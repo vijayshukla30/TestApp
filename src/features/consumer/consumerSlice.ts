@@ -1,15 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { api } from "../../services/api";
+import { exchangeConsumerApi } from "../../services/exchangeConsumer";
+
+type ConsumerEntry = {
+  data: any | null;
+  loading: boolean;
+  error?: string;
+};
 
 type ConsumerState = {
-  byAgentId: Record<
-    string,
-    {
-      data: any | null;
-      loading: boolean;
-      error?: string;
-    }
-  >;
+  byAgentId: Record<string, ConsumerEntry>;
 };
 
 const initialState: ConsumerState = {
@@ -21,20 +20,92 @@ export const fetchConsumerByAgent = createAsyncThunk(
   async (
     {
       agentId,
+      seoName,
       token,
     }: {
       agentId: string;
+      seoName: string;
       token: string;
     },
     { rejectWithValue }
   ) => {
     try {
-      const res = await api.getConsumerDetails(agentId, token);
+      const res = await exchangeConsumerApi.getConsumerDetails(
+        agentId,
+        seoName,
+        token
+      );
       return { agentId, consumer: res };
     } catch (err: any) {
+      console.log("err :>> ", err);
       return rejectWithValue({
         agentId,
         error: err.message || "Failed to fetch consumer",
+      });
+    }
+  }
+);
+
+export const upsertConsumer = createAsyncThunk(
+  "consumer/upsert",
+  async (
+    {
+      agentId,
+      seoName,
+      token,
+      data,
+    }: {
+      agentId: string | any;
+      seoName: string | any;
+      token: string;
+      data: any;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const consumer = await exchangeConsumerApi.upsertConsumer(
+        agentId,
+        seoName,
+        token,
+        data
+      );
+      return { agentId, consumer };
+    } catch (error: any) {
+      return rejectWithValue({
+        agentId,
+        error:
+          error?.response?.data ||
+          error?.message ||
+          "Failed to create consumer",
+      });
+    }
+  }
+);
+
+export const deleteConsumer = createAsyncThunk(
+  "consumer/delete",
+  async (
+    {
+      agentId,
+      seoName,
+      token,
+    }: {
+      agentId: string;
+      seoName: string;
+      token: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      await exchangeConsumerApi.deleteConsumer(agentId, seoName, token);
+      return { agentId };
+    } catch (error: any) {
+      return rejectWithValue({
+        agentId,
+        error:
+          error?.response?.data ||
+          error?.message ||
+          "Failed to delete consumer",
       });
     }
   }
@@ -50,19 +121,14 @@ const consumerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // FETCH
       .addCase(fetchConsumerByAgent.pending, (state, action) => {
         const agentId = action.meta.arg.agentId;
-        state.byAgentId[agentId] = {
-          data: null,
-          loading: true,
-        };
+        state.byAgentId[agentId] = { data: null, loading: true };
       })
       .addCase(fetchConsumerByAgent.fulfilled, (state, action) => {
         const { agentId, consumer } = action.payload;
-        state.byAgentId[agentId] = {
-          data: consumer,
-          loading: false,
-        };
+        state.byAgentId[agentId] = { data: consumer, loading: false };
       })
       .addCase(fetchConsumerByAgent.rejected, (state, action: any) => {
         const { agentId, error } = action.payload;
@@ -71,6 +137,17 @@ const consumerSlice = createSlice({
           loading: false,
           error,
         };
+      })
+
+      // UPSERT
+      .addCase(upsertConsumer.fulfilled, (state, action) => {
+        const { agentId, consumer } = action.payload;
+        state.byAgentId[agentId] = { data: consumer, loading: false };
+      })
+
+      // DELETE
+      .addCase(deleteConsumer.fulfilled, (state, action) => {
+        delete state.byAgentId[action.payload.agentId];
       });
   },
 });

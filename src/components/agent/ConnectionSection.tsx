@@ -6,9 +6,17 @@ import useTheme from "../../hooks/useTheme";
 
 type Props = {
   onConnect: () => void;
+  onDisconnect: () => void;
+  installed: boolean;
+  loading: boolean;
 };
 
-export default function ConnectionSection({ onConnect }: Props) {
+export default function ConnectionSection({
+  onConnect,
+  onDisconnect,
+  installed,
+  loading,
+}: Props) {
   const { theme } = useTheme();
 
   return (
@@ -25,8 +33,13 @@ export default function ConnectionSection({ onConnect }: Props) {
         Connect your platform to enable tools and automation.
       </Text>
 
-      <Button mode="contained" onPress={onConnect} style={styles.button}>
-        Connect Platform
+      <Button
+        mode="contained"
+        loading={loading}
+        onPress={installed ? onDisconnect : onConnect}
+        style={styles.button}
+      >
+        {installed ? "Connected" : "Connect Platform"}
       </Button>
     </AppCard>
   );

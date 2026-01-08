@@ -20,9 +20,10 @@ import {
 } from "../../../utils/format";
 import ConnectionSection from "../../../components/agent/ConnectionSection";
 import GennieTools from "../../../components/agent/GennieTools";
-import { buildAuthUrl, createAuthState } from "../../../utils/auth";
-import { openAuthLink } from "../../../utils/openAuthLink";
-import { api } from "../../../services/api";
+// import { buildAuthUrl, createAuthState } from "../../../utils/auth";
+// import { openAuthLink } from "../../../utils/openAuthLink";
+// import { api } from "../../../services/api";
+import { useConsumerDetails } from "../../../hooks/useConsumerDetails";
 
 export default function AgentDetails() {
   const { theme } = useTheme();
@@ -31,6 +32,9 @@ export default function AgentDetails() {
   const agent: Agent | null = params.agent
     ? JSON.parse(params.agent as string)
     : null;
+
+  const { consumer, loading, isInstalled, connect, disconnect } =
+    useConsumerDetails(agent);
 
   if (!agent) {
     return (
@@ -42,7 +46,6 @@ export default function AgentDetails() {
 
   const rawPhone = agent.phoneId?.phoneNumber;
   const countryCode = agent.phoneId?.countryCode ?? "";
-  const isConnected = Boolean(agent.platform);
 
   const localDigits = extractUSLocalNumber(rawPhone);
   const formattedLocal = formatPhoneNumberUS(localDigits);
@@ -54,33 +57,11 @@ export default function AgentDetails() {
 
   const platformName = agent.platform?.type?.toLowerCase();
 
-  const onConnect = async () => {
-    try {
-      const consumer: any = {};
-      console.log("Connect platform clicked for:", agent.agentName);
-      const state = createAuthState(consumer, agent.uuid);
-      let data;
-      try {
-        data = await api.fetchAuthProfile(state);
-      } catch (err) {
-        console.log("Profile check failed, redirecting to auth");
-      }
-
-      if (!data?.profile) {
-        const authUrl = buildAuthUrl(agent.uuid, state);
-        await openAuthLink(authUrl);
-        return;
-      }
-      console.log("Profile exists:", data.profile);
-    } catch (error) {
-      console.error("Connect platform error:", error);
-    }
-  };
-
   return (
     <>
       <Stack.Screen
         options={{
+          title: agent.agentName,
           headerLeft: () => (
             <Pressable
               onPress={() => {
@@ -147,15 +128,20 @@ export default function AgentDetails() {
             <View
               style={[
                 styles.statusDot,
-                { backgroundColor: isConnected ? "#22C55E" : "#EF4444" },
+                { backgroundColor: isInstalled ? "#22C55E" : "#EF4444" },
               ]}
             />
             <Text style={[styles.infoValue, { color: theme.text }]}>
-              {isConnected ? "Active" : "Inactive"}
+              {isInstalled ? "Active" : "Inactive"}
             </Text>
           </AppCard>
 
-          <ConnectionSection onConnect={onConnect} />
+          <ConnectionSection
+            loading={loading}
+            installed={isInstalled}
+            onConnect={connect}
+            onDisconnect={disconnect}
+          />
 
           <GennieTools
             platformName={platformName}

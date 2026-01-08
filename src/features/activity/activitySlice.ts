@@ -16,6 +16,37 @@ export const fetchUserActivity = createAsyncThunk(
   }
 );
 
+export const createUserActivity = createAsyncThunk(
+  "activity/create",
+  async (
+    {
+      assistantUuid,
+      isInstalled,
+      token,
+    }: {
+      assistantUuid: string | any;
+      isInstalled: boolean;
+      token: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await api.createUserActivity(
+        {
+          assistantUuid,
+          isInstalled,
+        },
+        token
+      );
+      return res;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data || error?.message || "Failed to update activity"
+      );
+    }
+  }
+);
+
 type ActivityState = {
   list: any[];
   loading: boolean;

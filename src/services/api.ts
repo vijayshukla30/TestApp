@@ -91,4 +91,15 @@ export const api = {
         Authorization: `Bearer ${token}`,
       },
     }),
+  createUserActivity: (
+    data: { assistantUuid: string; isInstalled: boolean },
+    token: string
+  ) =>
+    request(`/user/create-activity`, {
+      method: "POST",
+      body: data,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
 };
