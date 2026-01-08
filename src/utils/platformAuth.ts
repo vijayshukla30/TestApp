@@ -26,7 +26,10 @@ export const handlePlatformAuth = async ({
     platformType,
     assistant.seoName
   );
-  let url = `${serverBase}?state=${encodeURIComponent(state)}`;
+
+  let url = `${serverBase}/general-auth/auth/${
+    assistant.uuid
+  }?state=${encodeURIComponent(state)}`;
 
   if (platformType.includes("slack")) {
     url = `${serverBase}/slack/auth/${state}`;
