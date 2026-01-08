@@ -1,28 +1,39 @@
+import * as Linking from "expo-linking";
+import { Agent } from "../types/agent";
+import { createAuthState } from "./auth";
+
 export const handlePlatformAuth = async ({
   assistant,
   consumer,
-  openAuthLink,
-  dispatch,
-  updateConsumer,
-  createUserActivity,
-}: any) => {
-  const platformType = assistant.platformType?.type?.toLowerCase() || "";
-  const authUrl = buildAuthUrl(assistant.uuid, consumer);
+}: {
+  assistant: Agent;
+  consumer: any;
+}) => {
+  if (!consumer?.uuid) {
+    throw new Error("Consumer missing");
+  }
 
-  await openAuthLink(authUrl);
+  const platformType = assistant.platform?.type?.toLowerCase() || "custom";
 
-  await dispatch(
-    createUserActivity({
-      assistantUuid: assistant.uuid,
-      isInstalled: true,
-    })
+  const serverBase = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (!serverBase) {
+    throw new Error("Auth base URLs is not defined");
+  }
+
+  const state = createAuthState(
+    consumer,
+    assistant.uuid,
+    platformType,
+    assistant.seoName
   );
-};
+  let url = `${serverBase}?state=${encodeURIComponent(state)}`;
 
-const buildAuthUrl = (assistantId: string, consumer: any) => {
-  const base = process.env.EXPO_EXCHANGE_AUTH_URL;
-  const state = encodeURIComponent(
-    JSON.stringify({ assistantId, consumerId: consumer.uuid })
-  );
-  return `${base}?state=${state}`;
+  if (platformType.includes("slack")) {
+    url = `${serverBase}/slack/auth/${state}`;
+  }
+  if (platformType.includes("trello")) {
+    url = `${serverBase}/trello/auth/${state}`;
+  }
+
+  await Linking.openURL(url);
 };

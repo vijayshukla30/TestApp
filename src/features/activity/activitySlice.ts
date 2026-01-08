@@ -26,7 +26,7 @@ export const createUserActivity = createAsyncThunk(
     }: {
       assistantUuid: string | any;
       isInstalled: boolean;
-      token: string;
+      token: string | any;
     },
     { rejectWithValue }
   ) => {

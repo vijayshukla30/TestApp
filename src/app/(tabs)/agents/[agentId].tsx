@@ -1,3 +1,4 @@
+import React from "react";
 import {
   View,
   Text,
@@ -6,7 +7,12 @@ import {
   ScrollView,
   Pressable,
 } from "react-native";
-import { useLocalSearchParams, Stack, router } from "expo-router";
+import {
+  useLocalSearchParams,
+  Stack,
+  router,
+  useFocusEffect,
+} from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import Screen from "../../../components/Screen";
@@ -20,10 +26,8 @@ import {
 } from "../../../utils/format";
 import ConnectionSection from "../../../components/agent/ConnectionSection";
 import GennieTools from "../../../components/agent/GennieTools";
-// import { buildAuthUrl, createAuthState } from "../../../utils/auth";
-// import { openAuthLink } from "../../../utils/openAuthLink";
-// import { api } from "../../../services/api";
 import { useConsumerDetails } from "../../../hooks/useConsumerDetails";
+import { usePlatformConnection } from "../../../hooks/usePlatformConnection";
 
 export default function AgentDetails() {
   const { theme } = useTheme();
@@ -33,8 +37,8 @@ export default function AgentDetails() {
     ? JSON.parse(params.agent as string)
     : null;
 
-  const { consumer, loading, isInstalled, connect, disconnect } =
-    useConsumerDetails(agent);
+  const { consumer, loading, isInstalled } = useConsumerDetails(agent);
+  const { connectPlatform, disconnectPlatform } = usePlatformConnection();
 
   if (!agent) {
     return (
@@ -56,6 +60,10 @@ export default function AgentDetails() {
       : rawPhone || "Not assigned";
 
   const platformName = agent.platform?.type?.toLowerCase();
+
+  const onConnect = async () => {
+    await connectPlatform(agent, consumer);
+  };
 
   return (
     <>
@@ -139,8 +147,8 @@ export default function AgentDetails() {
           <ConnectionSection
             loading={loading}
             installed={isInstalled}
-            onConnect={connect}
-            onDisconnect={disconnect}
+            onConnect={onConnect}
+            onDisconnect={() => disconnectPlatform(agent)}
           />
 
           <GennieTools

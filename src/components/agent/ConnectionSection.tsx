@@ -39,7 +39,7 @@ export default function ConnectionSection({
         onPress={installed ? onDisconnect : onConnect}
         style={styles.button}
       >
-        {installed ? "Connected" : "Connect Platform"}
+        {installed ? "Disconnect" : "Connect Platform"}
       </Button>
     </AppCard>
   );

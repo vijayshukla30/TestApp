@@ -24,8 +24,8 @@ export const fetchConsumerByAgent = createAsyncThunk(
       token,
     }: {
       agentId: string;
-      seoName: string;
-      token: string;
+      seoName: string | any;
+      token: string | any;
     },
     { rejectWithValue }
   ) => {
@@ -91,7 +91,7 @@ export const deleteConsumer = createAsyncThunk(
       token,
     }: {
       agentId: string;
-      seoName: string;
+      seoName: string | any;
       token: string;
     },
     { rejectWithValue }
