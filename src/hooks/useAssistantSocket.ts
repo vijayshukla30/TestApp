@@ -9,6 +9,9 @@ export default function useAssistantSocket({
   const wsRef = useRef<WebSocket | null>(null);
   const pendingQueue = useRef<any[]>([]);
 
+  const heartbeatRef = useRef<any>(null);
+  const reconnectTimeoutRef = useRef<any>(null);
+
   const connect = () => {
     if (
       wsRef.current &&
@@ -33,6 +36,12 @@ export default function useAssistantSocket({
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         })
       );
+      heartbeatRef.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "ping" }));
+        }
+      }, 15000);
+
       // 🔥 Flush queued messages
       pendingQueue.current.forEach((msg) => ws.send(msg));
       pendingQueue.current = [];
@@ -46,6 +55,14 @@ export default function useAssistantSocket({
 
     ws.onerror = (e) => {
       console.log("❌ WS error", e);
+    };
+
+    ws.onclose = () => {
+      clearInterval(heartbeatRef.current);
+
+      reconnectTimeoutRef.current = setTimeout(() => {
+        connect();
+      }, 2000);
     };
 
     return ws;
@@ -79,6 +96,9 @@ export default function useAssistantSocket({
   };
 
   const close = () => {
+    clearInterval(heartbeatRef.current);
+    clearTimeout(reconnectTimeoutRef.current);
+
     wsRef.current?.close();
     wsRef.current = null;
     pendingQueue.current = [];

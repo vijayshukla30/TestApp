@@ -8,4 +8,5 @@ export type Theme = {
   subText: string;
   border: string;
   primary: string;
+  shadow: string;
 };
