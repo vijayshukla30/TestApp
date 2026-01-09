@@ -12,6 +12,7 @@ import {
   BackHandler,
   Alert,
 } from "react-native";
+import { Portal, Dialog, Button, Appbar } from "react-native-paper";
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import { Audio } from "expo-av";
@@ -125,6 +126,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [showEndDialog, setShowEndDialog] = useState(false);
 
   /* ---------------- voice overlay spring ---------------- */
 
@@ -350,7 +352,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
         </Text>
 
         <Pressable
-          onPress={confirmEndChat}
+          onPress={() => setShowEndDialog(true)}
           hitSlop={12}
           style={{
             paddingHorizontal: 12,
@@ -453,6 +455,26 @@ export default function AgentChat({ agent, consumer, userId }: any) {
 
         <Text style={{ color: theme.subText, marginTop: 8 }}>Listening…</Text>
       </Animated.View>
+      <Portal>
+        <Dialog
+          visible={showEndDialog}
+          onDismiss={() => setShowEndDialog(false)}
+        >
+          <Dialog.Title>End this assistant session?</Dialog.Title>
+          <Dialog.Content>
+            <Text style={{ color: theme.text }}>
+              Your current conversation will be cleared. You can start a new
+              session anytime.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowEndDialog(false)}>Cancel</Button>
+            <Button textColor="#EF4444" onPress={endChatAndExit}>
+              End Chat
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </KeyboardAvoidingView>
   );
 }
