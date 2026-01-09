@@ -9,7 +9,10 @@ import {
   Animated,
   KeyboardAvoidingView,
   Platform,
+  BackHandler,
+  Alert,
 } from "react-native";
+import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
@@ -206,6 +209,18 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     return () => socket.close();
   }, []);
 
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        confirmEndChat();
+        return true; // block default back
+      }
+    );
+
+    return () => subscription.remove();
+  }, []);
+
   /* ---------------- text ---------------- */
 
   const sendText = () => {
@@ -277,6 +292,41 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     }
   };
 
+  const endChatAndExit = () => {
+    // 1. Stop recording safely
+    try {
+      recordingRef.current?.stopAndUnloadAsync();
+    } catch {}
+
+    // 2. Close websocket
+    socket.close();
+
+    // 3. Reset session state
+    setMessages([]);
+    setThinking(false);
+    setRecording(null);
+
+    // 4. Navigate home
+    router.replace("/(tabs)/home");
+  };
+
+  const confirmEndChat = () => {
+    Alert.alert(
+      "End this assistant session?",
+      "Your current conversation will be cleared. You can start a new session anytime.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "End Chat",
+          style: "destructive",
+          onPress: () => {
+            endChatAndExit();
+          },
+        },
+      ]
+    );
+  };
+
   /* ---------------- UI ---------------- */
 
   return (
@@ -284,6 +334,43 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       style={{ flex: 1, backgroundColor: theme.background }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <View
+        style={{
+          height: 48,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 12,
+          borderBottomWidth: 1,
+          borderColor: theme.border,
+        }}
+      >
+        <Text style={{ fontSize: 16, fontWeight: "600", color: theme.text }}>
+          {agent.agentName}
+        </Text>
+
+        <Pressable
+          onPress={confirmEndChat}
+          hitSlop={12}
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 6,
+            backgroundColor: "rgba(239,68,68,0.12)",
+          }}
+        >
+          <Text
+            style={{
+              color: "#EF4444",
+              fontSize: 13,
+              fontWeight: "600",
+            }}
+          >
+            End Chat
+          </Text>
+        </Pressable>
+      </View>
+
       {/* CHAT */}
       <Animated.View style={{ flex: 1, opacity: chatDim }}>
         <FlatList
