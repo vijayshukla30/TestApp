@@ -24,6 +24,8 @@ export function AgentChat({ agent, consumer, userId }: any) {
 
   const recordingRef = useRef<Audio.Recording | null>(null);
   const stoppingRef = useRef(false);
+  const isRecordingRef = useRef(false);
+  const recordingStartedAtRef = useRef<number>(0);
 
   const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -80,7 +82,8 @@ export function AgentChat({ agent, consumer, userId }: any) {
 
   // ---- AUDIO ----
   const startRecording = async () => {
-    if (recordingRef.current || stoppingRef.current) return;
+    if (isRecordingRef.current || stoppingRef.current) return;
+
     try {
       await Audio.requestPermissionsAsync();
       await Audio.setAudioModeAsync({
@@ -89,7 +92,11 @@ export function AgentChat({ agent, consumer, userId }: any) {
       });
 
       const rec = new Audio.Recording();
+
       recordingRef.current = rec;
+      isRecordingRef.current = true;
+      recordingStartedAtRef.current = Date.now();
+
       await rec.prepareToRecordAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
@@ -98,23 +105,26 @@ export function AgentChat({ agent, consumer, userId }: any) {
     } catch (error) {
       console.log("🎤 startRecording error", error);
       recordingRef.current = null;
+      isRecordingRef.current = false;
     }
   };
 
   const stopRecording = async () => {
     const rec = recordingRef.current;
 
-    // 🚫 Nothing to stop OR already stopping
-    if (!rec || stoppingRef.current) return;
+    if (!rec || !isRecordingRef.current || stoppingRef.current) return;
 
     stoppingRef.current = true;
 
     try {
+      const duration = Date.now() - recordingStartedAtRef.current;
+      if (duration < 400) {
+        await rec.stopAndUnloadAsync().catch(() => {});
+        return;
+      }
+
       await rec.stopAndUnloadAsync();
       const uri = rec.getURI();
-
-      recordingRef.current = null;
-      setRecording(null);
 
       if (!uri) return;
 
@@ -124,7 +134,11 @@ export function AgentChat({ agent, consumer, userId }: any) {
     } catch (error) {
       console.log("🎤 stopRecording error", error);
     } finally {
+      recordingRef.current = null;
+      isRecordingRef.current = false;
       stoppingRef.current = false;
+      recordingStartedAtRef.current = 0;
+      setRecording(null);
     }
   };
 
