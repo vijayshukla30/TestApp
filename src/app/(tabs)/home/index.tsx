@@ -15,7 +15,6 @@ export default function Home() {
   const { user, token } = useAuth()!;
   const dispatch = useAppDispatch();
   const { list, loading } = useAppSelector((s) => s.activity);
-
   const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
@@ -32,7 +31,7 @@ export default function Home() {
     setRefreshing(false);
   };
 
-  const installed = list.filter((x) => x.isInstalled);
+  const installed = list.filter((x) => x.isInstalled && x.assistantId?.uuid);
 
   return (
     <Screen>
@@ -56,7 +55,6 @@ export default function Home() {
                 pathname: "/agents/[agentId]",
                 params: {
                   agentId: item.assistantId.uuid,
-                  agent: JSON.stringify(item.assistantId),
                   from: "home",
                 },
               })
@@ -66,7 +64,7 @@ export default function Home() {
                 pathname: "/home/use/[agentId]",
                 params: {
                   agentId: item.assistantId.uuid,
-                  agent: JSON.stringify(item.assistantId),
+                  from: "home",
                 },
               })
             }
