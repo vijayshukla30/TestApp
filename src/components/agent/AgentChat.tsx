@@ -1,95 +1,182 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
   View,
+  Text,
+  FlatList,
+  TextInput,
+  Pressable,
   StyleSheet,
   Animated,
   Easing,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { BlurView } from "expo-blur";
 import { Audio } from "expo-av";
 import { MaterialIcons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
 import useTheme from "../../hooks/useTheme";
 import useAssistantSocket from "../../hooks/useAssistantSocket";
-import { ChatMessage } from "../../utils/chat";
-import { MicWaveform } from "./MicWaveform";
 
-export function AgentChat({ agent, consumer, userId }: any) {
+/* -------------------------------- utils -------------------------------- */
+
+const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+/* ----------------------------- waveform --------------------------------- */
+
+function MicWaveform({ active, color }: any) {
+  const bars = Array.from({ length: 7 });
+  const anims = useRef(bars.map(() => new Animated.Value(6))).current;
+
+  useEffect(() => {
+    if (!active) return;
+
+    const loops = anims.map((a, i) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(a, {
+            toValue: 24,
+            duration: 260 + i * 40,
+            useNativeDriver: false,
+          }),
+          Animated.timing(a, {
+            toValue: 6,
+            duration: 260 + i * 40,
+            useNativeDriver: false,
+          }),
+        ])
+      )
+    );
+
+    loops.forEach((l) => l.start());
+    return () => anims.forEach((a) => a.stopAnimation());
+  }, [active]);
+
+  if (!active) return null;
+
+  return (
+    <View style={styles.waveform}>
+      {anims.map((a, i) => (
+        <Animated.View
+          key={i}
+          style={[styles.waveBar, { height: a, backgroundColor: color }]}
+        />
+      ))}
+    </View>
+  );
+}
+
+/* ------------------------------ component -------------------------------- */
+
+export default function AgentChat({ agent, consumer, userId }: any) {
   const { theme } = useTheme();
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
+
+  /* ------------------ voice overlay animation ------------------ */
+
+  const voiceAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const overlayHeight = voiceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 260],
+  });
+
+  const overlayOpacity = voiceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const chatDim = voiceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.25],
+  });
+
+  const showVoice = () => {
+    Animated.timing(voiceAnim, {
+      toValue: 1,
+      duration: 320,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.15,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  };
+
+  const hideVoice = () => {
+    Animated.timing(voiceAnim, {
+      toValue: 0,
+      duration: 260,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+
+    pulseAnim.stopAnimation();
+    pulseAnim.setValue(1);
+  };
+
+  /* ------------------ recording safety ------------------ */
 
   const recordingRef = useRef<Audio.Recording | null>(null);
   const stoppingRef = useRef(false);
-  const isRecordingRef = useRef(false);
-  const recordingStartedAtRef = useRef<number>(0);
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const startedAtRef = useRef(0);
 
-  const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  /* ------------------ websocket ------------------ */
 
   const socket = useAssistantSocket({
     agent,
     consumer,
     userId,
-    onMessage: (data) => {
-      console.log("WS message:", data);
-      switch (data?.type) {
-        case "AssistantDetails":
-          return;
-        case "AgentConnected":
-          setThinking(false);
-          return;
-        case "ConversationText": {
-          const { role, content, from } = data.message;
+    onMessage: (data: any) => {
+      if (data?.type !== "ConversationText") return;
 
-          if (from === "transcriber") {
-            setInput((prev) => (prev ? `${prev} ${content}` : content));
-            return;
-          }
+      const { role, content, from } = data.message;
 
-          setMessages((m) => [...m, { id: genId(), role, content }]);
-          // ✅ assistant replied → stop thinking
-          if (role === "assistant") {
-            setThinking(false);
-          }
-          return;
-        }
-
-        default:
-          console.log("Unknown WS type", data?.type);
+      if (from === "transcriber") {
+        setInput((p) => (p ? `${p} ${content}` : content));
+        return;
       }
+
+      setMessages((m) => [...m, { id: genId(), role, content }]);
     },
   });
 
   useEffect(() => {
     socket.connect();
-
     return () => socket.close();
   }, []);
 
-  // ---- TEXT ----
+  /* ------------------ text ------------------ */
+
   const sendText = () => {
     if (!input.trim()) return;
 
     setMessages((m) => [...m, { id: genId(), role: "user", content: input }]);
 
-    setThinking(true);
     socket.sendText(input);
     setInput("");
   };
 
-  // ---- AUDIO ----
+  /* ------------------ audio ------------------ */
+
   const startRecording = async () => {
-    if (isRecordingRef.current || stoppingRef.current) return;
-    startPulse();
+    if (recordingRef.current || stoppingRef.current) return;
+
     try {
       await Audio.requestPermissionsAsync();
       await Audio.setAudioModeAsync({
@@ -98,239 +185,234 @@ export function AgentChat({ agent, consumer, userId }: any) {
       });
 
       const rec = new Audio.Recording();
-
       recordingRef.current = rec;
-      isRecordingRef.current = true;
-      recordingStartedAtRef.current = Date.now();
+      startedAtRef.current = Date.now();
 
       await rec.prepareToRecordAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
       await rec.startAsync();
+
       setRecording(rec);
-    } catch (error) {
-      console.log("🎤 startRecording error", error);
+      showVoice();
+    } catch {
       recordingRef.current = null;
-      isRecordingRef.current = false;
     }
   };
 
   const stopRecording = async () => {
     const rec = recordingRef.current;
-
-    if (!rec || !isRecordingRef.current || stoppingRef.current) return;
+    if (!rec || stoppingRef.current) return;
 
     stoppingRef.current = true;
 
     try {
-      const duration = Date.now() - recordingStartedAtRef.current;
-      if (duration < 400) {
-        await rec.stopAndUnloadAsync().catch(() => {});
-        return;
-      }
+      await rec.stopAndUnloadAsync().catch(() => {});
+      const duration = Date.now() - startedAtRef.current;
+      if (duration < 400) return;
 
-      await rec.stopAndUnloadAsync();
       const uri = rec.getURI();
-
       if (!uri) return;
 
-      setThinking(true);
       const blob = await fetch(uri).then((r) => r.blob());
       socket.sendAudio(blob);
-    } catch (error) {
-      console.log("🎤 stopRecording error", error);
     } finally {
       recordingRef.current = null;
-      isRecordingRef.current = false;
       stoppingRef.current = false;
-      recordingStartedAtRef.current = 0;
+      startedAtRef.current = 0;
       setRecording(null);
-      stopPulse();
+      hideVoice();
     }
   };
 
-  const startPulse = () => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.15,
-          duration: 600,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 600,
-          easing: Easing.in(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  };
-
-  const stopPulse = () => {
-    pulseAnim.stopAnimation();
-    pulseAnim.setValue(1);
-  };
+  /* ------------------ UI ------------------ */
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: theme.background }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <FlatList
-        data={messages}
-        keyExtractor={(i) => i.id}
-        contentContainerStyle={{ padding: 12 }}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              alignSelf: item.role === "user" ? "flex-end" : "flex-start",
-              backgroundColor:
-                item.role === "user" ? theme.primary : theme.surface,
-              padding: 10,
-              borderRadius: 12,
-              marginVertical: 4,
-              maxWidth: "80%",
-            }}
-          >
-            <Text
-              style={{
-                color: item.role === "user" ? theme.background : theme.text,
-              }}
-            >
-              {item.content}
-            </Text>
-          </View>
-        )}
-      />
-
-      {thinking && (
-        <Text style={{ padding: 8, color: theme.subText }}>Thinking…</Text>
-      )}
-      <MicWaveform active={recording} color={theme.primary} />
-      <View
-        style={[
-          styles.composerWrapper,
-          {
-            backgroundColor: theme.background,
-            borderTopColor: theme.border,
-          },
-        ]}
-      >
-        <BlurView
-          intensity={40}
-          tint={theme.mode === "dark" ? "dark" : "light"}
-          style={styles.composerCard}
-        >
-          <TextInput
-            multiline
-            value={input}
-            onChangeText={setInput}
-            placeholder="Type a message…"
-            placeholderTextColor={theme.subText}
-            style={[
-              styles.textInput,
-              {
-                color: theme.text,
-              },
-            ]}
-          />
-
-          <View style={styles.actionRow}>
-            <Animated.View
-              style={{
-                transform: [{ scale: pulseAnim }],
-              }}
-            >
-              <Pressable
-                onPressIn={startRecording}
-                onPressOut={stopRecording}
-                style={[styles.iconButton, recording && styles.recordingButton]}
-              >
-                <MaterialIcons
-                  name="mic"
-                  size={22}
-                  color={recording ? "#fff" : theme.text}
-                />
-              </Pressable>
-            </Animated.View>
-
-            <Pressable
-              disabled={!input.trim()}
-              onPress={sendText}
+      {/* CHAT */}
+      <Animated.View style={{ flex: 1, opacity: chatDim }}>
+        <FlatList
+          data={messages}
+          keyExtractor={(i) => i.id}
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: 120,
+          }}
+          renderItem={({ item }) => (
+            <View
               style={[
-                styles.sendButton,
+                styles.bubble,
+                item.role === "user" ? styles.userBubble : styles.botBubble,
                 {
-                  backgroundColor: input.trim() ? theme.primary : theme.border,
+                  backgroundColor:
+                    item.role === "user" ? theme.primary : theme.surface,
                 },
               ]}
             >
-              <MaterialIcons name="send" size={20} color="#fff" />
-            </Pressable>
-          </View>
+              <Text
+                style={{
+                  color: item.role === "user" ? theme.background : theme.text,
+                }}
+              >
+                {item.content}
+              </Text>
+            </View>
+          )}
+        />
+      </Animated.View>
+
+      {/* COMPOSER */}
+      <View style={styles.composerWrapper}>
+        <BlurView
+          intensity={Platform.OS === "ios" ? 25 : 0}
+          tint={theme.mode === "dark" ? "dark" : "light"}
+          style={[styles.composer, { backgroundColor: theme.surface }]}
+        >
+          <Pressable
+            onPressIn={startRecording}
+            onPressOut={stopRecording}
+            style={[styles.micSmall, recording && styles.micActive]}
+          >
+            <MaterialIcons name="mic" size={20} color="#fff" />
+          </Pressable>
+
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="Type your message…"
+            placeholderTextColor={theme.subText}
+            style={[styles.input, { color: theme.text }]}
+          />
+
+          <Pressable
+            onPress={sendText}
+            style={[styles.send, { backgroundColor: theme.primary }]}
+          >
+            <MaterialIcons name="send" size={18} color="#fff" />
+          </Pressable>
         </BlurView>
       </View>
+
+      {/* VOICE OVERLAY */}
+      <Animated.View
+        pointerEvents={recording ? "auto" : "none"}
+        style={[
+          styles.voiceOverlay,
+          {
+            height: overlayHeight,
+            opacity: overlayOpacity,
+          },
+        ]}
+      >
+        <MicWaveform active={recording} color={theme.primary} />
+
+        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+          <View style={[styles.bigMic, { backgroundColor: theme.primary }]}>
+            <MaterialIcons name="mic" size={34} color="#fff" />
+          </View>
+        </Animated.View>
+
+        <Text style={{ color: theme.subText }}>Listening…</Text>
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
+
+/* ------------------------------- styles --------------------------------- */
+
 const styles = StyleSheet.create({
-  composerWrapper: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === "ios" ? 24 : 12,
-    borderTopWidth: 1,
-  },
-
-  composerCard: {
-    borderRadius: 16,
+  bubble: {
+    maxWidth: "78%",
     padding: 12,
-
-    // Shadow (iOS)
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-
-    // Elevation (Android)
-    elevation: 8,
-    backgroundColor: "rgba(255,255,255,0.85)",
+    borderRadius: 16,
+    marginVertical: 6,
+  },
+  userBubble: {
+    alignSelf: "flex-end",
+    borderBottomRightRadius: 4,
+  },
+  botBubble: {
+    alignSelf: "flex-start",
+    borderBottomLeftRadius: 4,
   },
 
-  textInput: {
-    minHeight: 56,
-    maxHeight: 140,
-    fontSize: 16,
-    lineHeight: 22,
+  composerWrapper: {
+    position: "absolute",
+    bottom: 16,
+    left: 12,
+    right: 12,
+  },
+
+  composer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 24,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    textAlignVertical: "top",
+    elevation: 10,
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
   },
 
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 10,
-  },
-
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  micSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#7C3AED",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "transparent",
   },
 
-  recordingButton: {
+  micActive: {
     backgroundColor: "#EF4444",
   },
 
-  sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  input: {
+    flex: 1,
+    marginHorizontal: 10,
+    fontSize: 15,
+  },
+
+  send: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  voiceOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+
+  bigMic: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 16,
+    elevation: 16,
+  },
+
+  waveform: {
+    flexDirection: "row",
+    gap: 6,
+    marginBottom: 12,
+  },
+
+  waveBar: {
+    width: 4,
+    borderRadius: 2,
   },
 });
