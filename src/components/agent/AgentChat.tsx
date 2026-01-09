@@ -7,111 +7,143 @@ import {
   Pressable,
   StyleSheet,
   Animated,
-  Easing,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { Audio } from "expo-av";
+import * as Haptics from "expo-haptics";
 import { MaterialIcons } from "@expo/vector-icons";
 import useTheme from "../../hooks/useTheme";
 import useAssistantSocket from "../../hooks/useAssistantSocket";
-
-/* -------------------------------- utils -------------------------------- */
+import { MicWaveform } from "./MicWaveform";
 
 const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-/* ----------------------------- waveform --------------------------------- */
-
-function MicWaveform({ active, color }: any) {
-  const bars = Array.from({ length: 7 });
-  const anims = useRef(bars.map(() => new Animated.Value(6))).current;
+function ThinkingDots({ color }: any) {
+  const dot1 = useRef(new Animated.Value(0.2)).current;
+  const dot2 = useRef(new Animated.Value(0.2)).current;
+  const dot3 = useRef(new Animated.Value(0.2)).current;
 
   useEffect(() => {
-    if (!active) return;
-
-    const loops = anims.map((a, i) =>
+    const pulse = (dot: Animated.Value, delay: number) =>
       Animated.loop(
         Animated.sequence([
-          Animated.timing(a, {
-            toValue: 24,
-            duration: 260 + i * 40,
-            useNativeDriver: false,
+          Animated.delay(delay),
+          Animated.timing(dot, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
           }),
-          Animated.timing(a, {
-            toValue: 6,
-            duration: 260 + i * 40,
-            useNativeDriver: false,
+          Animated.timing(dot, {
+            toValue: 0.2,
+            duration: 400,
+            useNativeDriver: true,
           }),
         ])
-      )
-    );
+      );
 
-    loops.forEach((l) => l.start());
-    return () => anims.forEach((a) => a.stopAnimation());
-  }, [active]);
+    const a1 = pulse(dot1, 0);
+    const a2 = pulse(dot2, 150);
+    const a3 = pulse(dot3, 300);
 
-  if (!active) return null;
+    a1.start();
+    a2.start();
+    a3.start();
+
+    return () => {
+      dot1.stopAnimation();
+      dot2.stopAnimation();
+      dot3.stopAnimation();
+    };
+  }, []);
 
   return (
-    <View style={styles.waveform}>
-      {anims.map((a, i) => (
+    <View style={{ flexDirection: "row", gap: 6, padding: 6 }}>
+      {[dot1, dot2, dot3].map((d, i) => (
         <Animated.View
           key={i}
-          style={[styles.waveBar, { height: a, backgroundColor: color }]}
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: color,
+            opacity: d,
+          }}
         />
       ))}
     </View>
   );
 }
 
-/* ------------------------------ component -------------------------------- */
+/* ----------------------------- bubble item ------------------------------ */
+
+function AnimatedBubble({ children, style }: any) {
+  const scale = useRef(new Animated.Value(0.92)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scale, {
+        toValue: 1,
+        damping: 14,
+        stiffness: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 160,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          transform: [{ scale }],
+          opacity,
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+/* ------------------------------ component ------------------------------- */
 
 export default function AgentChat({ agent, consumer, userId }: any) {
   const { theme } = useTheme();
 
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
+  const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
-  /* ------------------ voice overlay animation ------------------ */
+  /* ---------------- voice overlay spring ---------------- */
 
   const voiceAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const overlayHeight = voiceAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 260],
-  });
-
-  const overlayOpacity = voiceAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-
-  const chatDim = voiceAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0.25],
-  });
-
   const showVoice = () => {
-    Animated.timing(voiceAnim, {
+    Animated.spring(voiceAnim, {
       toValue: 1,
-      duration: 320,
-      easing: Easing.out(Easing.cubic),
+      damping: 18,
+      stiffness: 120,
       useNativeDriver: false,
     }).start();
 
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
+        Animated.spring(pulseAnim, {
           toValue: 1.15,
-          duration: 600,
           useNativeDriver: true,
         }),
-        Animated.timing(pulseAnim, {
+        Animated.spring(pulseAnim, {
           toValue: 1,
-          duration: 600,
           useNativeDriver: true,
         }),
       ])
@@ -119,10 +151,10 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   };
 
   const hideVoice = () => {
-    Animated.timing(voiceAnim, {
+    Animated.spring(voiceAnim, {
       toValue: 0,
-      duration: 260,
-      easing: Easing.in(Easing.cubic),
+      damping: 20,
+      stiffness: 140,
       useNativeDriver: false,
     }).start();
 
@@ -130,13 +162,23 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     pulseAnim.setValue(1);
   };
 
-  /* ------------------ recording safety ------------------ */
+  const overlayHeight = voiceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 260],
+  });
+
+  const chatDim = voiceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.25],
+  });
+
+  /* ---------------- audio safety ---------------- */
 
   const recordingRef = useRef<Audio.Recording | null>(null);
   const stoppingRef = useRef(false);
   const startedAtRef = useRef(0);
 
-  /* ------------------ websocket ------------------ */
+  /* ---------------- websocket ---------------- */
 
   const socket = useAssistantSocket({
     agent,
@@ -153,6 +195,9 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       }
 
       setMessages((m) => [...m, { id: genId(), role, content }]);
+      if (role === "assistant") {
+        setThinking(false); // 👈 stop thinking ONLY here
+      }
     },
   });
 
@@ -161,21 +206,26 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     return () => socket.close();
   }, []);
 
-  /* ------------------ text ------------------ */
+  /* ---------------- text ---------------- */
 
   const sendText = () => {
     if (!input.trim()) return;
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     setMessages((m) => [...m, { id: genId(), role: "user", content: input }]);
 
+    setThinking(true);
     socket.sendText(input);
     setInput("");
   };
 
-  /* ------------------ audio ------------------ */
+  /* ---------------- audio ---------------- */
 
   const startRecording = async () => {
     if (recordingRef.current || stoppingRef.current) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
       await Audio.requestPermissionsAsync();
@@ -214,6 +264,8 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       const uri = rec.getURI();
       if (!uri) return;
 
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
       const blob = await fetch(uri).then((r) => r.blob());
       socket.sendAudio(blob);
     } finally {
@@ -225,7 +277,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     }
   };
 
-  /* ------------------ UI ------------------ */
+  /* ---------------- UI ---------------- */
 
   return (
     <KeyboardAvoidingView
@@ -242,7 +294,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
             paddingBottom: 120,
           }}
           renderItem={({ item }) => (
-            <View
+            <AnimatedBubble
               style={[
                 styles.bubble,
                 item.role === "user" ? styles.userBubble : styles.botBubble,
@@ -259,8 +311,11 @@ export default function AgentChat({ agent, consumer, userId }: any) {
               >
                 {item.content}
               </Text>
-            </View>
+            </AnimatedBubble>
           )}
+          ListFooterComponent={
+            thinking ? <ThinkingDots color={theme.subText} /> : null
+          }
         />
       </Animated.View>
 
@@ -299,13 +354,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       {/* VOICE OVERLAY */}
       <Animated.View
         pointerEvents={recording ? "auto" : "none"}
-        style={[
-          styles.voiceOverlay,
-          {
-            height: overlayHeight,
-            opacity: overlayOpacity,
-          },
-        ]}
+        style={[styles.voiceOverlay, { height: overlayHeight }]}
       >
         <MicWaveform active={recording} color={theme.primary} />
 
@@ -315,13 +364,13 @@ export default function AgentChat({ agent, consumer, userId }: any) {
           </View>
         </Animated.View>
 
-        <Text style={{ color: theme.subText }}>Listening…</Text>
+        <Text style={{ color: theme.subText, marginTop: 8 }}>Listening…</Text>
       </Animated.View>
     </KeyboardAvoidingView>
   );
 }
 
-/* ------------------------------- styles --------------------------------- */
+/* -------------------------------- styles -------------------------------- */
 
 const styles = StyleSheet.create({
   bubble: {
@@ -403,16 +452,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginVertical: 16,
     elevation: 16,
-  },
-
-  waveform: {
-    flexDirection: "row",
-    gap: 6,
-    marginBottom: 12,
-  },
-
-  waveBar: {
-    width: 4,
-    borderRadius: 2,
   },
 });
