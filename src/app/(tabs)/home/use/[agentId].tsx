@@ -1,18 +1,14 @@
-import { useEffect } from "react";
 import { Text, StyleSheet } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import useAuth from "../../../../hooks/useAuth";
 import Screen from "../../../../components/Screen";
-import useAppDispatch from "../../../../hooks/useAppDispatch";
 import { useAppSelector } from "../../../../hooks/useAppSelector";
-import { fetchConsumerByAgent } from "../../../../features/consumer/consumerSlice";
 import { useConsumerDetails } from "../../../../hooks/useConsumerDetails";
 import AgentChat from "../../../../components/agent/AgentChat";
 
 export default function AgentUse() {
   const { agentId } = useLocalSearchParams<{ agentId: string }>();
-  const { user, token } = useAuth();
-  const dispatch = useAppDispatch();
+  const { user } = useAuth();
 
   const agent = useAppSelector(
     (s) =>

@@ -69,8 +69,8 @@ export default function AgentGrid<T>({
 
 const styles = StyleSheet.create({
   columnWrapper: {
-    gap: GAP,
     justifyContent: "space-between",
+    paddingHorizontal: 2,
   },
   cardContainer: {
     flexBasis: "48%",
