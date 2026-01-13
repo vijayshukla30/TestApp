@@ -70,7 +70,7 @@ export const api = {
     request("/resend-otp", { method: "POST", body: { email } }),
 
   getAgentsByConsumer: (consumerUuid: string, token: string) =>
-    request<AgentsApiResponse>(`/organization/${consumerUuid}`, {
+    request<AgentsApiResponse>(`/organization/?role=CONSUMER`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
