@@ -12,7 +12,6 @@ import {
   BackHandler,
   Alert,
 } from "react-native";
-import { Portal, Dialog, Button, Appbar } from "react-native-paper";
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import { Audio } from "expo-av";
@@ -23,6 +22,7 @@ import useAssistantSocket from "../../hooks/useAssistantSocket";
 import { MicWaveform } from "./MicWaveform";
 
 const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const COMPOSER_HEIGHT = 64;
 
 function ThinkingDots({ color }: any) {
   const dot1 = useRef(new Animated.Value(0.2)).current;
@@ -126,7 +126,6 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const [showEndDialog, setShowEndDialog] = useState(false);
 
   /* ---------------- voice overlay spring ---------------- */
 
@@ -166,11 +165,6 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     pulseAnim.stopAnimation();
     pulseAnim.setValue(1);
   };
-
-  const overlayHeight = voiceAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 260],
-  });
 
   const chatDim = voiceAnim.interpolate({
     inputRange: [0, 1],
@@ -329,13 +323,12 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     );
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.background }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "height" : undefined}
     >
+      {/* HEADER */}
       <View
         style={{
           height: 48,
@@ -352,7 +345,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
         </Text>
 
         <Pressable
-          onPress={() => setShowEndDialog(true)}
+          onPress={confirmEndChat}
           hitSlop={12}
           style={{
             paddingHorizontal: 12,
@@ -361,68 +354,90 @@ export default function AgentChat({ agent, consumer, userId }: any) {
             backgroundColor: "rgba(239,68,68,0.12)",
           }}
         >
-          <Text
-            style={{
-              color: "#EF4444",
-              fontSize: 13,
-              fontWeight: "600",
-            }}
-          >
+          <Text style={{ color: "#EF4444", fontSize: 13, fontWeight: "600" }}>
             End Chat
           </Text>
         </Pressable>
       </View>
 
-      {/* CHAT */}
-      <Animated.View style={{ flex: 1, opacity: chatDim }}>
-        <FlatList
-          data={messages}
-          keyExtractor={(i) => i.id}
-          contentContainerStyle={{
-            padding: 16,
-            paddingBottom: 120,
-          }}
-          renderItem={({ item }) => (
-            <AnimatedBubble
-              style={[
-                styles.bubble,
-                item.role === "user" ? styles.userBubble : styles.botBubble,
-                {
-                  backgroundColor:
-                    item.role === "user" ? theme.primary : theme.surface,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  color: item.role === "user" ? theme.background : theme.text,
+      {/* BODY */}
+      <View style={{ flex: 1 }}>
+        {/* UPPER HALF — VOICE */}
+        <View style={styles.voiceAreaWrapper}>
+          <View style={[styles.voiceCard, { backgroundColor: theme.surface }]}>
+            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+              <Pressable
+                onPressIn={startRecording}
+                onPressOut={stopRecording}
+                hitSlop={16}
+                android_ripple={{
+                  color: "rgba(255,255,255,0.1)",
+                  borderless: true,
                 }}
+                style={[
+                  styles.bigMicHero,
+                  { backgroundColor: theme.primary },
+                  recording && styles.bigMicActive,
+                ]}
               >
-                {item.content}
-              </Text>
-            </AnimatedBubble>
-          )}
-          ListFooterComponent={
-            thinking ? <ThinkingDots color={theme.subText} /> : null
-          }
-        />
-      </Animated.View>
+                <MaterialIcons name="mic" size={46} color="#fff" />
+              </Pressable>
+            </Animated.View>
 
-      {/* COMPOSER */}
+            <Text style={[styles.voiceHint, { color: theme.subText }]}>
+              {recording
+                ? "Listening…"
+                : thinking
+                ? "Thinking…"
+                : "Tap and speak"}
+            </Text>
+
+            {recording && <MicWaveform active color={theme.primary} />}
+          </View>
+        </View>
+        {/* LOWER HALF — CHAT */}
+        <Animated.View style={[styles.chatArea, { opacity: chatDim }]}>
+          <FlatList
+            data={messages}
+            keyExtractor={(i) => i.id}
+            contentContainerStyle={{
+              padding: 12,
+              paddingBottom: COMPOSER_HEIGHT + 12,
+            }}
+            renderItem={({ item }) => (
+              <AnimatedBubble
+                style={[
+                  styles.bubble,
+                  item.role === "user" ? styles.userBubble : styles.botBubble,
+                  {
+                    backgroundColor:
+                      item.role === "user" ? theme.primary : theme.surface,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: item.role === "user" ? theme.background : theme.text,
+                  }}
+                >
+                  {item.content}
+                </Text>
+              </AnimatedBubble>
+            )}
+            ListFooterComponent={
+              thinking ? <ThinkingDots color={theme.subText} /> : null
+            }
+          />
+        </Animated.View>
+      </View>
+
+      {/* COMPOSER — unchanged */}
       <View style={styles.composerWrapper}>
         <BlurView
           intensity={Platform.OS === "ios" ? 25 : 0}
           tint={theme.mode === "dark" ? "dark" : "light"}
           style={[styles.composer, { backgroundColor: theme.surface }]}
         >
-          <Pressable
-            onPressIn={startRecording}
-            onPressOut={stopRecording}
-            style={[styles.micSmall, recording && styles.micActive]}
-          >
-            <MaterialIcons name="mic" size={20} color="#fff" />
-          </Pressable>
-
           <TextInput
             value={input}
             onChangeText={setInput}
@@ -439,47 +454,9 @@ export default function AgentChat({ agent, consumer, userId }: any) {
           </Pressable>
         </BlurView>
       </View>
-
-      {/* VOICE OVERLAY */}
-      <Animated.View
-        pointerEvents={recording ? "auto" : "none"}
-        style={[styles.voiceOverlay, { height: overlayHeight }]}
-      >
-        <MicWaveform active={recording} color={theme.primary} />
-
-        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-          <View style={[styles.bigMic, { backgroundColor: theme.primary }]}>
-            <MaterialIcons name="mic" size={34} color="#fff" />
-          </View>
-        </Animated.View>
-
-        <Text style={{ color: theme.subText, marginTop: 8 }}>Listening…</Text>
-      </Animated.View>
-      <Portal>
-        <Dialog
-          visible={showEndDialog}
-          onDismiss={() => setShowEndDialog(false)}
-        >
-          <Dialog.Title>End this assistant session?</Dialog.Title>
-          <Dialog.Content>
-            <Text style={{ color: theme.text }}>
-              Your current conversation will be cleared. You can start a new
-              session anytime.
-            </Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setShowEndDialog(false)}>Cancel</Button>
-            <Button textColor="#EF4444" onPress={endChatAndExit}>
-              End Chat
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     </KeyboardAvoidingView>
   );
 }
-
-/* -------------------------------- styles -------------------------------- */
 
 const styles = StyleSheet.create({
   bubble: {
@@ -498,10 +475,8 @@ const styles = StyleSheet.create({
   },
 
   composerWrapper: {
-    position: "absolute",
-    bottom: 16,
-    left: 12,
-    right: 12,
+    paddingHorizontal: 12,
+    paddingBottom: Platform.OS === "ios" ? 24 : 12,
   },
 
   composer: {
@@ -561,5 +536,50 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginVertical: 16,
     elevation: 16,
+  },
+  voiceAreaWrapper: {
+    flex: 0.55,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
+  },
+
+  voiceCard: {
+    width: "100%",
+    maxWidth: 360,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 24,
+    paddingVertical: 28,
+    elevation: 18,
+    shadowOpacity: 0.25,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 12 },
+  },
+  bigMicHero: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 24,
+    shadowOpacity: 0.35,
+    shadowRadius: 30,
+  },
+
+  bigMicActive: {
+    backgroundColor: "#EF4444",
+  },
+
+  voiceHint: {
+    marginTop: 14,
+    fontSize: 15,
+    opacity: 0.85,
+  },
+
+  chatArea: {
+    flex: 0.45,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.08)",
   },
 });
