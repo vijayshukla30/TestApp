@@ -13,9 +13,7 @@ import { showGlobalMessage } from "../context/UIContext";
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 async function request<T>(url: string, options: RequestOptions): Promise<T> {
-  console.log("API_BASE_URL :>> ", API_BASE_URL);
-  console.log("url :>> ", url);
-  const res = await fetch(`${API_BASE_URL}${url}`, {
+  const res = await fetch(`${API_BASE_URL}/api/v1${url}`, {
     method: options.method,
     headers: {
       "Content-Type": "application/json",
@@ -72,7 +70,7 @@ export const api = {
     request("/resend-otp", { method: "POST", body: { email } }),
 
   getAgentsByConsumer: (consumerUuid: string, token: string) =>
-    request<AgentsApiResponse>(`/organization/${consumerUuid}`, {
+    request<AgentsApiResponse>(`/organization/?role=CONSUMER`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -87,6 +85,17 @@ export const api = {
   getUserActivity: (token: string) =>
     request<{ activities: any[] }>("/user/activity", {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
+  createUserActivity: (
+    data: { assistantUuid: string; isInstalled: boolean },
+    token: string
+  ) =>
+    request(`/user/create-activity`, {
+      method: "POST",
+      body: data,
       headers: {
         Authorization: `Bearer ${token}`,
       },

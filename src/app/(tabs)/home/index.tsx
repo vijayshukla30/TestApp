@@ -9,13 +9,13 @@ import { fetchUserActivity } from "../../../features/activity/activitySlice";
 import Screen from "../../../components/Screen";
 import AgentGrid from "../../../components/agent/AgentGrid";
 import HomeAgentCard from "../../../components/agent/HomeAgentCard";
+import InstallAgentCard from "../../../components/agent/InstallAgentCard";
 
 export default function Home() {
   const { theme } = useTheme();
   const { user, token } = useAuth()!;
   const dispatch = useAppDispatch();
   const { list, loading } = useAppSelector((s) => s.activity);
-
   const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
@@ -32,7 +32,7 @@ export default function Home() {
     setRefreshing(false);
   };
 
-  const installed = list.filter((x) => x.isInstalled);
+  const installed = list.filter((x) => x.isInstalled && x.assistantId?.uuid);
 
   return (
     <Screen>
@@ -43,35 +43,41 @@ export default function Home() {
         <Text style={[styles.name, { color: theme.text }]}>{user?.name}</Text>
       </View>
       <AgentGrid
-        data={installed}
+        data={[...installed, { __install__: true }]}
         loading={loading}
         refreshing={refreshing}
         onRefresh={onRefresh}
-        getId={(item) => item.assistantId.uuid}
-        renderItem={(item) => (
-          <HomeAgentCard
-            agent={item.assistantId}
-            onOpenDetail={() =>
-              router.push({
-                pathname: "/agents/[agentId]",
-                params: {
-                  agentId: item.assistantId.uuid,
-                  agent: JSON.stringify(item.assistantId),
-                  from: "home",
-                },
-              })
-            }
-            onUseNow={() =>
-              router.push({
-                pathname: "/home/use/[agentId]",
-                params: {
-                  agentId: item.assistantId.uuid,
-                  agent: JSON.stringify(item.assistantId),
-                },
-              })
-            }
-          />
-        )}
+        getId={(item) =>
+          item.__install__ ? "install-card" : item.assistantId.uuid
+        }
+        renderItem={(item) =>
+          item.__install__ ? (
+            <InstallAgentCard onPress={() => router.push("/agents")} />
+          ) : (
+            <HomeAgentCard
+              agent={item.assistantId}
+              onOpenDetail={() =>
+                router.push({
+                  pathname: "/agents/[agentId]",
+                  params: {
+                    agentId: item.assistantId.uuid,
+                    from: "home",
+                    agent: JSON.stringify(item),
+                  },
+                })
+              }
+              onUseNow={() =>
+                router.push({
+                  pathname: "/home/use/[agentId]",
+                  params: {
+                    agentId: item.assistantId.uuid,
+                    from: "home",
+                  },
+                })
+              }
+            />
+          )
+        }
       />
     </Screen>
   );

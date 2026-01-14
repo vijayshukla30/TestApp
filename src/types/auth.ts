@@ -14,6 +14,7 @@ export type User = {
   name: string;
   role: "CONSUMER" | "ADMIN" | string;
   phoneNumber: string[];
+  org: string | any;
 };
 
 export type JwtPayload = {
