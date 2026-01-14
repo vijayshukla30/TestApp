@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import {
-  Keyboard,
-  TouchableWithoutFeedback,
   StyleSheet,
   View,
   Pressable,
@@ -33,7 +31,6 @@ export default function ChatComposer({
 
   return (
     <View style={styles.wrapper}>
-      {/* TEXT INPUT CARD */}
       <AppCard style={[styles.card, { backgroundColor: theme.surface }]}>
         <BlurView
           intensity={25}
