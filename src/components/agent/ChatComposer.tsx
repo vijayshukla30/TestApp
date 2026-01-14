@@ -39,6 +39,7 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
             multiline
             textAlign={value ? "left" : "center"}
             textAlignVertical="top"
+            blurOnSubmit
             style={[styles.textArea, { color: theme.text }]}
           />
         </BlurView>

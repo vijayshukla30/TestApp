@@ -8,6 +8,7 @@ import {
   Keyboard,
   BackHandler,
   Alert,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { router } from "expo-router";
 import { Audio } from "expo-av";
@@ -121,33 +122,24 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-    >
-      {/* dismiss keyboard when tapping outside */}
-      <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
+    <View style={{ flex: 1 }}>
+      <AgentHeader title={agent.agentName} onBack={confirmEndChat} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ flex: 1 }}>
-          <AgentHeader title={agent.agentName} onBack={confirmEndChat} />
-
           <MicSection
             recording={recording}
             thinking={thinking}
             onToggle={toggleRecording}
           />
         </View>
-      </Pressable>
+      </TouchableWithoutFeedback>
 
       <ChatContextCard
         messages={messages}
         onOpenHistory={() => setShowHistory(true)}
       />
 
-      {/* composer pinned to bottom */}
-      <View style={styles.composerContainer}>
-        <ChatComposer value={input} onChange={setInput} onSend={sendText} />
-      </View>
+      <ChatComposer value={input} onChange={setInput} onSend={sendText} />
 
       <HistoryModal
         visible={showHistory}
@@ -155,25 +147,8 @@ export default function AgentChat({ agent, consumer, userId }: any) {
         thinking={thinking}
         onClose={() => setShowHistory(false)}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  composerContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 0,
-  },
-  historyFloating: {
-    position: "absolute",
-    right: 16,
-    top: "52%",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
-    zIndex: 10,
-  },
-});
+const styles = StyleSheet.create({});
