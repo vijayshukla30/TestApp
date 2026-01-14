@@ -10,6 +10,7 @@ type Props = {
   variant?: CardVariant;
   style?: StyleProp<ViewStyle>;
   elevation?: CardElevation;
+  compact?: boolean;
 };
 
 export default function AppCard({
@@ -17,20 +18,30 @@ export default function AppCard({
   variant = "default",
   style,
   elevation,
+  compact = false,
 }: Props) {
   const { theme } = useTheme();
   const isAuth = variant === "auth";
 
-  const cardElevation: CardElevation = elevation ?? (isAuth ? 4 : 2);
+  const cardElevation: CardElevation = compact
+    ? 0
+    : elevation ?? (isAuth ? 4 : 2);
 
   return (
     <Surface
       elevation={cardElevation}
       style={[
         styles.base,
+        compact && styles.compact,
         {
-          backgroundColor: isAuth ? "rgba(15,20,35,0.9)" : theme.surface,
-          borderColor: "rgba(255,255,255,0.08)",
+          backgroundColor: compact
+            ? "rgba(255,255,255,0.03)"
+            : isAuth
+            ? "rgba(15,20,35,0.9)"
+            : theme.surface,
+          borderColor: compact
+            ? "rgba(255,255,255,0.04)"
+            : "rgba(255,255,255,0.08)",
         },
         style,
       ]}
@@ -45,5 +56,9 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
+  },
+  compact: {
+    padding: 10,
+    borderWidth: 0,
   },
 });

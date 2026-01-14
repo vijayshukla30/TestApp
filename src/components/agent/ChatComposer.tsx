@@ -17,15 +17,9 @@ type Props = {
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
-  onHistory: () => void;
 };
 
-export default function ChatComposer({
-  value,
-  onChange,
-  onSend,
-  onHistory,
-}: Props) {
+export default function ChatComposer({ value, onChange, onSend }: Props) {
   const { theme } = useTheme();
   const [showAttachments, setShowAttachments] = useState(false);
 
@@ -37,16 +31,13 @@ export default function ChatComposer({
           tint={theme.mode === "dark" ? "dark" : "light"}
           style={styles.textCard}
         >
-          <Pressable onPress={onHistory} hitSlop={10}>
-            <MaterialIcons name="history" size={22} color={theme.subText} />
-          </Pressable>
-
           <TextInput
             value={value}
             onChangeText={onChange}
             placeholder="Type or speak…"
             placeholderTextColor={theme.subText}
             multiline
+            textAlign={value ? "left" : "center"}
             textAlignVertical="top"
             style={[styles.textArea, { color: theme.text }]}
           />
@@ -97,13 +88,10 @@ const styles = StyleSheet.create({
   },
 
   textArea: {
-    flex: 1,
-    minHeight: 90,
-    maxHeight: 150,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 14,
+    height: 56, // 👈 fixed height looks better
+    borderRadius: 16,
     fontSize: 15,
+    paddingHorizontal: 14,
   },
 
   actionBar: {

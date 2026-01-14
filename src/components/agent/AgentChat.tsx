@@ -17,6 +17,7 @@ import AgentHeader from "./AgentHeader";
 import MicSection from "./MicSection";
 import ChatComposer from "./ChatComposer";
 import HistoryModal from "./HistoryModal";
+import ChatContextCard from "./ChatContextCard";
 
 const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -119,8 +120,6 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     );
   };
 
-  /* ---------------- render ---------------- */
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -140,14 +139,14 @@ export default function AgentChat({ agent, consumer, userId }: any) {
         </View>
       </Pressable>
 
+      <ChatContextCard
+        messages={messages}
+        onOpenHistory={() => setShowHistory(true)}
+      />
+
       {/* composer pinned to bottom */}
       <View style={styles.composerContainer}>
-        <ChatComposer
-          value={input}
-          onChange={setInput}
-          onSend={sendText}
-          onHistory={() => setShowHistory(true)}
-        />
+        <ChatComposer value={input} onChange={setInput} onSend={sendText} />
       </View>
 
       <HistoryModal
@@ -164,5 +163,17 @@ const styles = StyleSheet.create({
   composerContainer: {
     paddingHorizontal: 12,
     paddingBottom: 0,
+  },
+  historyFloating: {
+    position: "absolute",
+    right: 16,
+    top: "52%",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    zIndex: 10,
   },
 });
