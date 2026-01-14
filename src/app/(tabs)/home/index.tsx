@@ -61,8 +61,8 @@ export default function Home() {
                   pathname: "/agents/[agentId]",
                   params: {
                     agentId: item.assistantId.uuid,
+                    agent: JSON.stringify(item.assistantId),
                     from: "home",
-                    agent: JSON.stringify(item),
                   },
                 })
               }

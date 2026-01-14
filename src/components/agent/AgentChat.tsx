@@ -245,9 +245,13 @@ export default function AgentChat({ agent, consumer, userId }: any) {
 
     try {
       await rec.stopAndUnloadAsync().catch(() => {});
-      if (Date.now() - startedAtRef.current < 400) return;
+      const duration = Date.now() - startedAtRef.current;
+
+      if (duration < 300) return;
+
       const uri = rec.getURI();
       if (!uri) return;
+
       const blob = await fetch(uri).then((r) => r.blob());
       socket.sendAudio(blob);
     } finally {
@@ -278,12 +282,20 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       "Your current conversation will be cleared.",
       [
         { text: "Cancel", style: "cancel" },
-        { text: "End Chat", style: "destructive", onPress: endChatAndExit },
+        { text: "Back", style: "destructive", onPress: endChatAndExit },
       ]
     );
   };
 
   /* ---------------- render ---------------- */
+
+  const toggleRecording = async () => {
+    if (recordingRef.current) {
+      await stopRecording();
+    } else {
+      await startRecording();
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -293,7 +305,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
           {agent.agentName}
         </Text>
         <Pressable onPress={confirmEndChat} style={styles.endBtn}>
-          <Text style={{ color: "#EF4444", fontWeight: "600" }}>End Chat</Text>
+          <Text style={{ color: "#EF4444", fontWeight: "600" }}>Back</Text>
         </Pressable>
       </View>
 
@@ -301,8 +313,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       <View style={styles.micArea}>
         <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
           <Pressable
-            onPressIn={startRecording}
-            onPressOut={stopRecording}
+            onPress={toggleRecording}
             hitSlop={20}
             style={[
               styles.micButton,

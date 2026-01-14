@@ -36,6 +36,8 @@ export default function AgentDetails() {
   const agent: Agent | null = params.agent
     ? JSON.parse(params.agent as string)
     : null;
+  console.log("params :>> ", params);
+  console.log("agent :>> ", agent);
 
   const { consumer, loading, isInstalled } = useConsumerDetails(agent);
   const { connectPlatform, disconnectPlatform } = usePlatformConnection();
@@ -65,24 +67,26 @@ export default function AgentDetails() {
     await connectPlatform(agent, consumer);
   };
 
+  const headerLeft = () => (
+    <Pressable
+      onPress={() => {
+        if (params?.from === "home") {
+          router.push("/(tabs)/home");
+        } else {
+          router.back();
+        }
+      }}
+    >
+      <MaterialIcons name="arrow-back" size={24} />
+    </Pressable>
+  );
+
   return (
     <>
       <Stack.Screen
         options={{
           title: agent.agentName,
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                if ((params.from = "home")) {
-                  router.replace("/(tabs)/home");
-                } else {
-                  router.back();
-                }
-              }}
-            >
-              <MaterialIcons name="arrow-back" size={24} />
-            </Pressable>
-          ),
+          headerLeft,
         }}
       />
 
