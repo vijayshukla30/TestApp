@@ -7,64 +7,61 @@ import {
   Pressable,
   StyleSheet,
   Animated,
-  KeyboardAvoidingView,
+  Modal,
   Platform,
   BackHandler,
   Alert,
+  PanResponder,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { router } from "expo-router";
 import { BlurView } from "expo-blur";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import useTheme from "../../hooks/useTheme";
 import useAssistantSocket from "../../hooks/useAssistantSocket";
 import { MicWaveform } from "./MicWaveform";
+import AppCard from "../ui/AppCard";
 
 const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-const COMPOSER_HEIGHT = 64;
+
+/* ----------------------------- thinking dots ---------------------------- */
 
 function ThinkingDots({ color }: any) {
-  const dot1 = useRef(new Animated.Value(0.2)).current;
-  const dot2 = useRef(new Animated.Value(0.2)).current;
-  const dot3 = useRef(new Animated.Value(0.2)).current;
+  const dots = [
+    useRef(new Animated.Value(0.2)).current,
+    useRef(new Animated.Value(0.2)).current,
+    useRef(new Animated.Value(0.2)).current,
+  ];
 
   useEffect(() => {
-    const pulse = (dot: Animated.Value, delay: number) =>
+    const anims = dots.map((d, i) =>
       Animated.loop(
         Animated.sequence([
-          Animated.delay(delay),
-          Animated.timing(dot, {
+          Animated.delay(i * 150),
+          Animated.timing(d, {
             toValue: 1,
             duration: 400,
             useNativeDriver: true,
           }),
-          Animated.timing(dot, {
+          Animated.timing(d, {
             toValue: 0.2,
             duration: 400,
             useNativeDriver: true,
           }),
         ])
-      );
-
-    const a1 = pulse(dot1, 0);
-    const a2 = pulse(dot2, 150);
-    const a3 = pulse(dot3, 300);
-
-    a1.start();
-    a2.start();
-    a3.start();
-
-    return () => {
-      dot1.stopAnimation();
-      dot2.stopAnimation();
-      dot3.stopAnimation();
-    };
+      )
+    );
+    anims.forEach((a) => a.start());
+    return () => dots.forEach((d) => d.stopAnimation());
   }, []);
 
   return (
     <View style={{ flexDirection: "row", gap: 6, padding: 6 }}>
-      {[dot1, dot2, dot3].map((d, i) => (
+      {dots.map((d, i) => (
         <Animated.View
           key={i}
           style={{
@@ -80,7 +77,7 @@ function ThinkingDots({ color }: any) {
   );
 }
 
-/* ----------------------------- bubble item ------------------------------ */
+/* ------------------------------ bubble ---------------------------------- */
 
 function AnimatedBubble({ children, style }: any) {
   const scale = useRef(new Animated.Value(0.92)).current;
@@ -103,73 +100,65 @@ function AnimatedBubble({ children, style }: any) {
   }, []);
 
   return (
-    <Animated.View
-      style={[
-        style,
-        {
-          transform: [{ scale }],
-          opacity,
-        },
-      ]}
-    >
+    <Animated.View style={[style, { transform: [{ scale }], opacity }]}>
       {children}
     </Animated.View>
   );
 }
 
-/* ------------------------------ component ------------------------------- */
+/* ------------------------------ main ------------------------------------ */
 
 export default function AgentChat({ agent, consumer, userId }: any) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
-  /* ---------------- voice overlay spring ---------------- */
+  /* ---------------- voice animation ---------------- */
 
-  const voiceAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const showVoice = () => {
-    Animated.spring(voiceAnim, {
-      toValue: 1,
-      damping: 18,
-      stiffness: 120,
-      useNativeDriver: false,
-    }).start();
-
+  const startPulse = () => {
     Animated.loop(
       Animated.sequence([
-        Animated.spring(pulseAnim, {
-          toValue: 1.15,
-          useNativeDriver: true,
-        }),
-        Animated.spring(pulseAnim, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
+        Animated.spring(pulseAnim, { toValue: 1.15, useNativeDriver: true }),
+        Animated.spring(pulseAnim, { toValue: 1, useNativeDriver: true }),
       ])
     ).start();
   };
 
-  const hideVoice = () => {
-    Animated.spring(voiceAnim, {
-      toValue: 0,
-      damping: 20,
-      stiffness: 140,
-      useNativeDriver: false,
-    }).start();
-
+  const stopPulse = () => {
     pulseAnim.stopAnimation();
     pulseAnim.setValue(1);
   };
 
-  const chatDim = voiceAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0.25],
-  });
+  /* ---------------- pan to close modal ---------------- */
+
+  const panY = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 12,
+      onPanResponderMove: Animated.event([null, { dy: panY }], {
+        useNativeDriver: false,
+      }),
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          setShowHistory(false);
+          panY.setValue(0);
+        } else {
+          Animated.spring(panY, {
+            toValue: 0,
+            useNativeDriver: false,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   /* ---------------- audio safety ---------------- */
 
@@ -194,9 +183,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       }
 
       setMessages((m) => [...m, { id: genId(), role, content }]);
-      if (role === "assistant") {
-        setThinking(false); // 👈 stop thinking ONLY here
-      }
+      if (role === "assistant") setThinking(false);
     },
   });
 
@@ -206,26 +193,19 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   }, []);
 
   useEffect(() => {
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        confirmEndChat();
-        return true; // block default back
-      }
-    );
-
-    return () => subscription.remove();
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      confirmEndChat();
+      return true;
+    });
+    return () => sub.remove();
   }, []);
 
-  /* ---------------- text ---------------- */
+  /* ---------------- send text ---------------- */
 
   const sendText = () => {
     if (!input.trim()) return;
-
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
     setMessages((m) => [...m, { id: genId(), role: "user", content: input }]);
-
     setThinking(true);
     socket.sendText(input);
     setInput("");
@@ -235,7 +215,6 @@ export default function AgentChat({ agent, consumer, userId }: any) {
 
   const startRecording = async () => {
     if (recordingRef.current || stoppingRef.current) return;
-
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
@@ -255,28 +234,20 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       await rec.startAsync();
 
       setRecording(rec);
-      showVoice();
-    } catch {
-      recordingRef.current = null;
-    }
+      startPulse();
+    } catch {}
   };
 
   const stopRecording = async () => {
     const rec = recordingRef.current;
     if (!rec || stoppingRef.current) return;
-
     stoppingRef.current = true;
 
     try {
       await rec.stopAndUnloadAsync().catch(() => {});
-      const duration = Date.now() - startedAtRef.current;
-      if (duration < 400) return;
-
+      if (Date.now() - startedAtRef.current < 400) return;
       const uri = rec.getURI();
       if (!uri) return;
-
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
       const blob = await fetch(uri).then((r) => r.blob());
       socket.sendAudio(blob);
     } finally {
@@ -284,181 +255,263 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       stoppingRef.current = false;
       startedAtRef.current = 0;
       setRecording(null);
-      hideVoice();
+      stopPulse();
     }
   };
 
+  /* ---------------- end chat ---------------- */
+
   const endChatAndExit = () => {
-    // 1. Stop recording safely
     try {
       recordingRef.current?.stopAndUnloadAsync();
     } catch {}
-
-    // 2. Close websocket
     socket.close();
-
-    // 3. Reset session state
     setMessages([]);
     setThinking(false);
     setRecording(null);
-
-    // 4. Navigate home
     router.replace("/(tabs)/home");
   };
 
   const confirmEndChat = () => {
     Alert.alert(
       "End this assistant session?",
-      "Your current conversation will be cleared. You can start a new session anytime.",
+      "Your current conversation will be cleared.",
       [
         { text: "Cancel", style: "cancel" },
-        {
-          text: "End Chat",
-          style: "destructive",
-          onPress: () => {
-            endChatAndExit();
-          },
-        },
+        { text: "End Chat", style: "destructive", onPress: endChatAndExit },
       ]
     );
   };
 
+  /* ---------------- render ---------------- */
+
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: theme.background }}
-      behavior={Platform.OS === "ios" ? "height" : undefined}
-    >
+    <View style={{ flex: 1 }}>
       {/* HEADER */}
-      <View
-        style={{
-          height: 48,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 12,
-          borderBottomWidth: 1,
-          borderColor: theme.border,
-        }}
-      >
-        <Text style={{ fontSize: 16, fontWeight: "600", color: theme.text }}>
+      <View style={styles.header}>
+        <Text style={{ color: theme.text, fontWeight: "600" }}>
           {agent.agentName}
         </Text>
-
-        <Pressable
-          onPress={confirmEndChat}
-          hitSlop={12}
-          style={{
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 6,
-            backgroundColor: "rgba(239,68,68,0.12)",
-          }}
-        >
-          <Text style={{ color: "#EF4444", fontSize: 13, fontWeight: "600" }}>
-            End Chat
-          </Text>
+        <Pressable onPress={confirmEndChat} style={styles.endBtn}>
+          <Text style={{ color: "#EF4444", fontWeight: "600" }}>End Chat</Text>
         </Pressable>
       </View>
 
-      {/* BODY */}
-      <View style={{ flex: 1 }}>
-        {/* UPPER HALF — VOICE */}
-        <View style={styles.voiceAreaWrapper}>
-          <View style={[styles.voiceCard, { backgroundColor: theme.surface }]}>
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <Pressable
-                onPressIn={startRecording}
-                onPressOut={stopRecording}
-                hitSlop={16}
-                android_ripple={{
-                  color: "rgba(255,255,255,0.1)",
-                  borderless: true,
-                }}
-                style={[
-                  styles.bigMicHero,
-                  { backgroundColor: theme.primary },
-                  recording && styles.bigMicActive,
-                ]}
-              >
-                <MaterialIcons name="mic" size={46} color="#fff" />
-              </Pressable>
-            </Animated.View>
-
-            <Text style={[styles.voiceHint, { color: theme.subText }]}>
-              {recording
-                ? "Listening…"
-                : thinking
-                ? "Thinking…"
-                : "Tap and speak"}
-            </Text>
-
-            {recording && <MicWaveform active color={theme.primary} />}
-          </View>
-        </View>
-        {/* LOWER HALF — CHAT */}
-        <Animated.View style={[styles.chatArea, { opacity: chatDim }]}>
-          <FlatList
-            data={messages}
-            keyExtractor={(i) => i.id}
-            contentContainerStyle={{
-              padding: 12,
-              paddingBottom: COMPOSER_HEIGHT + 12,
-            }}
-            renderItem={({ item }) => (
-              <AnimatedBubble
-                style={[
-                  styles.bubble,
-                  item.role === "user" ? styles.userBubble : styles.botBubble,
-                  {
-                    backgroundColor:
-                      item.role === "user" ? theme.primary : theme.surface,
-                  },
-                ]}
-              >
-                <Text
-                  style={{
-                    color: item.role === "user" ? theme.background : theme.text,
-                  }}
-                >
-                  {item.content}
-                </Text>
-              </AnimatedBubble>
-            )}
-            ListFooterComponent={
-              thinking ? <ThinkingDots color={theme.subText} /> : null
-            }
-          />
+      {/* MIC AREA */}
+      <View style={styles.micArea}>
+        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+          <Pressable
+            onPressIn={startRecording}
+            onPressOut={stopRecording}
+            hitSlop={20}
+            style={[
+              styles.micButton,
+              { backgroundColor: recording ? "#EF4444" : theme.primary },
+            ]}
+          >
+            <MaterialIcons name="mic" size={56} color="#000" />
+          </Pressable>
         </Animated.View>
+
+        <Text style={[styles.micStatus, { color: theme.subText }]}>
+          {recording ? "Listening…" : thinking ? "Thinking…" : "Tap and speak"}
+        </Text>
+
+        {recording && <MicWaveform active color={theme.primary} />}
       </View>
 
-      {/* COMPOSER — unchanged */}
-      <View style={styles.composerWrapper}>
+      {/* COMPOSER */}
+      <AppCard
+        style={[
+          styles.composerCardOuter,
+          {
+            backgroundColor: theme.surface,
+            padding: 5,
+          },
+        ]}
+      >
         <BlurView
-          intensity={Platform.OS === "ios" ? 25 : 0}
+          intensity={25}
           tint={theme.mode === "dark" ? "dark" : "light"}
-          style={[styles.composer, { backgroundColor: theme.surface }]}
+          style={styles.composerCard}
         >
+          <Pressable onPress={() => setShowHistory(true)}>
+            <MaterialIcons name="history" size={22} color={theme.subText} />
+          </Pressable>
+
           <TextInput
             value={input}
             onChangeText={setInput}
-            placeholder="Type your message…"
+            placeholder="Type or speak…"
             placeholderTextColor={theme.subText}
             style={[styles.input, { color: theme.text }]}
           />
 
           <Pressable
             onPress={sendText}
-            style={[styles.send, { backgroundColor: theme.primary }]}
+            style={[styles.sendBtn, { backgroundColor: theme.primary }]}
           >
-            <MaterialIcons name="send" size={18} color="#fff" />
+            <MaterialIcons name="send" size={18} color="#000" />
           </Pressable>
         </BlurView>
-      </View>
-    </KeyboardAvoidingView>
+      </AppCard>
+
+      {/* HISTORY MODAL */}
+      <Modal
+        visible={showHistory}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View
+            style={{
+              flex: 1,
+              paddingTop: insets.top,
+              backgroundColor: theme.background,
+            }}
+          >
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={Keyboard.dismiss}
+            />
+            <BlurView
+              intensity={25}
+              tint={theme.mode === "dark" ? "dark" : "light"}
+              style={[
+                styles.historyHeader,
+                {
+                  paddingTop: insets.top, // 👈 THIS IS THE REAL FIX
+                  height: 56 + insets.top,
+                },
+              ]}
+            >
+              <Text style={[styles.historyTitle, { color: theme.text }]}>
+                Conversation
+              </Text>
+              <Pressable onPress={() => setShowHistory(false)} hitSlop={12}>
+                <MaterialIcons name="close" size={24} color={theme.text} />
+              </Pressable>
+            </BlurView>
+
+            <Animated.View
+              style={{ flex: 1, transform: [{ translateY: panY }] }}
+              {...panResponder.panHandlers}
+            >
+              <FlatList
+                data={messages}
+                keyExtractor={(i) => i.id}
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{
+                  paddingTop: 56 + insets.top + 16,
+                  paddingHorizontal: 16,
+                  paddingBottom: 24,
+                }}
+                renderItem={({ item }) => (
+                  <AnimatedBubble
+                    style={[
+                      styles.bubble,
+                      item.role === "user"
+                        ? styles.userBubble
+                        : styles.botBubble,
+                      {
+                        backgroundColor:
+                          item.role === "user" ? theme.primary : theme.surface,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          item.role === "user" ? theme.background : theme.text,
+                      }}
+                    >
+                      {item.content}
+                    </Text>
+                  </AnimatedBubble>
+                )}
+                ListFooterComponent={
+                  thinking ? <ThinkingDots color={theme.subText} /> : null
+                }
+              />
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </View>
   );
 }
 
+/* ------------------------------ styles ---------------------------------- */
+
 const styles = StyleSheet.create({
+  header: {
+    height: 48,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  endBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: "rgba(239,68,68,0.12)",
+  },
+  micArea: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  micButton: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 30,
+    shadowOpacity: 0.4,
+    shadowRadius: 40,
+  },
+  micStatus: {
+    marginTop: 16,
+    fontSize: 15,
+    opacity: 0.85,
+  },
+  composerCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  input: {
+    flex: 1,
+    marginHorizontal: 10,
+    fontSize: 15,
+    paddingVertical: 6,
+  },
+  sendBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  historyHeader: {
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
   bubble: {
     maxWidth: "78%",
     padding: 12,
@@ -473,113 +526,12 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderBottomLeftRadius: 4,
   },
-
-  composerWrapper: {
-    paddingHorizontal: 12,
-    paddingBottom: Platform.OS === "ios" ? 24 : 12,
-  },
-
-  composer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 24,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    elevation: 10,
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-  },
-
-  micSmall: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#7C3AED",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  micActive: {
-    backgroundColor: "#EF4444",
-  },
-
-  input: {
-    flex: 1,
-    marginHorizontal: 10,
-    fontSize: 15,
-  },
-
-  send: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  voiceOverlay: {
+  composerCardOuter: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    alignItems: "center",
-    justifyContent: "center",
+    left: 12,
+    right: 12,
+    bottom: Platform.OS === "ios" ? 24 : 12, // safe spacing
+    borderRadius: 28,
     overflow: "hidden",
-  },
-
-  bigMic: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 16,
-    elevation: 16,
-  },
-  voiceAreaWrapper: {
-    flex: 0.55,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 10,
-  },
-
-  voiceCard: {
-    width: "100%",
-    maxWidth: 360,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 24,
-    paddingVertical: 28,
-    elevation: 18,
-    shadowOpacity: 0.25,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 12 },
-  },
-  bigMicHero: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 24,
-    shadowOpacity: 0.35,
-    shadowRadius: 30,
-  },
-
-  bigMicActive: {
-    backgroundColor: "#EF4444",
-  },
-
-  voiceHint: {
-    marginTop: 14,
-    fontSize: 15,
-    opacity: 0.85,
-  },
-
-  chatArea: {
-    flex: 0.45,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.08)",
   },
 });
