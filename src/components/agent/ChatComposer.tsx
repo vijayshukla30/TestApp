@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -21,28 +21,34 @@ type Props = {
 
 export default function ChatComposer({ value, onChange, onSend }: Props) {
   const { theme } = useTheme();
+  const inputRef = useRef<TextInput>(null);
   const [showAttachments, setShowAttachments] = useState(false);
 
   return (
     <View style={styles.wrapper}>
       <AppCard style={[styles.card, { backgroundColor: theme.surface }]}>
-        <BlurView
-          intensity={25}
-          tint={theme.mode === "dark" ? "dark" : "light"}
-          style={styles.textCard}
+        <Pressable
+          onPress={() => inputRef.current?.focus()}
+          style={[styles.card, { backgroundColor: theme.surface }]}
         >
-          <TextInput
-            value={value}
-            onChangeText={onChange}
-            placeholder="Type or speak…"
-            placeholderTextColor={theme.subText}
-            multiline
-            textAlign={value ? "left" : "center"}
-            textAlignVertical="top"
-            blurOnSubmit
-            style={[styles.textArea, { color: theme.text }]}
-          />
-        </BlurView>
+          <BlurView
+            intensity={25}
+            tint={theme.mode === "dark" ? "dark" : "light"}
+            style={styles.textCard}
+          >
+            <TextInput
+              ref={inputRef}
+              value={value}
+              onChangeText={onChange}
+              placeholder="Type or speak…"
+              placeholderTextColor={theme.subText}
+              multiline
+              textAlign={value ? "left" : "center"}
+              textAlignVertical="top"
+              style={[styles.textArea, { color: theme.text }]}
+            />
+          </BlurView>
+        </Pressable>
       </AppCard>
 
       {/* ACTION BAR */}
