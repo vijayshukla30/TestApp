@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, BackHandler, Alert } from "react-native";
+import {
+  View,
+  StyleSheet,
+  BackHandler,
+  Alert,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { router } from "expo-router";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
@@ -8,10 +16,13 @@ import AgentHeader from "./AgentHeader";
 import MicSection from "./MicSection";
 import ChatComposer from "./ChatComposer";
 import HistoryModal from "./HistoryModal";
+import useTheme from "../../hooks/useTheme";
 
 const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export default function AgentChat({ agent, consumer, userId }: any) {
+  const { theme } = useTheme();
+
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -144,30 +155,49 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <AgentHeader title={agent.agentName} onBack={confirmEndChat} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <AgentHeader title={agent.agentName} onBack={confirmEndChat} />
 
-      <MicSection
-        recording={isRecording}
-        thinking={thinking}
-        onToggle={toggleRecording}
-      />
+        <View style={styles.micSection}>
+          <MicSection
+            recording={isRecording}
+            thinking={thinking}
+            onToggle={toggleRecording}
+          />
+        </View>
 
-      <ChatComposer
-        value={input}
-        onChange={setInput}
-        onSend={sendText}
-        onHistory={() => setShowHistory(true)}
-      />
+        <View style={styles.composerSection}>
+          <ChatComposer
+            value={input}
+            onChange={setInput}
+            onSend={sendText}
+            onHistory={() => setShowHistory(true)}
+          />
+        </View>
 
-      <HistoryModal
-        visible={showHistory}
-        messages={messages}
-        thinking={thinking}
-        onClose={() => setShowHistory(false)}
-      />
-    </View>
+        <HistoryModal
+          visible={showHistory}
+          messages={messages}
+          thinking={thinking}
+          onClose={() => setShowHistory(false)}
+        />
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {},
+
+  micSection: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  composerSection: {
+    paddingHorizontal: 16,
+    paddingBottom: Platform.OS === "ios" ? 24 : 16,
+  },
+});

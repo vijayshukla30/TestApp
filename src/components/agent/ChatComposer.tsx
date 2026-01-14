@@ -1,17 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Keyboard,
   TouchableWithoutFeedback,
   StyleSheet,
-  Platform,
   View,
   Pressable,
   TextInput,
+  Text,
+  Modal,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { MaterialIcons } from "@expo/vector-icons";
 import useTheme from "../../hooks/useTheme";
 import AppCard from "../ui/AppCard";
+import { AttachmentSheet } from "./AttachmentSheet";
 
 type Props = {
   value: string;
@@ -20,95 +22,136 @@ type Props = {
   onHistory: () => void;
 };
 
-const ChatComposer = ({ value, onChange, onSend, onHistory }: Props) => {
+export default function ChatComposer({
+  value,
+  onChange,
+  onSend,
+  onHistory,
+}: Props) {
   const { theme } = useTheme();
+  const [showAttachments, setShowAttachments] = useState(false);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <AppCard
-        style={[
-          styles.outer,
-          {
-            backgroundColor: theme.surface,
-            padding: 5,
-          },
-        ]}
-      >
+    <View style={styles.wrapper}>
+      {/* TEXT INPUT CARD */}
+      <AppCard style={[styles.card, { backgroundColor: theme.surface }]}>
         <BlurView
           intensity={25}
           tint={theme.mode === "dark" ? "dark" : "light"}
-          style={styles.inner}
+          style={styles.textCard}
         >
-          <View style={styles.inputRow}>
-            <Pressable onPress={onHistory} hitSlop={10}>
-              <MaterialIcons name="history" size={22} color={theme.subText} />
-            </Pressable>
-
-            <TextInput
-              value={value}
-              onChangeText={onChange}
-              placeholder="Type or speak…"
-              placeholderTextColor={theme.subText}
-              multiline
-              textAlignVertical="top"
-              style={[styles.textArea, { color: theme.text }]}
-            />
-          </View>
-
-          <Pressable
-            onPress={() => {
-              Keyboard.dismiss();
-              onSend();
-            }}
-            style={[styles.sendBtn, { backgroundColor: theme.primary }]}
-          >
-            <MaterialIcons name="send" size={20} color="#000" />
+          <Pressable onPress={onHistory} hitSlop={10}>
+            <MaterialIcons name="history" size={22} color={theme.subText} />
           </Pressable>
+
+          <TextInput
+            value={value}
+            onChangeText={onChange}
+            placeholder="Type or speak…"
+            placeholderTextColor={theme.subText}
+            multiline
+            textAlignVertical="top"
+            style={[styles.textArea, { color: theme.text }]}
+          />
         </BlurView>
       </AppCard>
-    </TouchableWithoutFeedback>
+
+      {/* ACTION BAR */}
+      <View style={styles.actionBar}>
+        <Pressable
+          onPress={onSend}
+          style={[styles.primaryBtn, { backgroundColor: theme.primary }]}
+        >
+          <MaterialIcons name="send" size={18} color="#000" />
+          <Text style={styles.primaryText}>Send</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setShowAttachments(true)}
+          style={[styles.iconBtn, { backgroundColor: theme.surface }]}
+        >
+          <MaterialIcons name="photo-camera" size={22} color={theme.subText} />
+        </Pressable>
+      </View>
+      {/* ATTACHMENT SHEET */}
+      <AttachmentSheet
+        visible={showAttachments}
+        onClose={() => setShowAttachments(false)}
+      />
+    </View>
   );
-};
-
+}
 const styles = StyleSheet.create({
-  outer: {
-    position: "absolute",
-    left: 12,
-    right: 12,
-    bottom: Platform.OS === "ios" ? 24 : 12,
-    borderRadius: 28,
-    padding: 5,
-    overflow: "hidden",
+  wrapper: {
+    gap: 12,
   },
 
-  inner: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 10,
+  card: {
+    borderRadius: 24,
+    padding: 6,
   },
 
-  inputRow: {
+  textCard: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
 
   textArea: {
     flex: 1,
-    minHeight: 44,
-    maxHeight: 120,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    minHeight: 90,
+    maxHeight: 150,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 14,
     fontSize: 15,
   },
 
-  sendBtn: {
+  actionBar: {
+    flexDirection: "row",
+    gap: 12,
+  },
+
+  primaryBtn: {
+    flex: 1,
     height: 44,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  primaryText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  iconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 6,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+
+  sendBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  sendText: {
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
-
-export default ChatComposer;
