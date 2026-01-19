@@ -1,5 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import {
   StyleSheet,
   View,
@@ -18,12 +21,14 @@ type Props = {
 export default function Screen({ children, center, scroll = false }: Props) {
   const { theme } = useTheme();
   const isDark = theme.mode === "dark";
+  const insets = useSafeAreaInsets();
 
   const content = scroll ? (
     <ScrollView
       contentContainerStyle={[
         styles.container,
         center && styles.centerContainer,
+        { paddingTop: insets.top },
       ]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
@@ -31,7 +36,13 @@ export default function Screen({ children, center, scroll = false }: Props) {
       {children}
     </ScrollView>
   ) : (
-    <View style={[styles.container, center && styles.centerContainer]}>
+    <View
+      style={[
+        styles.container,
+        center && styles.centerContainer,
+        { paddingTop: insets.top },
+      ]}
+    >
       {children}
     </View>
   );

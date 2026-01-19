@@ -29,8 +29,6 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [showHistory, setShowHistory] = useState(false);
 
-  /* ---------------- socket ---------------- */
-
   const socket = useAssistantSocket({
     agent,
     consumer,
@@ -80,25 +78,54 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   const recordingRef = useRef<Audio.Recording | null>(null);
 
   const toggleRecording = async () => {
+    // ---------- STOP ----------
     if (recordingRef.current) {
-      await recordingRef.current.stopAndUnloadAsync();
+      const rec = recordingRef.current;
       recordingRef.current = null;
       setRecording(null);
+
+      try {
+        await rec.stopAndUnloadAsync();
+
+        const uri = rec.getURI();
+        if (!uri) return;
+
+        // convert to blob
+        const blob = await fetch(uri).then((r) => r.blob());
+
+        // 🔑 SEND AUDIO TO WS
+        socket.sendAudio(blob);
+
+        setThinking(true);
+      } catch (e) {
+        console.warn("Failed to stop/send recording", e);
+      }
+
       return;
     }
 
-    await Audio.requestPermissionsAsync();
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: true,
-      playsInSilentModeIOS: true,
-    });
+    // ---------- START ----------
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
 
-    const rec = new Audio.Recording();
-    recordingRef.current = rec;
-    await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-    await rec.startAsync();
-    setRecording(rec);
-  };
+      const rec = new Audio.Recording();
+      recordingRef.current = rec;
+
+      await rec.prepareToRecordAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY,
+      );
+      await rec.startAsync();
+
+      setRecording(rec);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch (e) {
+      console.warn("Failed to start recording", e);
+    }
+  }; 
 
   /* ---------------- end chat ---------------- */
 
@@ -117,7 +144,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
       [
         { text: "Cancel", style: "cancel" },
         { text: "Back", style: "destructive", onPress: endChatAndExit },
-      ]
+      ],
     );
   };
 

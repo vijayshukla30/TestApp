@@ -51,7 +51,6 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
         </Pressable>
       </AppCard>
 
-      {/* ACTION BAR */}
       <View style={styles.actionBar}>
         <Pressable
           onPress={onSend}
@@ -68,7 +67,6 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
           <MaterialIcons name="photo-camera" size={22} color={theme.subText} />
         </Pressable>
       </View>
-      {/* ATTACHMENT SHEET */}
       <AttachmentSheet
         visible={showAttachments}
         onClose={() => setShowAttachments(false)}

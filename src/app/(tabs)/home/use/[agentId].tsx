@@ -5,6 +5,7 @@ import Screen from "../../../../components/Screen";
 import { useAppSelector } from "../../../../hooks/useAppSelector";
 import { useConsumerDetails } from "../../../../hooks/useConsumerDetails";
 import AgentChat from "../../../../components/agent/AgentChat";
+import LoadingCard from "../../../../components/ui/LoadingCard";
 
 export default function AgentUse() {
   const { agentId } = useLocalSearchParams<{ agentId: string }>();
@@ -12,14 +13,17 @@ export default function AgentUse() {
 
   const agent = useAppSelector(
     (s) =>
-      s.activity.list.find((x) => x.assistantId.uuid === agentId)?.assistantId
+      s.activity.list.find((x) => x.assistantId.uuid === agentId)?.assistantId,
   );
 
   const { consumer, loading, isInstalled } = useConsumerDetails(agent);
   if (!agent || loading || !consumer || !isInstalled) {
     return (
-      <Screen>
-        <Text>Loading ...</Text>
+      <Screen center>
+        <LoadingCard
+          title="Preparing assistant"
+          subtitle="Setting things up for you"
+        />
       </Screen>
     );
   }
