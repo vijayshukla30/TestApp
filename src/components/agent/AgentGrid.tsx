@@ -32,6 +32,7 @@ export default function AgentGrid<T>({
         data={[1, 2, 3, 4]}
         keyExtractor={(i) => `skeleton-${i}`}
         numColumns={NUM_COLUMNS}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
         columnWrapperStyle={styles.columnWrapper}
         ItemSeparatorComponent={ItemSeparator}
         renderItem={() => (
@@ -48,6 +49,7 @@ export default function AgentGrid<T>({
       data={data}
       keyExtractor={getId}
       numColumns={NUM_COLUMNS}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
       columnWrapperStyle={styles.columnWrapper}
       ItemSeparatorComponent={ItemSeparator}
       refreshControl={
@@ -69,10 +71,9 @@ export default function AgentGrid<T>({
 
 const styles = StyleSheet.create({
   columnWrapper: {
-    justifyContent: "space-between",
-    paddingHorizontal: 2,
+    gap: GAP,
   },
   cardContainer: {
-    flexBasis: "48%",
+    flex: 1,
   },
 });
