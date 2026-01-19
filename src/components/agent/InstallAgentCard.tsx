@@ -71,17 +71,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#ffffff10",
-    marginBottom: 16,
+    marginBottom: 25,
   },
 
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
-    marginBottom: 6,
+    marginBottom: 15,
   },
 
   subText: {
-    fontSize: 13,
+    fontSize: 15,
     textAlign: "center",
   },
 });
