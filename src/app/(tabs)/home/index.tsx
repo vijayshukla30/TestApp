@@ -23,7 +23,7 @@ export default function Home() {
       if (!token) return;
 
       dispatch(fetchUserActivity({ token }));
-    }, [token])
+    }, [token]),
   );
 
   const onRefresh = async () => {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "600",
     marginTop: 4,
   },

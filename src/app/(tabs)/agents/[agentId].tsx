@@ -28,6 +28,7 @@ import ConnectionSection from "../../../components/agent/ConnectionSection";
 import GennieTools from "../../../components/agent/GennieTools";
 import { useConsumerDetails } from "../../../hooks/useConsumerDetails";
 import { usePlatformConnection } from "../../../hooks/usePlatformConnection";
+import AgentLayout from "../../../components/layouts/AgentLayout";
 
 export default function AgentDetails() {
   const { theme } = useTheme();
@@ -90,7 +91,7 @@ export default function AgentDetails() {
         }}
       />
 
-      <Screen>
+      <AgentLayout agent={agent} onBack={() => router.back()}>
         <ScrollView
           stickyHeaderIndices={[0]}
           showsVerticalScrollIndicator={false}
@@ -160,7 +161,7 @@ export default function AgentDetails() {
             agentName={agent.agentName}
           />
         </ScrollView>
-      </Screen>
+      </AgentLayout>
     </>
   );
 }

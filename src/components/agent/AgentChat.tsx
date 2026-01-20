@@ -1,20 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import {
   View,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
   Keyboard,
-  BackHandler,
-  Alert,
   TouchableWithoutFeedback,
 } from "react-native";
-import { router } from "expo-router";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
+
 import useAssistantSocket from "../../hooks/useAssistantSocket";
-import AgentHeader from "./AgentHeader";
 import MicSection from "./MicSection";
 import ChatComposer from "./ChatComposer";
 import HistoryModal from "./HistoryModal";
@@ -22,12 +22,24 @@ import ChatContextCard from "./ChatContextCard";
 
 const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-export default function AgentChat({ agent, consumer, userId }: any) {
+type Props = {
+  agent: any;
+  consumer: any;
+  userId?: string;
+};
+
+export type AgentChatRef = {
+  end: () => void;
+};
+
+function AgentChat({ agent, consumer, userId }: Props, ref: any) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+
+  const recordingRef = useRef<Audio.Recording | null>(null);
 
   const socket = useAssistantSocket({
     agent,
@@ -35,6 +47,7 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     userId,
     onMessage: (data: any) => {
       if (data?.type !== "ConversationText") return;
+
       const { role, content, from } = data.message;
 
       if (from === "transcriber") {
@@ -47,25 +60,30 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     },
   });
 
+  /* ---------- lifecycle ---------- */
+
   useEffect(() => {
     socket.connect();
     return () => socket.close();
   }, []);
 
-  /* ---------------- back handling ---------------- */
+  const cleanup = () => {
+    socket.close();
+    setMessages([]);
+    setThinking(false);
+    setRecording(null);
+    recordingRef.current = null;
+  };
 
-  useEffect(() => {
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      confirmEndChat();
-      return true;
-    });
-    return () => sub.remove();
-  }, []);
+  useImperativeHandle(ref, () => ({
+    end: cleanup,
+  }));
 
-  /* ---------------- send text ---------------- */
+  /* ---------- send text ---------- */
 
   const sendText = () => {
     if (!input.trim()) return;
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setMessages((m) => [...m, { id: genId(), role: "user", content: input }]);
     setThinking(true);
@@ -73,12 +91,10 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     setInput("");
   };
 
-  /* ---------------- recording (toggle) ---------------- */
-
-  const recordingRef = useRef<Audio.Recording | null>(null);
+  /* ---------- mic ---------- */
 
   const toggleRecording = async () => {
-    // ---------- STOP ----------
+    // stop
     if (recordingRef.current) {
       const rec = recordingRef.current;
       recordingRef.current = null;
@@ -86,25 +102,20 @@ export default function AgentChat({ agent, consumer, userId }: any) {
 
       try {
         await rec.stopAndUnloadAsync();
-
         const uri = rec.getURI();
         if (!uri) return;
 
-        // convert to blob
         const blob = await fetch(uri).then((r) => r.blob());
-
-        // 🔑 SEND AUDIO TO WS
         socket.sendAudio(blob);
-
         setThinking(true);
       } catch (e) {
-        console.warn("Failed to stop/send recording", e);
+        console.warn("Recording error", e);
       }
 
       return;
     }
 
-    // ---------- START ----------
+    // start
     try {
       await Audio.requestPermissionsAsync();
       await Audio.setAudioModeAsync({
@@ -125,32 +136,10 @@ export default function AgentChat({ agent, consumer, userId }: any) {
     } catch (e) {
       console.warn("Failed to start recording", e);
     }
-  }; 
-
-  /* ---------------- end chat ---------------- */
-
-  const endChatAndExit = () => {
-    socket.close();
-    setMessages([]);
-    setThinking(false);
-    setRecording(null);
-    router.replace("/(tabs)/home");
-  };
-
-  const confirmEndChat = () => {
-    Alert.alert(
-      "End this assistant session?",
-      "Your current conversation will be cleared.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Back", style: "destructive", onPress: endChatAndExit },
-      ],
-    );
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <AgentHeader title={agent.agentName} onBack={confirmEndChat} />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ flex: 1 }}>
           <MicSection
@@ -178,4 +167,4 @@ export default function AgentChat({ agent, consumer, userId }: any) {
   );
 }
 
-const styles = StyleSheet.create({});
+export default forwardRef(AgentChat);

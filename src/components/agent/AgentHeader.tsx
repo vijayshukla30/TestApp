@@ -1,39 +1,59 @@
 import React from "react";
-import { View, StyleSheet, Text, Pressable } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 import useTheme from "../../hooks/useTheme";
-import { Agent } from "../../types/agent";
+import { getPlatformImage } from "../../utils/platform";
 
-const AgentHeader = ({
-  title,
-  onBack,
-}: {
+type Props = {
   title: string;
+  platform?: string;
   onBack: () => void;
-}) => {
+};
+
+export default function AgentHeader({ title, platform, onBack }: Props) {
   const { theme } = useTheme();
+
   return (
     <View style={styles.header}>
-      <Text style={{ color: theme.text, fontWeight: "600" }}>{title}</Text>
-      <Pressable onPress={onBack} style={styles.endBtn}>
-        <Text style={{ color: "#EF4444", fontWeight: "600" }}>Back</Text>
+      <Pressable onPress={onBack} hitSlop={12}>
+        <MaterialIcons name="arrow-back" size={24} color={theme.text} />
       </Pressable>
+
+      <View style={styles.center}>
+        {platform && (
+          <Image source={getPlatformImage(platform)} style={styles.icon} />
+        )}
+        <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
+          {title}
+        </Text>
+      </View>
+
+      {/* spacer to balance back icon */}
+      <View style={{ width: 24 }} />
     </View>
   );
-};
+}
+
 const styles = StyleSheet.create({
   header: {
-    height: 48,
-    paddingHorizontal: 12,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
-  endBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    backgroundColor: "rgba(239,68,68,0.12)",
+  center: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  icon: {
+    width: 22,
+    height: 22,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
-
-export default AgentHeader;
