@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  Pressable,
-} from "react-native";
+import { View, Text, Image, ScrollView, Pressable } from "react-native";
 import { useLocalSearchParams, Stack, router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -31,8 +24,6 @@ export default function AgentDetails() {
   const agent: Agent | null = params.agent
     ? JSON.parse(params.agent as string)
     : null;
-  console.log("params :>> ", params);
-  console.log("agent :>> ", agent);
 
   const { consumer, loading, isInstalled } = useConsumerDetails(agent);
   const { connectPlatform, disconnectPlatform } = usePlatformConnection();
@@ -107,7 +98,6 @@ export default function AgentDetails() {
           <View className="items-center mt-6 mb-7">
             <Image
               source={getPlatformImage(agent.platform?.type)}
-              style={styles.heroIcon}
               className="w-18 h-18 mb-3"
             />
             <Text className="text-text text-xl font-bold">
@@ -152,70 +142,3 @@ export default function AgentDetails() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  stickyHeader: {
-    height: 56,
-    paddingVertical: 16,
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-
-  stickyIcon: {
-    width: 26,
-    height: 26,
-  },
-
-  stickyTitle: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    textAlign: "center",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  heroHeader: {
-    alignItems: "center",
-    marginTop: 24,
-    marginBottom: 28,
-  },
-
-  heroIcon: {
-    width: 72,
-    height: 72,
-    marginBottom: 12,
-  },
-
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-
-  sectionLabel: {
-    fontSize: 12,
-    marginBottom: 6,
-    marginLeft: 4,
-  },
-
-  infoCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 14,
-    marginBottom: 16,
-  },
-
-  infoValue: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-});

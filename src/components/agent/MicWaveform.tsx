@@ -1,4 +1,4 @@
-import { Animated, View, StyleSheet } from "react-native";
+import { Animated, View } from "react-native";
 import { useEffect, useRef } from "react";
 
 export function MicWaveform({ active, color }: any) {
@@ -50,16 +50,3 @@ export function MicWaveform({ active, color }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    gap: 4,
-    marginBottom: 6,
-    alignSelf: "center",
-  },
-  bar: {
-    width: 4,
-    borderRadius: 2,
-  },
-});

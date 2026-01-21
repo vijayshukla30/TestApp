@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { useState, useContext } from "react";
 import { useLocalSearchParams, router } from "expo-router";
 
@@ -91,24 +91,3 @@ export default function Verify() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 18,
-    padding: 24,
-    borderWidth: 1,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  subtitle: {
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  footer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-});

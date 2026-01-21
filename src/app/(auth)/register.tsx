@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, Image } from "react-native";
 import { useState, useContext } from "react";
 import { Link, router } from "expo-router";
 
@@ -148,50 +148,3 @@ export default function Register() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 18,
-    padding: 24,
-    borderWidth: 1,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  logo: {
-    width: 56,
-    height: 56,
-    marginBottom: 6,
-  },
-  brand: {
-    color: "#E5E7EB",
-    fontSize: 18,
-    fontWeight: "600",
-    letterSpacing: 0.5,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    textAlign: "center",
-    marginTop: 12,
-  },
-  subtitle: {
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  input: {
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 10,
-    borderRadius: 8,
-  },
-  footer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  link: {
-    fontWeight: "600",
-  },
-});
