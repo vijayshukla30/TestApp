@@ -1,15 +1,13 @@
 import { Slot } from "expo-router";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
-import { PaperProvider } from "react-native-paper";
 import { Provider } from "react-redux";
 
 import { ThemeProvider } from "../context/ThemeContext";
-import useTheme from "../hooks/useTheme";
-import { createPaperTheme } from "../theme/paperTheme";
 import { store } from "../store";
 import useAppDispatch from "../hooks/useAppDispatch";
 import { restoreSession } from "../features/auth/authSlice";
+import "../../global.css";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,18 +21,12 @@ function Bootstrap() {
   return null;
 }
 
-function Providers() {
-  const { theme } = useTheme();
-
+function AppShell() {
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
 
-  return (
-    <PaperProvider theme={createPaperTheme(theme)}>
-      <Slot />
-    </PaperProvider>
-  );
+  return <Slot />;
 }
 
 export default function RootLayout() {
@@ -42,7 +34,7 @@ export default function RootLayout() {
     <Provider store={store}>
       <ThemeProvider>
         <Bootstrap />
-        <Providers />
+        <AppShell />
       </ThemeProvider>
     </Provider>
   );

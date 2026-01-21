@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import useTheme from "../../hooks/useTheme";
+import { colors } from "../../theme/colors";
 
 type Props = {
   messages: any[];
@@ -9,80 +9,46 @@ type Props = {
 };
 
 export default function ChatContextDock({ messages, onOpenHistory }: Props) {
-  const { theme } = useTheme();
   const preview = messages.slice(-3);
 
   if (!preview.length) return null;
 
   return (
-    <View style={styles.wrap}>
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.surface,
-            borderColor: "rgba(255,255,255,0.08)",
-          },
-        ]}
-      >
-        <Pressable onPress={onOpenHistory} style={styles.historyBtn}>
-          <MaterialIcons name="history" size={18} color={theme.subText} />
+    <View className="px-0.5 mb-2">
+      <View className="relative rounded-2xl p-3 border border-white/10 bg-surface">
+        <Pressable
+          onPress={onOpenHistory}
+          className="absolute top-2 right-2 w-8 h-8 rounded-full items-center justify-center bg-black/30"
+        >
+          <MaterialIcons name="history" size={18} color={colors.subText} />
         </Pressable>
 
-        {preview.map((m) => (
-          <View
-            key={m.id}
-            style={[
-              styles.bubble,
-              {
-                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                backgroundColor:
-                  m.role === "user" ? theme.primary : "rgba(255,255,255,0.06)",
-              },
-            ]}
-          >
-            <Text
-              numberOfLines={1}
+        {preview.map((m) => {
+          const isUser = m.role === "user";
+          return (
+            <View
+              key={m.id}
+              className="my-1 px-3 py-1.5 rounded-2xl max-w-[85%]"
               style={{
-                fontSize: 14,
-                color: m.role === "user" ? theme.background : theme.text,
+                alignSelf: isUser ? "flex-end" : "flex-start",
+                backgroundColor: isUser
+                  ? colors.primary
+                  : "rgba(255,255,255,0.06)",
               }}
             >
-              {m.content}
-            </Text>
-          </View>
-        ))}
+              <Text
+                numberOfLines={1}
+                className="text-sm"
+                style={{
+                  color: isUser ? colors.background : colors.text,
+                }}
+              >
+                {m.content}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    paddingHorizontal: 2,
-    marginBottom: 8,
-  },
-  card: {
-    borderRadius: 18,
-    padding: 12,
-    borderWidth: 1,
-  },
-  historyBtn: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.25)",
-  },
-  bubble: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    marginVertical: 4,
-    maxWidth: "85%",
-  },
-});

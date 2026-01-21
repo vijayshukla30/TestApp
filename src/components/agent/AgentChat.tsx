@@ -5,12 +5,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import {
-  View,
-  StyleSheet,
-  Keyboard,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { View, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 
@@ -60,8 +55,6 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
     },
   });
 
-  /* ---------- lifecycle ---------- */
-
   useEffect(() => {
     socket.connect();
     return () => socket.close();
@@ -79,8 +72,6 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
     end: cleanup,
   }));
 
-  /* ---------- send text ---------- */
-
   const sendText = () => {
     if (!input.trim()) return;
 
@@ -90,8 +81,6 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
     socket.sendText(input);
     setInput("");
   };
-
-  /* ---------- mic ---------- */
 
   const toggleRecording = async () => {
     // stop

@@ -1,18 +1,17 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useState, useContext } from "react";
 import { Link, router } from "expo-router";
-import { TextInput, Button, Surface, HelperText } from "react-native-paper";
 
 import Screen from "../../components/Screen";
-import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
 import { api } from "../../services/api";
 import AuthCard from "../../components/auth/AuthCard";
-import AppCard from "../../components/ui/AppCard";
+import Input from "../../components/ui/Input";
+import ErrorText from "../../components/ui/ErrorText";
+import PrimaryButton from "../../components/ui/PrimaryButton";
 
 export default function Register() {
-  const { theme } = useTheme();
   const { showMessage } = useContext(UIContext);
 
   const [name, setName] = useState("");
@@ -78,117 +77,73 @@ export default function Register() {
   return (
     <Screen center>
       <AuthCard>
-        <AppCard variant="auth">
+        <View className="rounded-2xl bg-surface border border-border p-6">
           {/* Logo */}
-          <View style={styles.logoContainer}>
+          <View className="items-center mb-3">
             <Image
               source={require("../../../assets/logo.png")}
-              style={styles.logo}
+              className="w-14 h-14 mb-2"
               resizeMode="contain"
             />
-            <Text style={styles.brand}>gennie</Text>
+            <Text className="text-text text-lg font-semibold tracking-wide">
+              gennie
+            </Text>
           </View>
 
           {/* Title */}
-          <Text style={[styles.title, { color: theme.text }]}>
+          <Text className="text-text text-xl font-semibold text-center mt-3">
             Create Account
           </Text>
-          <Text style={[styles.subtitle, { color: theme.subText }]}>
+          <Text className="text-subText text-center mb-6">
             Sign up to get started
           </Text>
 
-          <TextInput
-            label="Full Name"
+          <Input
+            placeholder="Full Name"
             value={name}
             onChangeText={setName}
-            mode="outlined"
-            autoCapitalize="words"
-            textContentType="name"
-            activeOutlineColor={theme.primary}
-            outlineColor={theme.border}
-            error={!!errors.name}
-            style={styles.input}
+            autoCapitalize="sentences"
           />
-          <HelperText type="error" visible={!!errors.name}>
-            {errors.name}
-          </HelperText>
+          <ErrorText message={errors.name} />
 
-          <TextInput
-            label="Email address"
+          <Input
+            placeholder="Email address"
             value={email}
             onChangeText={setEmail}
-            autoCapitalize="none"
             keyboardType="email-address"
-            autoComplete="email"
-            textContentType="emailAddress"
-            mode="outlined"
-            activeOutlineColor={theme.primary}
-            outlineColor={theme.border}
-            error={!!errors.email}
-            style={styles.input}
           />
-          <HelperText type="error" visible={!!errors.email}>
-            {errors.email}
-          </HelperText>
+          <ErrorText message={errors.email} />
 
-          <TextInput
-            label="Password"
+          <Input
+            placeholder="Password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            autoComplete="password"
-            textContentType="password"
-            mode="outlined"
-            activeOutlineColor={theme.primary}
-            outlineColor={theme.border}
-            error={!!errors.password}
-            style={styles.input}
           />
-          <HelperText type="error" visible={!!errors.password}>
-            {errors.password}
-          </HelperText>
+          <ErrorText message={errors.password} />
 
-          <TextInput
-            label="Phone Number"
+          <Input
+            placeholder="Phone Number"
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
-            autoComplete="tel"
-            textContentType="telephoneNumber"
-            mode="outlined"
-            activeOutlineColor={theme.primary}
-            outlineColor={theme.border}
-            error={!!errors.phone}
-            style={styles.input}
           />
-          <HelperText type="error" visible={!!errors.phone}>
-            {errors.phone}
-          </HelperText>
+          <ErrorText message={errors.phone} />
 
           {/* Submit */}
-          <Button
-            mode="contained"
+          <PrimaryButton
+            title="Create Account"
             onPress={onRegister}
             loading={loading}
-            disabled={loading}
-            style={styles.button}
-          >
-            Create Account
-          </Button>
+          />
 
-          <View style={styles.footer}>
-            <Text style={{ color: theme.subText }}>
-              Already have an account?
-            </Text>
-            <Link
-              href="/(auth)/login"
-              style={[styles.link, { color: theme.primary }]}
-            >
-              {" "}
-              Sign in
+          <View className="mt-5 items-center">
+            <Text className="text-subText">Already have an account?</Text>
+            <Link href="/(auth)/login">
+              <Text className="text-primary font-semibold mt-1">Sign in</Text>
             </Link>
           </View>
-        </AppCard>
+        </View>
       </AuthCard>
     </Screen>
   );

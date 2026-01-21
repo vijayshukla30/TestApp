@@ -7,19 +7,12 @@ import {
   ScrollView,
   Pressable,
 } from "react-native";
-import {
-  useLocalSearchParams,
-  Stack,
-  router,
-  useFocusEffect,
-} from "expo-router";
+import { useLocalSearchParams, Stack, router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import Screen from "../../../components/Screen";
-import useTheme from "../../../hooks/useTheme";
 import { Agent } from "../../../types/agent";
 import { getPlatformImage } from "../../../utils/platform";
-import AppCard from "../../../components/ui/AppCard";
 import {
   extractUSLocalNumber,
   formatPhoneNumberUS,
@@ -29,9 +22,10 @@ import GennieTools from "../../../components/agent/GennieTools";
 import { useConsumerDetails } from "../../../hooks/useConsumerDetails";
 import { usePlatformConnection } from "../../../hooks/usePlatformConnection";
 import AgentLayout from "../../../components/layouts/AgentLayout";
+import Card from "../../../components/ui/Card";
+import { colors } from "../../../theme/colors";
 
 export default function AgentDetails() {
-  const { theme } = useTheme();
   const params = useLocalSearchParams();
 
   const agent: Agent | null = params.agent
@@ -46,7 +40,7 @@ export default function AgentDetails() {
   if (!agent) {
     return (
       <Screen>
-        <Text style={{ color: theme.text }}>Agent details unavailable</Text>
+        <Text className="text-text">Agent details unavailable</Text>
       </Screen>
     );
   }
@@ -97,57 +91,50 @@ export default function AgentDetails() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
-          <View
-            style={[styles.stickyHeader, { backgroundColor: theme.background }]}
-          >
+          <View className="h-14 px-4 justify-center border-b border-border bg-background">
             <Image
               source={getPlatformImage(agent.platform?.type)}
-              style={styles.stickyIcon}
+              className="w-6 h-6"
             />
             <Text
               numberOfLines={1}
-              style={[styles.stickyTitle, { color: theme.text }]}
+              className="absolute left-0 right-0 text-center text-text font-semibold text-base"
             >
               {agent.agentName}
             </Text>
           </View>
 
-          <View style={styles.heroHeader}>
+          <View className="items-center mt-6 mb-7">
             <Image
               source={getPlatformImage(agent.platform?.type)}
               style={styles.heroIcon}
+              className="w-18 h-18 mb-3"
             />
-            <Text style={[styles.heroTitle, { color: theme.text }]}>
+            <Text className="text-text text-xl font-bold">
               {agent.agentName}
             </Text>
           </View>
 
-          <Text style={[styles.sectionLabel, { color: theme.subText }]}>
-            Phone
-          </Text>
+          <Text className="text-subText text-xs mb-1 ml-1">Phone</Text>
 
-          <AppCard style={styles.infoCard}>
-            <MaterialIcons name="phone" size={22} color={theme.primary} />
-            <Text style={[styles.infoValue, { color: theme.text }]}>
+          <Card className="flex-row items-center gap-3 py-3 mb-4">
+            <MaterialIcons name="phone" size={22} color={colors.primary} />
+            <Text className="text-text text-base font-semibold">
               {displayPhone}
             </Text>
-          </AppCard>
+          </Card>
 
-          <Text style={[styles.sectionLabel, { color: theme.subText }]}>
-            Status
-          </Text>
-
-          <AppCard style={styles.infoCard}>
+          <Text className="text-subText text-xs mb-1 ml-1">Status</Text>
+          <Card className="flex-row items-center gap-3 py-3 mb-4">
             <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: isInstalled ? "#22C55E" : "#EF4444" },
-              ]}
+              className={`w-3 h-3 rounded-full ${
+                isInstalled ? "bg-green-500" : "bg-red-500"
+              }`}
             />
-            <Text style={[styles.infoValue, { color: theme.text }]}>
+            <Text className="text-text text-base font-semibold">
               {isInstalled ? "Active" : "Inactive"}
             </Text>
-          </AppCard>
+          </Card>
 
           <ConnectionSection
             loading={loading}

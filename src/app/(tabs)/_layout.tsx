@@ -1,21 +1,19 @@
 import { Tabs } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-
-import useTheme from "../../hooks/useTheme";
+import { colors } from "../../theme/colors";
 
 export default function TabsLayout() {
-  const { theme } = useTheme();
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.background,
-          borderTopColor: theme.border,
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+          elevation: 10,
         },
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.subText,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.subText,
       }}
     >
       <Tabs.Screen
@@ -31,7 +29,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="agents"
         options={{
-          title: "Agents",
+          title: "Assistants",
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="group" size={size} color={color} />
           ),
