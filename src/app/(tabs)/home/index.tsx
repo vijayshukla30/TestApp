@@ -56,7 +56,7 @@ export default function Home() {
               agent={item.assistantId}
               onOpenDetail={() =>
                 router.push({
-                  pathname: "/agents/[agentId]",
+                  pathname: "/home/[agentId]",
                   params: {
                     agentId: item.assistantId.uuid,
                     agent: JSON.stringify(item.assistantId),
