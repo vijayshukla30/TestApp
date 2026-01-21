@@ -1,8 +1,8 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet, Image } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import useTheme from "../../hooks/useTheme";
 import { getPlatformImage } from "../../utils/platform";
+import { colors } from "../../theme/colors";
 
 type Props = {
   title: string;
@@ -11,49 +11,25 @@ type Props = {
 };
 
 export default function AgentHeader({ title, platform, onBack }: Props) {
-  const { theme } = useTheme();
-
   return (
-    <View style={styles.header}>
+    <View className="h-14 flex-row items-center px-4">
       <Pressable onPress={onBack} hitSlop={12}>
-        <MaterialIcons name="arrow-back" size={24} color={theme.text} />
+        <MaterialIcons name="arrow-back" size={24} color={colors.text} />
       </Pressable>
 
-      <View style={styles.center}>
+      <View className="flex-1 flex-row items-center justify-center gap-2">
         {platform && (
-          <Image source={getPlatformImage(platform)} style={styles.icon} />
+          <Image
+            source={getPlatformImage(platform)}
+            className="w-[22px] h-[22px]"
+          />
         )}
-        <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
+        <Text className="text-text text-base font-semibold" numberOfLines={1}>
           {title}
         </Text>
       </View>
 
-      {/* spacer to balance back icon */}
-      <View style={{ width: 24 }} />
+      <View className="w-6" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    height: 56,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  center: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  icon: {
-    width: 22,
-    height: 22,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});

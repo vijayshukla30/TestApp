@@ -1,5 +1,4 @@
-// components/layouts/ListLayout.tsx
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import Screen from "../Screen";
 
 export default function ListLayout({
@@ -9,14 +8,7 @@ export default function ListLayout({
 }) {
   return (
     <Screen>
-      <View style={styles.container}>{children}</View>
+      <View className="flex-1 px-5 pt-3">{children}</View>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 12,
-  },
-});

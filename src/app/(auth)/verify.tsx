@@ -1,19 +1,17 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useState, useContext } from "react";
-import { TextInput, Button, Surface } from "react-native-paper";
 import { useLocalSearchParams, router } from "expo-router";
 
 import Screen from "../../components/Screen";
-import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
 import { api } from "../../services/api";
 import AuthCard from "../../components/auth/AuthCard";
 import { VerifyOtpResponse } from "../../types/auth";
-import AppCard from "../../components/ui/AppCard";
 import useAuth from "../../hooks/useAuth";
+import Input from "../../components/ui/Input";
+import PrimaryButton from "../../components/ui/PrimaryButton";
 
 export default function Verify() {
-  const { theme } = useTheme();
   const { showMessage } = useContext(UIContext);
   const { login } = useAuth()!;
 
@@ -60,44 +58,35 @@ export default function Verify() {
   return (
     <Screen center>
       <AuthCard>
-        <AppCard variant="auth">
-          <Text style={[styles.title, { color: theme.text }]}>Verify OTP</Text>
-
-          <Text style={[styles.subtitle, { color: theme.subText }]}>
-            Enter the OTP sent to {email}
+        <View className="rounded-2xl bg-surface border border-border p-6">
+          <Text className="text-text text-xl font-semibold text-center">
+            Verify OTP
           </Text>
 
-          <TextInput
-            label="6-digit code"
+          <Text className="text-subText text-center mt-2 mb-6">
+            Enter the OTP sent to{" "}
+            <Text className="font-semibold text-text">{email}</Text>
+          </Text>
+
+          <Input
+            placeholder="6-digit code"
             value={otp}
             onChangeText={setOtp}
             keyboardType="number-pad"
-            autoComplete="one-time-code"
-            textContentType="oneTimeCode"
-            returnKeyType="done"
-            onSubmitEditing={onVerify}
-            activeOutlineColor={theme.primary}
-            outlineColor={theme.border}
-            mode="outlined"
-            style={{ marginBottom: 16 }}
           />
 
-          <Button
-            mode="contained"
-            onPress={onVerify}
-            loading={loading}
-            disabled={loading}
-          >
-            Verify
-          </Button>
+          <PrimaryButton title="Verify" onPress={onVerify} loading={loading} />
 
-          <View style={styles.footer}>
-            <Text style={{ color: theme.subText }}>OTP expired?</Text>
-            <Button mode="text" onPress={() => router.replace("/(auth)/login")}>
+          <View className="mt-6 items-center">
+            <Text className="text-subText mb-1">OTP expired?</Text>
+            <Text
+              onPress={() => router.replace("/(auth)/login")}
+              className="text-primary font-semibold"
+            >
               Login again
-            </Button>
+            </Text>
           </View>
-        </AppCard>
+        </View>
       </AuthCard>
     </Screen>
   );

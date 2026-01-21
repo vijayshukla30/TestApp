@@ -1,20 +1,19 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, Image } from "react-native";
 import { useState, useContext } from "react";
 import { Link, router } from "expo-router";
-import { TextInput, Button } from "react-native-paper";
 
 import Screen from "../../components/Screen";
-import useTheme from "../../hooks/useTheme";
 import { UIContext } from "../../context/UIContext";
 import AuthCard from "../../components/auth/AuthCard";
 import AuthSkeleton from "../../components/auth/AuthSkeleton";
+
 import { api } from "../../services/api";
-import AppCard from "../../components/ui/AppCard";
 import useAuth from "../../hooks/useAuth";
 import { isAuthSuccess } from "../../utils/authGaurds";
+import Input from "../../components/ui/Input";
+import PrimaryButton from "../../components/ui/PrimaryButton";
 
 export default function Login() {
-  const { theme } = useTheme();
   const { login } = useAuth();
   const { showMessage } = useContext(UIContext);
 
@@ -75,128 +74,59 @@ export default function Login() {
   return (
     <Screen center>
       <AuthCard>
-        <AppCard variant="auth">
-          <View style={styles.logoContainer}>
+        <View className="rounded-2xl bg-surface border border-border p-6">
+          <View className="items-center mb-4">
             <Image
               source={require("../../../assets/logo.png")}
-              style={styles.logo}
+              className="w-14 h-14 mb-2"
               resizeMode="contain"
             />
-            <Text style={styles.brand}>gennie</Text>
+            <Text className="text-text text-lg font-semibold tracking-wide">
+              gennie
+            </Text>
           </View>
 
-          <Text style={[styles.title, { color: theme.text }]}>Sign In</Text>
-          <Text style={[styles.subtitle, { color: theme.subText }]}>
+          <Text className="text-text text-xl font-semibold text-center mt-3">
+            Sign In
+          </Text>
+          <Text className="text-subText text-center mb-6">
             Get access to your account
           </Text>
 
-          <TextInput
-            label="Email address"
+          <Input
+            placeholder="Email address"
             value={email}
             onChangeText={setEmail}
-            mode="outlined"
-            autoCapitalize="none"
             keyboardType="email-address"
-            autoComplete="email"
-            textContentType="emailAddress"
-            activeOutlineColor={theme.primary}
-            outlineColor={theme.border}
-            style={styles.input}
           />
 
-          <TextInput
-            label="Password"
+          <Input
+            placeholder="Password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            mode="outlined"
-            autoComplete="password"
-            textContentType="password"
-            activeOutlineColor={theme.primary}
-            outlineColor={theme.border}
-            style={styles.input}
           />
 
-          <View style={styles.forgot}>
-            <Link
-              href="/(auth)/forgot-password"
-              style={[styles.link, { color: theme.primary }]}
-            >
-              Forgot Password?
+          <View className="items-end mb-5">
+            <Link href="/(auth)/forgot-password">
+              <Text className="text-primary font-semibold">
+                Forgot Password?
+              </Text>
             </Link>
           </View>
 
-          <Button
-            mode="contained"
-            onPress={onLogin}
-            loading={loading}
-            disabled={loading}
-            style={styles.button}
-          >
-            Sign In
-          </Button>
+          <PrimaryButton title="Sign In" onPress={onLogin} loading={loading} />
 
-          <View style={styles.footer}>
-            <Text style={{ color: theme.subText }}>Don’t have an account?</Text>
-            <Link
-              href="/(auth)/register"
-              style={[styles.link, { color: theme.primary }]}
-            >
-              Create an account
+          <View className="mt-5 items-center">
+            <Text className="text-subText">Don’t have an account?</Text>
+            <Link href="/(auth)/register">
+              <Text className="text-primary font-semibold mt-1">
+                Create an account
+              </Text>
             </Link>
           </View>
-        </AppCard>
+        </View>
       </AuthCard>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 18,
-    padding: 24,
-    borderWidth: 1,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  logo: {
-    width: 56,
-    height: 56,
-    marginBottom: 6,
-  },
-  brand: {
-    color: "#E5E7EB",
-    fontSize: 18,
-    fontWeight: "600",
-    letterSpacing: 0.5,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    textAlign: "center",
-    marginTop: 12,
-  },
-  subtitle: {
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  input: {
-    marginBottom: 14,
-  },
-  forgot: {
-    alignItems: "flex-end",
-    marginBottom: 20,
-  },
-  button: {
-    borderRadius: 8,
-  },
-  footer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  link: {
-    fontWeight: "600",
-  },
-});

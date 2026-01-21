@@ -1,8 +1,8 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import useTheme from "../../hooks/useTheme";
 import ToolChip from "../ui/ToolChip";
+import { colors } from "../../theme/colors";
 
 type Tool = {
   name: string;
@@ -24,17 +24,18 @@ const ToolDetails = ({
   open,
   onToggle,
 }: Props) => {
-  const { theme } = useTheme();
-
   const SectionHeader = () => (
-    <Pressable onPress={onToggle} style={styles.sectionHeader}>
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+    <Pressable
+      onPress={onToggle}
+      className="flex-row items-center justify-between py-2"
+    >
+      <Text className="text-text text-sm font-semibold">
         {title} ({tools.length})
       </Text>
       <MaterialIcons
         name={open ? "expand-less" : "expand-more"}
         size={24}
-        color={theme.subText}
+        color={colors.subText}
       />
     </Pressable>
   );
@@ -44,7 +45,7 @@ const ToolDetails = ({
       <SectionHeader />
 
       {open && (
-        <View style={styles.chipsWrap}>
+        <View className="flex-row flex-wrap gap-2.5 mb-4">
           {tools.map((tool) => (
             <ToolChip
               key={tool.name}
@@ -57,24 +58,5 @@ const ToolDetails = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  chipsWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 16,
-  },
-});
 
 export default ToolDetails;

@@ -2,8 +2,8 @@ import React, { useRef, useEffect } from "react";
 import { View, StyleSheet, Text, Pressable, Animated } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
-import useTheme from "../../hooks/useTheme";
 import { MicWaveform } from "./MicWaveform";
+import { colors } from "../../theme/colors";
 
 type Props = {
   recording: Audio.Recording | null;
@@ -12,7 +12,6 @@ type Props = {
 };
 
 const MicSection = ({ recording, thinking, onToggle }: Props) => {
-  const { theme } = useTheme();
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -27,7 +26,7 @@ const MicSection = ({ recording, thinking, onToggle }: Props) => {
             toValue: 1,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       pulseAnim.stopAnimation();
@@ -36,25 +35,25 @@ const MicSection = ({ recording, thinking, onToggle }: Props) => {
   }, [recording]);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 items-center justify-center">
       <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
         <Pressable
           onPress={onToggle}
           hitSlop={20}
-          style={[
-            styles.micButton,
-            { backgroundColor: recording ? "#EF4444" : theme.primary },
-          ]}
+          className="w-[140px] h-[140px] rounded-full items-center justify-center shadow-2xl"
+          style={{
+            backgroundColor: recording ? "#EF4444" : colors.primary,
+          }}
         >
           <MaterialIcons name="mic" size={56} color="#000" />
         </Pressable>
       </Animated.View>
 
-      <Text style={[styles.status, { color: theme.subText }]}>
+      <Text className="mt-4 text-[15px] opacity-85 text-subText">
         {recording ? "Listening…" : thinking ? "Thinking…" : "Tap and speak"}
       </Text>
 
-      {recording && <MicWaveform active color={theme.primary} />}
+      {recording && <MicWaveform active color={colors.primary} />}
     </View>
   );
 };

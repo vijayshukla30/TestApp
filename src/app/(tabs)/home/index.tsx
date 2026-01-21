@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { useFocusEffect, router } from "expo-router";
-import useTheme from "../../../hooks/useTheme";
 import useAuth from "../../../hooks/useAuth";
 import useAppDispatch from "../../../hooks/useAppDispatch";
 import { useAppSelector } from "../../../hooks/useAppSelector";
@@ -12,7 +11,6 @@ import HomeAgentCard from "../../../components/agent/HomeAgentCard";
 import InstallAgentCard from "../../../components/agent/InstallAgentCard";
 
 export default function Home() {
-  const { theme } = useTheme();
   const { user, token } = useAuth()!;
   const dispatch = useAppDispatch();
   const { list, loading } = useAppSelector((s) => s.activity);
@@ -36,11 +34,11 @@ export default function Home() {
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text style={[styles.greeting, { color: theme.subText }]}>
-          Welcome back 👋
+      <View className="mt-2 mb-6 mx-6">
+        <Text className="text-subText text-sm">Welcome back 👋</Text>
+        <Text className="text-text text-lg font-semibold mt-1">
+          {user?.name}
         </Text>
-        <Text style={[styles.name, { color: theme.text }]}>{user?.name}</Text>
       </View>
       <AgentGrid
         data={[...installed, { __install__: true }]}
@@ -82,20 +80,3 @@ export default function Home() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    marginTop: 8,
-    marginBottom: 24,
-  },
-
-  greeting: {
-    fontSize: 14,
-  },
-
-  name: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 4,
-  },
-});

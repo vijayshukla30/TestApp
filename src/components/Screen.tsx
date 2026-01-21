@@ -1,21 +1,17 @@
-// components/Screen.tsx
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
-import useTheme from "../hooks/useTheme";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
-export default function Screen({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme();
-  const isDark = theme.mode === "dark";
-
+export default function Screen({
+  children,
+  center = false,
+}: {
+  children: React.ReactNode;
+  center?: boolean;
+}) {
   return (
-    <SafeAreaView
-      style={[
-        styles.safe,
-        { backgroundColor: isDark ? "#0B1020" : theme.background },
-      ]}
-    >
+    <SafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        className={`flex-1 ${center ? "items-center justify-center px-6" : "px-5"}`}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {children}
@@ -23,9 +19,3 @@ export default function Screen({ children }: { children: React.ReactNode }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
-});

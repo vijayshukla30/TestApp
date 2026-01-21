@@ -1,5 +1,4 @@
-import { Text, StyleSheet, Pressable } from "react-native";
-import useTheme from "../../hooks/useTheme";
+import { Pressable, Text } from "react-native";
 
 type Props = {
   label: string;
@@ -7,36 +6,23 @@ type Props = {
 };
 
 export default function ToolChip({ label, available }: Props) {
-  const { theme } = useTheme();
-
-  const bg = available ? "#0F2F1E" : "#2B1A1A";
-  const border = available ? "#4ADE80" : "#F87171";
-  const text = available ? "#86EFAC" : "#FCA5A5";
-
   return (
     <Pressable
-      style={[
-        styles.chip,
-        {
-          backgroundColor: bg,
-          borderColor: border,
-        },
-      ]}
+      className={[
+        "px-3.5 py-2 rounded-full border",
+        available
+          ? "bg-emerald-950 border-emerald-400"
+          : "bg-red-950 border-red-400",
+      ].join(" ")}
     >
-      <Text style={[styles.text, { color: text }]}>{label}</Text>
+      <Text
+        className={[
+          "text-xs font-medium",
+          available ? "text-emerald-300" : "text-red-300",
+        ].join(" ")}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    borderWidth: 1,
-  },
-  text: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-});
