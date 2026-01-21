@@ -35,6 +35,7 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
   const [showHistory, setShowHistory] = useState(false);
 
   const recordingRef = useRef<Audio.Recording | null>(null);
+  const recordStartRef = useRef<number | null>(null);
 
   const socket = useAssistantSocket({
     agent,
@@ -42,7 +43,7 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
     userId,
     onMessage: (data: any) => {
       if (data?.type !== "ConversationText") return;
-
+      console.log("data.message :>> ", data.message);
       const { role, content, from } = data.message;
 
       if (from === "transcriber") {
@@ -57,26 +58,47 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
 
   useEffect(() => {
     socket.connect();
-    return () => socket.close();
+    return () => {
+      cleanup();
+    };
   }, []);
 
   useEffect(() => {
     if (!thinking) return;
 
     const timeout = setTimeout(() => {
-      console.warn("Thinking timeout — resetting state");
       setThinking(false);
-    }, 10_000); // 12 seconds max
+      setRecording(null);
+      recordingRef.current = null;
+      recordStartRef.current = null;
+    }, 10_000);
 
     return () => clearTimeout(timeout);
   }, [thinking]);
 
-  const cleanup = () => {
+  const forceStopRecording = async () => {
+    const rec = recordingRef.current;
+
+    if (!rec) return;
+
+    try {
+      await rec.stopAndUnloadAsync();
+    } catch (e) {
+    } finally {
+      recordingRef.current = null;
+      recordStartRef.current = null;
+      setRecording(null);
+    }
+  };
+
+  const cleanup = async () => {
+    await forceStopRecording();
     socket.close();
     setMessages([]);
     setThinking(false);
     setRecording(null);
     recordingRef.current = null;
+    recordStartRef.current = null;
   };
 
   useImperativeHandle(ref, () => ({
@@ -94,41 +116,50 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
   };
 
   const toggleRecording = async () => {
-    console.log("thinking :>> ", thinking);
     if (thinking) return;
 
     if (recordingRef.current) {
       const rec = recordingRef.current;
-      recordingRef.current = null;
-      setRecording(null);
 
       try {
+        // ⛔ stop FIRST
         await rec.stopAndUnloadAsync();
         const uri = rec.getURI();
-        if (!uri) {
+
+        const start = recordStartRef.current;
+        const duration = start ? Date.now() - start : 0;
+
+        console.log("duration :>>", duration);
+
+        // cleanup refs AFTER stop
+        recordingRef.current = null;
+        recordStartRef.current = null;
+        setRecording(null);
+
+        // 🔕 accidental tap / silence
+        if (!uri || duration < 800) {
           setThinking(false);
           return;
         }
 
+        // ✅ valid audio
         const blob = await fetch(uri).then((r) => r.blob());
-        console.log("blob.size :>> ", blob.size);
-        if (blob.size < 2000) {
-          setThinking(false);
-          return;
-        }
+
         setThinking(true);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
         socket.sendAudio(blob);
       } catch (e) {
         console.warn("Recording error", e);
+        recordingRef.current = null;
+        recordStartRef.current = null;
+        setRecording(null);
         setThinking(false);
       }
 
       return;
     }
 
-    // start
     try {
       await Audio.requestPermissionsAsync();
       await Audio.setAudioModeAsync({
@@ -142,12 +173,17 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
       await rec.prepareToRecordAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
       );
+
+      recordStartRef.current = Date.now(); // ✅ MUST be before start
       await rec.startAsync();
 
       setRecording(rec);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (e) {
       console.warn("Failed to start recording", e);
+      recordingRef.current = null;
+      recordStartRef.current = null;
+      setRecording(null);
       setThinking(false);
     }
   };

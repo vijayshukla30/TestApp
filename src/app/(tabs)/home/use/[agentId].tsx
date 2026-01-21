@@ -35,8 +35,8 @@ export default function AgentUse() {
         {
           text: "End",
           style: "destructive",
-          onPress: () => {
-            chatRef.current?.end();
+          onPress: async () => {
+            await chatRef.current?.end();
             router.replace("/(tabs)/home");
           },
         },
