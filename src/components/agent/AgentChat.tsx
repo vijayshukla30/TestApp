@@ -60,6 +60,17 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
     return () => socket.close();
   }, []);
 
+  useEffect(() => {
+    if (!thinking) return;
+
+    const timeout = setTimeout(() => {
+      console.warn("Thinking timeout — resetting state");
+      setThinking(false);
+    }, 10_000); // 12 seconds max
+
+    return () => clearTimeout(timeout);
+  }, [thinking]);
+
   const cleanup = () => {
     socket.close();
     setMessages([]);
@@ -83,7 +94,9 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
   };
 
   const toggleRecording = async () => {
-    // stop
+    console.log("thinking :>> ", thinking);
+    if (thinking) return;
+
     if (recordingRef.current) {
       const rec = recordingRef.current;
       recordingRef.current = null;
@@ -92,13 +105,24 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
       try {
         await rec.stopAndUnloadAsync();
         const uri = rec.getURI();
-        if (!uri) return;
+        if (!uri) {
+          setThinking(false);
+          return;
+        }
 
         const blob = await fetch(uri).then((r) => r.blob());
-        socket.sendAudio(blob);
+        console.log("blob.size :>> ", blob.size);
+        if (blob.size < 2000) {
+          setThinking(false);
+          return;
+        }
         setThinking(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+        socket.sendAudio(blob);
       } catch (e) {
         console.warn("Recording error", e);
+        setThinking(false);
       }
 
       return;
@@ -124,6 +148,7 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (e) {
       console.warn("Failed to start recording", e);
+      setThinking(false);
     }
   };
 

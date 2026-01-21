@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { View, Text, Pressable, Animated } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
+import * as Haptics from "expo-haptics";
 import { MicWaveform } from "./MicWaveform";
 import { colors } from "../../theme/colors";
 
@@ -13,6 +14,7 @@ type Props = {
 
 const MicSection = ({ recording, thinking, onToggle }: Props) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const isListening = !!recording;
 
   useEffect(() => {
     if (recording) {
@@ -34,23 +36,37 @@ const MicSection = ({ recording, thinking, onToggle }: Props) => {
     }
   }, [recording]);
 
-  const isListening = !!recording;
+  const handleToggle = async () => {
+    if (thinking) return;
+
+    // 🔔 Haptics
+    if (isListening) {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } else {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    onToggle();
+  };
 
   return (
     <View className="flex-1 items-center justify-center">
       <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
         <Pressable
-          onPress={onToggle}
+          onPress={handleToggle}
+          disabled={thinking}
           hitSlop={20}
           className="w-[140px] h-[140px] rounded-full items-center justify-center shadow-2xl"
           style={{
             backgroundColor: isListening ? colors.primary : "#EF4444",
+            opacity: thinking ? 0.55 : 1,
           }}
         >
           <MaterialIcons
             name={isListening ? "mic" : "mic-off"}
             size={56}
             color="#000"
+            style={{ opacity: thinking ? 0.6 : 1 }}
           />
         </Pressable>
       </Animated.View>
