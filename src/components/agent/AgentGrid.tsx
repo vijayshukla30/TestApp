@@ -1,6 +1,5 @@
 import { View, FlatList, RefreshControl } from "react-native";
 import AgentCardSkeleton from "../skeltons/AgentCardSkeleton";
-import { colors } from "../../theme/colors";
 
 type Props<T> = {
   data: T[];
@@ -55,8 +54,8 @@ export default function AgentGrid<T>({
           <RefreshControl
             refreshing={!!refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
+            tintColor="#6366F1"
+            colors={["#6366F1"]}
           />
         ) : undefined
       }

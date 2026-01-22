@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import { colors } from "../../../theme/colors";
 
 export default function AgentsLayout() {
   return (

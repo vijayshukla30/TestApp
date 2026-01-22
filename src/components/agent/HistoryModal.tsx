@@ -11,12 +11,11 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { BlurView } from "expo-blur";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnimatedBubble from "./AnimatedBubble";
 import ThinkingDots from "./ThinkingDots";
-import { colors } from "../../theme/colors";
 import { useColorScheme } from "nativewind";
+import ThemedIcon from "../ui/ThemedIcon";
 type Props = {
   visible: boolean;
   messages: any[];
@@ -79,11 +78,7 @@ const HistoryModal = ({ visible, messages, thinking, onClose }: Props) => {
               hitSlop={12}
               className="active:opacity-70"
             >
-              <MaterialIcons
-                name="close"
-                size={24}
-                className="text-text dark:text-dark-text"
-              />
+              <ThemedIcon name="close" size={24} />
             </Pressable>
           </BlurView>
 
@@ -112,7 +107,6 @@ const HistoryModal = ({ visible, messages, thinking, onClose }: Props) => {
                       padding: 12,
                       borderRadius: 16,
                       marginVertical: 6,
-                      backgroundColor: isUser ? colors.primary : colors.surface,
                       ...(isUser
                         ? { borderBottomRightRadius: 4 }
                         : { borderBottomLeftRadius: 4 }),

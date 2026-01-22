@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import ToolChip from "../ui/ToolChip";
+import ThemedIcon from "../ui/ThemedIcon";
 
 type Tool = {
   name: string;
@@ -36,11 +37,7 @@ const ToolDetails = ({
         <Text className="text-text dark:text-dark-text text-sm font-semibold">
           {title} ({tools.length})
         </Text>
-        <MaterialIcons
-          name={open ? "expand-less" : "expand-more"}
-          size={24}
-          className="text-subText dark:text-dark-subText"
-        />
+        <ThemedIcon name={open ? "expand-less" : "expand-more"} size={24} />
       </Pressable>
     </View>
   );

@@ -3,12 +3,11 @@ import { router } from "expo-router";
 import Screen from "../../../components/Screen";
 import useAuth from "../../../hooks/useAuth";
 import Card from "../../../components/ui/Card";
-import { colors } from "../../../theme/colors";
-import { useThemeController } from "../../../theme/themeStore";
+import { useAppTheme } from "../../../context/ThemeProvider";
 
 export default function Settings() {
-  const { isDark, toggleTheme } = useThemeController();
   const { user, logout } = useAuth()!;
+  const { isDark, toggleTheme } = useAppTheme();
 
   const onLogout = async () => {
     await logout();

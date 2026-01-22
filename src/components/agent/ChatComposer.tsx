@@ -1,10 +1,16 @@
 import React, { useState, useRef } from "react";
-import { View, Pressable, TextInput, Text, Modal } from "react-native";
+import {
+  View,
+  Pressable,
+  TextInput,
+  Text,
+  Modal,
+  Platform,
+} from "react-native";
 import { BlurView } from "expo-blur";
-import { MaterialIcons } from "@expo/vector-icons";
 import { AttachmentSheet } from "./AttachmentSheet";
-import { colors } from "../../theme/colors";
 import { useColorScheme } from "nativewind";
+import ThemedIcon from "../ui/ThemedIcon";
 
 type Props = {
   value: string;
@@ -20,7 +26,12 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
   const isDark = colorScheme === "dark";
 
   return (
-    <View className="gap-3">
+    <View
+      className={`
+        gap-4 pb-4 ${Platform.OS === "android" ? "pb-6" : "pb-4"} 
+        bg-background dark:bg-dark-background
+      `}
+    >
       <Pressable
         onPress={() => inputRef.current?.focus()}
         className="
@@ -36,7 +47,7 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
         flex-row items-start gap-2 
         px-3 py-2 
         rounded-2xl 
-        bg-surface/70 dark:bg-dark-surface/70   // semi-transparent for blur effect
+        bg-surface/70 dark:bg-dark-surface/70
       "
         >
           <TextInput
@@ -58,7 +69,14 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
         </BlurView>
       </Pressable>
 
-      <View className="flex-row gap-3">
+      <View
+        className={`
+          flex-row gap-3 
+          px-2 
+          ${Platform.OS === "android" ? "pb-8" : "pb-4"}  // extra space on Android
+          ${Platform.OS === "ios" ? "pb-6" : ""}          // iOS home indicator safe area
+        `}
+      >
         <Pressable
           onPress={onSend}
           className="
@@ -68,7 +86,7 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
         active:opacity-85
       "
         >
-          <MaterialIcons name="send" size={18} color="#000" />
+          <ThemedIcon name="send" size={18} />
           <Text className="text-black dark:text-black text-[15px] font-semibold">
             Send
           </Text>
@@ -85,11 +103,7 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
         active:opacity-75
       "
         >
-          <MaterialIcons
-            name="photo-camera"
-            size={22}
-            className="text-subText dark:text-dark-subText"
-          />
+          <ThemedIcon name="photo-camera" size={22} />
         </Pressable>
       </View>
       <AttachmentSheet

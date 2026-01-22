@@ -10,13 +10,13 @@ export default function ToolChip({ label, available }: Props) {
     <Pressable
       className={`
   px-3.5 py-1.5 rounded-full border
-  shadow-sm dark:shadow-md
   ${
     available
-      ? "bg-primary/15 dark:bg-dark-primary/25 border-primary/40 dark:border-dark-primary/50"
+      ? "bg-primary/15 dark:bg-dark-primary/20 border-primary/30 dark:border-dark-primary/40"
       : "bg-surface-secondary dark:bg-dark-surface/70 border-border dark:border-dark-border/60"
   }
-  active:opacity-85
+        shadow-sm dark:shadow-sm        // ← subtle shadow in BOTH modes
+        active:opacity-85
 `}
     >
       <Text
@@ -27,6 +27,7 @@ export default function ToolChip({ label, available }: Props) {
               ? "text-primary dark:text-dark-primary"
               : "text-subText dark:text-dark-subText"
           }
+          drop-shadow-sm dark:drop-shadow-sm
         `}
       >
         {label}

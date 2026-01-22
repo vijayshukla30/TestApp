@@ -1,6 +1,7 @@
 import { Pressable, Text, ActivityIndicator, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
+import ThemedIcon from "./ThemedIcon";
 
 type Props = {
   title: string;
@@ -39,7 +40,7 @@ export default function PrimaryButton({
         <ActivityIndicator color={isDark ? "#000000" : "#000000"} />
       ) : (
         <View className="flex-row items-center gap-2">
-          <MaterialIcons name="check" size={18} color="#000" />
+          <ThemedIcon name="check" size={18} />
           <Text className="text-black dark:text-black font-semibold text-base">
             {title}
           </Text>

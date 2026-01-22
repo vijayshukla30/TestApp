@@ -1,5 +1,4 @@
 import { Pressable, Image, Text, View } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
 import * as Haptics from "expo-haptics";
 
@@ -7,6 +6,7 @@ import { getPlatformImage } from "../../utils/platform";
 import { Agent } from "../../types/agent";
 import Card from "../ui/Card";
 import { extractUSLocalNumber, formatPhoneNumberUS } from "../../utils/format";
+import ThemedIcon from "../ui/ThemedIcon";
 
 type Props = {
   agent: Agent;
@@ -45,24 +45,21 @@ export default function HomeAgentCard({
   };
 
   return (
-    <Card className="p-6 items-center relative overflow-hidden">
+    <Card className="p-6 items-center min-h-[200px] justify-between">
       {agent.phoneId && (
         <Pressable
           className="
             absolute top-3 left-3 
-            w-9 h-9 rounded-full 
-            bg-white/10 dark:bg-white/8 
-            items-center justify-center 
-            active:opacity-75
+      w-7 h-7 rounded-full 
+      bg-surface-secondary/30 dark:bg-dark-surface/40   // ← subtle but visible in both modes
+      items-center justify-center 
+      border border-border/20 dark:border-dark-border/30  // ← light border for definition
+      active:opacity-80
           "
           onPress={dialNumber}
           android_ripple={{ color: "#ffffff20", radius: 18 }}
         >
-          <MaterialIcons
-            name="call"
-            size={18}
-            className="text-primary dark:text-dark-primary"
-          />
+          <ThemedIcon name="call" size={16} />
         </Pressable>
       )}
 
@@ -70,19 +67,16 @@ export default function HomeAgentCard({
       <Pressable
         className="
           absolute top-3 right-3 
-          w-9 h-9 rounded-full 
-          bg-white/10 dark:bg-white/8 
-          items-center justify-center 
-          active:opacity-75
+    w-7 h-7 rounded-full 
+    bg-surface-secondary/30 dark:bg-dark-surface/40   // same as above
+    items-center justify-center 
+    border border-border/20 dark:border-dark-border/30
+    active:opacity-80
         "
         onPress={onOpenDetail}
         android_ripple={{ color: "#ffffff20", radius: 18 }}
       >
-        <MaterialIcons
-          name="settings"
-          size={18}
-          className="text-subText dark:text-dark-subText"
-        />
+        <ThemedIcon name="settings" size={16} />
       </Pressable>
 
       {/* Platform Icon */}
@@ -125,11 +119,7 @@ export default function HomeAgentCard({
         "
         onPress={onUseNow}
       >
-        <MaterialIcons
-          name="play-arrow"
-          size={18}
-          className="text-black dark:text-black"
-        />
+        <ThemedIcon name="play-arrow" size={18} />
         <Text className="text-black dark:text-black font-semibold text-sm">
           Use Now
         </Text>

@@ -7,6 +7,7 @@ import { store } from "../store";
 import useAppDispatch from "../hooks/useAppDispatch";
 import { restoreSession } from "../features/auth/authSlice";
 import "../../global.css";
+import { ThemeProvider } from "../context/ThemeProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,8 +32,10 @@ function AppShell() {
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <Bootstrap />
-      <AppShell />
+      <ThemeProvider>
+        <Bootstrap />
+        <AppShell />
+      </ThemeProvider>
     </Provider>
   );
 }

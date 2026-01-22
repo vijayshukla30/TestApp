@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { colors } from "../../theme/colors";
+import ThemedIcon from "../ui/ThemedIcon";
 
 type Props = {
   messages: any[];
@@ -29,11 +28,7 @@ export default function ChatContextDock({ messages, onOpenHistory }: Props) {
             bg-black/10 dark:bg-white/10
             active:opacity-75"
         >
-          <MaterialIcons
-            name="history"
-            size={18}
-            className="text-subText dark:text-dark-subText"
-          />
+          <ThemedIcon name="history" size={18} />
         </Pressable>
 
         {preview.map((m) => {

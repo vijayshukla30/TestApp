@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Text, ActivityIndicator, useColorScheme } from "react-native";
 import { BlurView } from "expo-blur";
-import { MaterialIcons } from "@expo/vector-icons";
-import { colors } from "../../theme/colors";
+import ThemedIcon from "./ThemedIcon";
 
 type Props = {
   title?: string;
@@ -26,11 +25,7 @@ export default function LoadingCard({ title = "Loading", subtitle }: Props) {
       backdrop-blur-md
     "
       >
-        <MaterialIcons
-          name="hourglass-top"
-          size={28}
-          className="text-primary dark:text-dark-primary"
-        />
+        <ThemedIcon name="hourglass-top" size={28} />
 
         <Text className="text-text dark:text-dark-text text-base font-semibold mt-2">
           {title}

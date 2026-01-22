@@ -5,6 +5,7 @@ import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { MicWaveform } from "./MicWaveform";
 import { useColorScheme } from "nativewind";
+import ThemedIcon from "../ui/ThemedIcon";
 
 type Props = {
   recording: Audio.Recording | null;
@@ -76,10 +77,11 @@ const MicSection = ({ recording, thinking, onToggle }: Props) => {
           `}
           style={{ backgroundColor: micBgColor }}
         >
-          <MaterialIcons
+          <ThemedIcon
             name={isListening ? "mic" : "mic-off"}
             size={56}
-            color={iconColor}
+            lightColor={iconColor}
+            darkColor={iconColor}
             style={{ opacity: thinking ? 0.65 : 1 }}
           />
         </Pressable>

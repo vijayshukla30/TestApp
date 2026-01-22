@@ -1,5 +1,4 @@
 import { View, Text, Image, ScrollView } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 import { getPlatformImage } from "../../utils/platform";
@@ -7,11 +6,11 @@ import ConnectionSection from "./ConnectionSection";
 import GennieTools from "./GennieTools";
 import AgentLayout from "../layouts/AgentLayout";
 import Card from "../ui/Card";
-import { colors } from "../../theme/colors";
 import { useConsumerDetails } from "../../hooks/useConsumerDetails";
 import { usePlatformConnection } from "../../hooks/usePlatformConnection";
 import { extractUSLocalNumber, formatPhoneNumberUS } from "../../utils/format";
 import { Agent } from "../../types/agent";
+import ThemedIcon from "../ui/ThemedIcon";
 
 const AgentDetail = ({ agent }: { agent: Agent }) => {
   const { consumer, loading, isInstalled } = useConsumerDetails(agent);
@@ -56,11 +55,7 @@ const AgentDetail = ({ agent }: { agent: Agent }) => {
           Phone
         </Text>
         <Card className="flex-row items-center gap-3 p-3 mb-4">
-          <MaterialIcons
-            name="phone"
-            size={22}
-            className="text-primary dark:text-dark-primary"
-          />
+          <ThemedIcon name="phone" size={22} />
           <Text className="text-text dark:text-dark-text text-base font-semibold">
             {displayPhone}
           </Text>

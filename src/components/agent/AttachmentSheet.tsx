@@ -1,5 +1,6 @@
 import { Modal, Pressable, View, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import ThemedIcon from "../ui/ThemedIcon";
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -59,19 +60,11 @@ function AttachmentItem({ icon, label, bgColor, iconColor }: ItemProps) {
         className={`
       w-20 h-20 rounded-full 
       items-center justify-center 
-      shadow-lg dark:shadow-xl
       bg-[${bgColor}] dark:bg-[${bgColor}]  // keep dynamic bgColor if needed
       border border-border/20 dark:border-dark-border/30
     `}
-        style={{
-          shadowColor: bgColor,
-          shadowOpacity: 0.45,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: 8 },
-          elevation: 5,
-        }}
       >
-        <MaterialIcons name={icon} size={26} color={iconColor} />
+        <ThemedIcon name={icon} size={26} />
       </View>
       <Text className="text-text dark:text-dark-text text-xs mt-2 font-medium">
         {label}

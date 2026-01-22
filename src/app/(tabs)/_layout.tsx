@@ -1,11 +1,9 @@
 import { Tabs } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
-import { colors } from "../../theme/colors";
+import ThemedIcon from "../../components/ui/ThemedIcon";
 
 export default function TabsLayout() {
   const { colorScheme } = useColorScheme();
-
   const isDark = colorScheme === "dark";
 
   return (
@@ -26,7 +24,7 @@ export default function TabsLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="home" size={size} color={color} />
+            <ThemedIcon name="home" size={size} />
           ),
         }}
       />
@@ -36,7 +34,7 @@ export default function TabsLayout() {
         options={{
           title: "Assistants",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="group" size={size} color={color} />
+            <ThemedIcon name="group" size={size} />
           ),
         }}
       />
@@ -46,7 +44,7 @@ export default function TabsLayout() {
         options={{
           title: "Settings",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="settings" size={size} color={color} />
+            <ThemedIcon name="settings" size={size} />
           ),
         }}
       />

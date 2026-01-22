@@ -11,12 +11,14 @@ import { Agent } from "../../../types/agent";
 import { fetchAgents } from "../../../features/agent/agentsSlice";
 import AgentGrid from "../../../components/agent/AgentGrid";
 import AgentCard from "../../../components/agent/AgentCard";
-import { colors } from "../../../theme/colors";
+import { useColorScheme } from "nativewind";
 
 export default function Agents() {
   const { user, token } = useAuth();
   const dispatch = useAppDispatch();
+  const { colorScheme } = useColorScheme();
 
+  const isDark = colorScheme === "dark";
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
@@ -74,10 +76,16 @@ export default function Agents() {
 
       <TextInput
         placeholder="Search assistant"
-        placeholderTextColor={colors.subText}
+        placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
         value={searchTerm}
         onChangeText={setSearchTerm}
-        className="mx-5 mb-5 h-12 rounded-xl border border-border bg-surface px-4 text-text text-base"
+        className="fh-14 rounded-xl 
+    text-text dark:text-white          // ← this is the key fix
+    bg-surface dark:bg-dark-surface 
+    border border-border dark:border-dark-border
+    placeholder:text-subText dark:placeholder:text-dark-subText
+    px-4 py-3 mx-5 mb-4
+    text-base"
       />
 
       {!isOnline && (

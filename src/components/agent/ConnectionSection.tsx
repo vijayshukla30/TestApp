@@ -1,6 +1,7 @@
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import ThemedIcon from "../ui/ThemedIcon";
 
 type Props = {
   onConnect: () => void;
@@ -28,11 +29,7 @@ export default function ConnectionSection({
           items-center justify-center mb-3 
           bg-primary/15 dark:bg-dark-primary/20"
       >
-        <MaterialIcons
-          name="link"
-          size={36}
-          className="text-primary dark:text-dark-primary"
-        />
+        <ThemedIcon name="link" size={36} />
       </View>
 
       <Text className="text-text dark:text-dark-text text-base font-semibold">
@@ -65,12 +62,11 @@ export default function ConnectionSection({
           <ActivityIndicator color={installed ? "#ffffff" : "#000000"} />
         ) : (
           <>
-            <MaterialIcons
+            <ThemedIcon
               name={installed ? "link-off" : "link"}
               size={18}
-              className={
-                installed ? "text-white" : "text-black dark:text-black"
-              }
+              lightColor={installed ? "#6366F1" : "#8B9CFF"}
+              darkColor={installed ? "#8B9CFF" : "#6366F1"}
             />
             <Text
               className={`
