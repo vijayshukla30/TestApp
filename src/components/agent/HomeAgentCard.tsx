@@ -120,7 +120,10 @@ export default function HomeAgentCard({
         onPress={onUseNow}
       >
         <ThemedIcon name="play-arrow" size={18} />
-        <Text className="text-black dark:text-black font-semibold text-sm">
+        <Text
+          className="text-black dark:text-white     // ← white text in dark mode
+      text-[15px] font-semibold font-semibold text-sm"
+        >
           Use Now
         </Text>
       </Pressable>

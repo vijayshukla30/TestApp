@@ -15,7 +15,7 @@ export default function ToolChip({ label, available }: Props) {
       ? "bg-primary/15 dark:bg-dark-primary/20 border-primary/30 dark:border-dark-primary/40"
       : "bg-surface-secondary dark:bg-dark-surface/70 border-border dark:border-dark-border/60"
   }
-        shadow-sm dark:shadow-sm        // ← subtle shadow in BOTH modes
+        shadow-sm dark:shadow-sm
         active:opacity-85
 `}
     >

@@ -25,7 +25,7 @@ export default function ConnectionSection({
         shadow-sm dark:shadow-md"
     >
       <View
-        className="w-[72px] h-[72px] rounded-full 
+        className="w-[72px] h-[72px] rounded-full
           items-center justify-center mb-3 
           bg-primary/15 dark:bg-dark-primary/20"
       >
@@ -65,13 +65,13 @@ export default function ConnectionSection({
             <ThemedIcon
               name={installed ? "link-off" : "link"}
               size={18}
-              lightColor={installed ? "#6366F1" : "#8B9CFF"}
-              darkColor={installed ? "#8B9CFF" : "#6366F1"}
+              lightColor="#FFFFFF"
+              darkColor="#000000"
             />
             <Text
               className={`
                 font-semibold text-[15px]
-                ${installed ? "text-white" : "text-black dark:text-black"}
+                text-white dark:text-white
               `}
             >
               {installed ? "Disconnect" : "Connect Platform"}

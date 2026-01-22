@@ -17,7 +17,7 @@ module.exports = {
         surface: "#FFFFFF",
         text: "#111827",
         subText: "#6B7280",
-        primary: "#6366F1", // indigo-500 – looks good in light
+        primary: "#8B9CFF", // indigo-500 – looks good in light
         border: "#E5E7EB",
         "surface-secondary": "#F3F4F6",
 

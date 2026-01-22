@@ -10,8 +10,8 @@ type ThemedIconProps = React.ComponentProps<typeof MaterialIcons> & {
 export default function ThemedIcon({
   name,
   size = 24,
-  lightColor = "#6366F1", // your primary
-  darkColor = "#8B9CFF", // your dark-primary
+  lightColor = "#374151", // black for light mode buttons
+  darkColor = "#E5E7EB", // your dark-primary
   ...props
 }: ThemedIconProps) {
   const { colorScheme } = useColorScheme();

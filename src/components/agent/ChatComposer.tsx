@@ -87,7 +87,10 @@ export default function ChatComposer({ value, onChange, onSend }: Props) {
       "
         >
           <ThemedIcon name="send" size={18} />
-          <Text className="text-black dark:text-black text-[15px] font-semibold">
+          <Text
+            className="text-black dark:text-white     // ← white text in dark mode
+      text-[15px] font-semibold"
+          >
             Send
           </Text>
         </Pressable>

@@ -100,18 +100,7 @@ const HistoryModal = ({ visible, messages, thinking, onClose }: Props) => {
               renderItem={({ item }) => {
                 const isUser = item.role === "user";
                 return (
-                  <AnimatedBubble
-                    style={{
-                      alignSelf: isUser ? "flex-end" : "flex-start",
-                      maxWidth: "78%",
-                      padding: 12,
-                      borderRadius: 16,
-                      marginVertical: 6,
-                      ...(isUser
-                        ? { borderBottomRightRadius: 4 }
-                        : { borderBottomLeftRadius: 4 }),
-                    }}
-                  >
+                  <AnimatedBubble isUser={isUser}>
                     <Text
                       className={`
                         text-[15px] leading-6
