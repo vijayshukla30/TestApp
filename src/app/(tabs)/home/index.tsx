@@ -35,8 +35,10 @@ export default function Home() {
   return (
     <Screen>
       <View className="mt-2 mb-6 mx-6">
-        <Text className="text-subText text-sm">Welcome back 👋</Text>
-        <Text className="text-text text-lg font-semibold mt-1">
+        <Text className="text-subText dark:text-dark-subText text-sm">
+          Welcome back 👋
+        </Text>
+        <Text className="text-text dark:text-dark-text text-lg font-semibold mt-1">
           {user?.name}
         </Text>
       </View>

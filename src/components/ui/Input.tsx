@@ -26,7 +26,18 @@ export default function Input({
       secureTextEntry={secureTextEntry}
       keyboardType={keyboardType}
       autoCapitalize={autoCapitalize}
-      className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-text mb-4"
+      className="
+    w-full rounded-xl
+    border border-border dark:border-dark-border
+    bg-surface dark:bg-dark-surface
+    px-4 py-3.5
+    text-text dark:text-dark-text
+    text-[15px]
+    placeholder:text-subText dark:placeholder:text-dark-subText
+    focus:border-primary dark:focus:border-dark-primary
+    focus:ring-1 focus:ring-primary/30 dark:focus:ring-dark-primary/30
+    mb-4
+  "
     />
   );
 }

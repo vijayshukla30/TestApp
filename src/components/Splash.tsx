@@ -1,9 +1,12 @@
 import { Text, Image } from "react-native";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut, ZoomIn } from "react-native-reanimated";
+import { useColorScheme } from "nativewind";
 
 export default function Splash() {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
   }, []);
@@ -12,17 +15,26 @@ export default function Splash() {
     <Animated.View
       entering={FadeIn.duration(400)}
       exiting={FadeOut.duration(300)}
-      className="flex-1 items-center justify-center bg-[#0B1020]"
+      className={`
+        flex-1 items-center justify-center
+        bg-background dark:bg-dark-background
+      `}
     >
-      <Image
+      <Animated.Image
+        entering={ZoomIn.duration(600).springify().delay(200)}
         source={require("../../assets/logo.png")}
         className="w-24 h-24 mb-3"
         resizeMode="contain"
       />
 
-      <Text className="text-gray-200 text-xl font-semibold tracking-wide">
+      <Animated.Text
+        entering={FadeIn.duration(600).delay(400)}
+        className={`
+         text-text dark:text-dark-text text-3xl font-bold tracking-widest
+        `}
+      >
         gennie
-      </Text>
+      </Animated.Text>
     </Animated.View>
   );
 }

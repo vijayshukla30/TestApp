@@ -1,10 +1,15 @@
 import { View, ActivityIndicator } from "react-native";
-import { colors } from "../../theme/colors";
+import { useColorScheme } from "nativewind";
 
 export default function AuthSkeleton() {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
   return (
-    <View className="py-16 items-center">
-      <ActivityIndicator size="large" color={colors.primary} />
+    <View className="flex-1 items-center justify-center py-16">
+      <ActivityIndicator
+        size="large"
+        className="text-primary dark:text-dark-primary"
+      />
     </View>
   );
 }

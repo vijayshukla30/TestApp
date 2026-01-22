@@ -4,7 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 import { MicWaveform } from "./MicWaveform";
-import { colors } from "../../theme/colors";
+import { useColorScheme } from "nativewind";
 
 type Props = {
   recording: Audio.Recording | null;
@@ -13,6 +13,8 @@ type Props = {
 };
 
 const MicSection = ({ recording, thinking, onToggle }: Props) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const isListening = !!recording;
 
@@ -49,6 +51,16 @@ const MicSection = ({ recording, thinking, onToggle }: Props) => {
     onToggle();
   };
 
+  const micBgColor = isListening
+    ? isDark
+      ? "#8B9CFF" // dark-primary
+      : "#6366F1" // primary (light)
+    : isDark
+      ? "#EF4444CC" // softer red in dark mode
+      : "#EF4444";
+
+  const iconColor = isDark ? "#000000" : "#000000";
+
   return (
     <View className="flex-1 items-center justify-center">
       <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
@@ -56,26 +68,40 @@ const MicSection = ({ recording, thinking, onToggle }: Props) => {
           onPress={handleToggle}
           disabled={thinking}
           hitSlop={20}
-          className="w-[140px] h-[140px] rounded-full items-center justify-center shadow-2xl"
-          style={{
-            backgroundColor: isListening ? colors.primary : "#EF4444",
-            opacity: thinking ? 0.55 : 1,
-          }}
+          className={`
+            w-[140px] h-[140px] rounded-full 
+            items-center justify-center 
+            shadow-2xl dark:shadow-xl
+            ${thinking ? "opacity-55" : "active:opacity-85"}
+          `}
+          style={{ backgroundColor: micBgColor }}
         >
           <MaterialIcons
             name={isListening ? "mic" : "mic-off"}
             size={56}
-            color="#000"
-            style={{ opacity: thinking ? 0.6 : 1 }}
+            color={iconColor}
+            style={{ opacity: thinking ? 0.65 : 1 }}
           />
         </Pressable>
       </Animated.View>
 
-      <Text className="mt-4 text-[15px] opacity-85 text-subText">
+      <Text
+        className={`
+          mt-5 text-[15px] font-medium
+          text-subText dark:text-dark-subText
+          ${thinking || isListening ? "opacity-90" : "opacity-75"}
+        `}
+      >
         {isListening ? "Listening…" : thinking ? "Thinking…" : "Tap and speak"}
       </Text>
 
-      {isListening && <MicWaveform active color={colors.primary} />}
+      {isListening && (
+        <MicWaveform
+          active
+          color={isDark ? "#8B9CFF" : "#6366F1"}
+          className="mt-6"
+        />
+      )}
     </View>
   );
 };

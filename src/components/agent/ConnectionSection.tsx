@@ -1,6 +1,6 @@
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { colors } from "../../theme/colors";
+import * as Haptics from "expo-haptics";
 
 type Props = {
   onConnect: () => void;
@@ -16,31 +16,71 @@ export default function ConnectionSection({
   loading,
 }: Props) {
   return (
-    <View className="items-center rounded-2xl border border-white/10 bg-surface px-5 py-7 mb-6">
-      <View className="w-[72px] h-[72px] rounded-full items-center justify-center mb-3 bg-primary/20">
-        <MaterialIcons name="link" size={36} color={colors.primary} />
+    <View
+      className="items-center rounded-2xl 
+        border border-border dark:border-dark-border
+        bg-surface dark:bg-dark-surface 
+        px-5 py-7 mb-6
+        shadow-sm dark:shadow-md"
+    >
+      <View
+        className="w-[72px] h-[72px] rounded-full 
+          items-center justify-center mb-3 
+          bg-primary/15 dark:bg-dark-primary/20"
+      >
+        <MaterialIcons
+          name="link"
+          size={36}
+          className="text-primary dark:text-dark-primary"
+        />
       </View>
 
-      <Text className="text-text text-base font-semibold">
+      <Text className="text-text dark:text-dark-text text-base font-semibold">
         Platform Connection
       </Text>
 
-      <Text className="text-subText text-xs text-center mt-1.5 mb-4">
+      <Text className="text-subText dark:text-dark-subText text-xs text-center mt-1.5 mb-5">
         Connect your platform to enable tools and automation.
       </Text>
 
       <Pressable
-        onPress={installed ? onDisconnect : onConnect}
-        className={`min-w-[180px] h-11 rounded-xl items-center justify-center ${
-          installed ? "bg-red-500" : "bg-primary"
-        }`}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          installed ? onDisconnect() : onConnect();
+        }}
+        disabled={loading}
+        className={`
+          min-w-[180px] h-11 rounded-xl 
+          items-center justify-center 
+          flex-row gap-2
+          ${
+            installed
+              ? "bg-red-500 active:bg-red-600 dark:bg-red-600 dark:active:bg-red-700"
+              : "bg-primary dark:bg-dark-primary active:bg-primary/90 dark:active:bg-dark-primary/90"
+          }
+          ${loading ? "opacity-70" : ""}
+        `}
       >
         {loading ? (
-          <ActivityIndicator color="#000" />
+          <ActivityIndicator color={installed ? "#ffffff" : "#000000"} />
         ) : (
-          <Text className="text-black font-semibold text-[15px]">
-            {installed ? "Disconnect" : "Connect Platform"}
-          </Text>
+          <>
+            <MaterialIcons
+              name={installed ? "link-off" : "link"}
+              size={18}
+              className={
+                installed ? "text-white" : "text-black dark:text-black"
+              }
+            />
+            <Text
+              className={`
+                font-semibold text-[15px]
+                ${installed ? "text-white" : "text-black dark:text-black"}
+              `}
+            >
+              {installed ? "Disconnect" : "Connect Platform"}
+            </Text>
+          </>
         )}
       </Pressable>
     </View>

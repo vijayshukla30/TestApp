@@ -9,7 +9,7 @@ export default function Screen({
   center?: boolean;
 }) {
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background dark:bg-dark-background">
       <KeyboardAvoidingView
         className={`flex-1 ${center ? "items-center justify-center px-6" : "px-5"}`}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

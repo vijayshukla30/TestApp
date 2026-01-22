@@ -17,48 +17,57 @@ export default function Settings() {
 
   return (
     <Screen>
-      <Text className="text-text text-xl font-semibold mb-4">Settings</Text>
+      <Text className="text-text dark:text-dark-text text-xl font-semibold mb-4">
+        Settings
+      </Text>
       {/* Section title */}
-      <Text className="text-subText text-xs uppercase tracking-wider mb-2">
+      <Text className="text-subText dark:text-dark-subText text-xs uppercase tracking-wider mb-2">
         Account
       </Text>
 
       <Card className="p-3">
-        <Text className="text-subText text-xs">Signed in as</Text>
-        <Text className="text-text text-base font-semibold mt-1">
+        <Text className="text-subText dark:text-dark-subText text-xs">
+          Signed in as
+        </Text>
+        <Text className="text-text dark:text-dark-text text-base font-semibold mt-1">
           {user?.email}
         </Text>
       </Card>
 
-      <Text className="text-subText text-xs uppercase tracking-wider mt-7 mb-2">
+      <Text className="text-subText dark:text-dark-subText text-xs uppercase tracking-wider mt-7 mb-2">
         Preferences
       </Text>
 
       <Card className="p-3">
         <View className="flex-row items-center justify-between">
-          <Text className="text-text text-base">Dark theme</Text>
+          <Text className="text-text dark:text-dark-text text-base">
+            Dark theme
+          </Text>
           <Switch
             value={isDark}
             onValueChange={toggleTheme}
             trackColor={{
-              false: "rgba(255,255,255,0.2)",
-              true: colors.primary,
+              false: "rgba(100,100,100,0.4)",
+              true: "#8B9CFF",
             }}
-            thumbColor="#FFFFFF"
+            thumbColor={isDark ? "#FFFFFF" : "#F3F4F6"}
+            ios_backgroundColor="rgba(100,100,100,0.4)"
           />
         </View>
       </Card>
 
-      <Text className="text-subText text-xs uppercase tracking-wider mt-7 mb-2">
+      <Text className="text-subText dark:text-dark-subText text-xs uppercase tracking-wider mt-7 mb-2">
         Danger Zone
       </Text>
 
       <Card>
         <Pressable
           onPress={onLogout}
-          className="bg-red-500 rounded-xl py-3 items-center"
+          className="bg-red-500 dark:bg-red-600 rounded-xl py-3 items-center active:opacity-80"
         >
-          <Text className="text-white font-semibold text-base">Sign out</Text>
+          <Text className="text-white dark:text-white font-semibold text-base">
+            Sign out
+          </Text>
         </Pressable>
       </Card>
     </Screen>

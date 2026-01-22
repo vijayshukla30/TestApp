@@ -12,9 +12,13 @@ type Props = {
 
 export default function AgentHeader({ title, platform, onBack }: Props) {
   return (
-    <View className="h-14 flex-row items-center px-4">
-      <Pressable onPress={onBack} hitSlop={12}>
-        <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+    <View className="h-14 flex-row items-center px-4 bg-surface dark:bg-dark-surface border-b border-border/30 dark:border-dark-border/50">
+      <Pressable onPress={onBack} hitSlop={12} className="active:opacity-70">
+        <MaterialIcons
+          name="arrow-back"
+          size={24}
+          className="text-subText dark:text-dark-subText"
+        />
       </Pressable>
 
       <View className="flex-1 flex-row items-center justify-center gap-2">
@@ -24,7 +28,10 @@ export default function AgentHeader({ title, platform, onBack }: Props) {
             className="w-[22px] h-[22px]"
           />
         )}
-        <Text className="text-text text-base font-semibold" numberOfLines={1}>
+        <Text
+          className="text-text dark:text-dark-text text-base font-semibold"
+          numberOfLines={1}
+        >
           {title}
         </Text>
       </View>

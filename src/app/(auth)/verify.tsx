@@ -58,14 +58,16 @@ export default function Verify() {
   return (
     <Screen center>
       <AuthCard>
-        <View className="rounded-2xl bg-surface border border-border p-6">
-          <Text className="text-text text-xl font-semibold text-center">
+        <View className="rounded-2xl bg-surface dark:bg-dark-surface border border-border dark:border-dark-border p-6">
+          <Text className="text-text dark:text-dark-text text-xl font-semibold text-center">
             Verify OTP
           </Text>
 
-          <Text className="text-subText text-center mt-2 mb-6">
+          <Text className="text-subText dark:text-dark-subtext text-center mt-2 mb-6">
             Enter the OTP sent to{" "}
-            <Text className="font-semibold text-text">{email}</Text>
+            <Text className="font-semibold text-text dark:text-dark-text">
+              {email}
+            </Text>
           </Text>
 
           <Input
@@ -78,10 +80,12 @@ export default function Verify() {
           <PrimaryButton title="Verify" onPress={onVerify} loading={loading} />
 
           <View className="mt-6 items-center">
-            <Text className="text-subText mb-1">OTP expired?</Text>
+            <Text className="text-subText dark:text-dark-subtext mb-1">
+              OTP expired?
+            </Text>
             <Text
               onPress={() => router.replace("/(auth)/login")}
-              className="text-primary font-semibold"
+              className="text-primary dark:text-dark-primary font-semibold"
             >
               Login again
             </Text>

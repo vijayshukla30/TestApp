@@ -189,9 +189,9 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View className="flex-1 bg-background dark:bg-dark-background">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={{ flex: 1 }}>
+        <View className="flex-1">
           <MicSection
             recording={recording}
             thinking={thinking}

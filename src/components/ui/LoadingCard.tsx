@@ -18,25 +18,33 @@ export default function LoadingCard({ title = "Loading", subtitle }: Props) {
       <BlurView
         intensity={25}
         tint={isDark ? "dark" : "light"}
-        className="rounded-2xl px-7 py-6 items-center"
-        style={{
-          backgroundColor: isDark ? "rgba(15,20,35,0.8)" : colors.surface,
-          minWidth: 220,
-        }}
+        className="
+      rounded-2xl px-7 py-6 items-center
+      bg-surface/80 dark:bg-dark-surface/70
+      border border-border/30 dark:border-dark-border/40
+      shadow-lg dark:shadow-xl
+      backdrop-blur-md
+    "
       >
-        <MaterialIcons name="hourglass-top" size={28} color={colors.primary} />
+        <MaterialIcons
+          name="hourglass-top"
+          size={28}
+          className="text-primary dark:text-dark-primary"
+        />
 
-        <Text className="text-text text-base font-semibold mt-2">{title}</Text>
+        <Text className="text-text dark:text-dark-text text-base font-semibold mt-2">
+          {title}
+        </Text>
 
         {subtitle && (
-          <Text className="text-subText text-xs text-center mt-1">
+          <Text className="text-subText dark:text-dark-subText text-xs text-center mt-1 max-w-[90%]">
             {subtitle}
           </Text>
         )}
 
         <ActivityIndicator
           size="small"
-          color={colors.primary}
+          color={isDark ? "#8B9CFF" : "#6366F1"}
           className="mt-3"
         />
       </BlurView>

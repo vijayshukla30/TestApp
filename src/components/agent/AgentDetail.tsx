@@ -38,7 +38,7 @@ const AgentDetail = ({ agent }: { agent: Agent }) => {
       >
         {/* Hero */}
         <View className="items-center mt-6 mb-8">
-          <View className="w-24 h-24 rounded-2xl bg-surface items-center justify-center mb-3">
+          <View className="w-24 h-24 rounded-2xl bg-surface dark:bg-dark-surface items-center justify-center mb-3 border border-border dark:border-dark-border">
             <Image
               source={getPlatformImage(agent.platform?.type)}
               className="w-14 h-14"
@@ -46,27 +46,37 @@ const AgentDetail = ({ agent }: { agent: Agent }) => {
             />
           </View>
 
-          <Text className="text-text text-xl font-bold">{agent.agentName}</Text>
+          <Text className="text-text dark:text-dark-text text-xl font-bold">
+            {agent.agentName}
+          </Text>
         </View>
 
         {/* Phone */}
-        <Text className="text-subText text-xs mb-1 ml-1">Phone</Text>
+        <Text className="text-subText dark:text-dark-subText text-xs mb-1 ml-1">
+          Phone
+        </Text>
         <Card className="flex-row items-center gap-3 p-3 mb-4">
-          <MaterialIcons name="phone" size={22} color={colors.primary} />
-          <Text className="text-text text-base font-semibold">
+          <MaterialIcons
+            name="phone"
+            size={22}
+            className="text-primary dark:text-dark-primary"
+          />
+          <Text className="text-text dark:text-dark-text text-base font-semibold">
             {displayPhone}
           </Text>
         </Card>
 
         {/* Status */}
-        <Text className="text-subText text-xs mb-1 ml-1">Status</Text>
+        <Text className="text-subText dark:text-dark-subText text-xs mb-1 ml-1">
+          Status
+        </Text>
         <Card className="flex-row items-center gap-3 p-3 mb-4">
           <View
             className={`w-3 h-3 rounded-full ${
               isInstalled ? "bg-green-500" : "bg-red-500"
             }`}
           />
-          <Text className="text-text text-base font-semibold">
+          <Text className="text-text dark:text-dark-text text-base font-semibold">
             {isInstalled ? "Active" : "Inactive"}
           </Text>
         </Card>

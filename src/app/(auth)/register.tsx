@@ -77,7 +77,7 @@ export default function Register() {
   return (
     <Screen center>
       <AuthCard>
-        <View className="rounded-2xl bg-surface border border-border p-6">
+        <View className="rounded-2xl bg-surface dark:bg-dark-surface border border-border dark:border-dark-border p-6">
           {/* Logo */}
           <View className="items-center mb-3">
             <Image
@@ -85,16 +85,16 @@ export default function Register() {
               className="w-14 h-14 mb-2"
               resizeMode="contain"
             />
-            <Text className="text-text text-lg font-semibold tracking-wide">
+            <Text className="text-text dark:text-dark-text text-lg font-semibold tracking-wide">
               gennie
             </Text>
           </View>
 
           {/* Title */}
-          <Text className="text-text text-xl font-semibold text-center mt-3">
+          <Text className="text-text dark:text-dark-text text-xl font-semibold text-center mt-3">
             Create Account
           </Text>
-          <Text className="text-subText text-center mb-6">
+          <Text className="text-subText dark:text-dark-subtext text-center mb-6">
             Sign up to get started
           </Text>
 
@@ -138,9 +138,13 @@ export default function Register() {
           />
 
           <View className="mt-5 items-center">
-            <Text className="text-subText">Already have an account?</Text>
+            <Text className="text-subText dark:text-dark-subtext">
+              Already have an account?
+            </Text>
             <Link href="/(auth)/login">
-              <Text className="text-primary font-semibold mt-1">Sign in</Text>
+              <Text className="text-primary dark:text-dark-primary font-semibold mt-1">
+                Sign in
+              </Text>
             </Link>
           </View>
         </View>

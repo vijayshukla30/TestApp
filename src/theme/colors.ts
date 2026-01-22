@@ -12,14 +12,3 @@ export const colors = {
   primary: "#8B9CFF",
   border: "rgba(255,255,255,0.12)",
 };
-
-export const getIconColor = (bg: string) => {
-  // Manually tuned palette (best UX, no math weirdness)
-  const map: Record<string, string> = {
-    "#A5B4FC": "#1E1B4B", // indigo-900
-    "#86EFAC": "#064E3B", // emerald-900
-    "#FDE68A": "#78350F", // amber-900
-  };
-
-  return map[bg] ?? "#111827"; // fallback: gray-900
-};

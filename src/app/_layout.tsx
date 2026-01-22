@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { Provider } from "react-redux";
 
-import { ThemeProvider } from "../context/ThemeContext";
 import { store } from "../store";
 import useAppDispatch from "../hooks/useAppDispatch";
 import { restoreSession } from "../features/auth/authSlice";
@@ -32,10 +31,8 @@ function AppShell() {
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <ThemeProvider>
-        <Bootstrap />
-        <AppShell />
-      </ThemeProvider>
+      <Bootstrap />
+      <AppShell />
     </Provider>
   );
 }

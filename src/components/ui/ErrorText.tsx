@@ -1,7 +1,19 @@
-import { Text } from "react-native";
+import { Text, View } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function ErrorText({ message }: { message?: string }) {
   if (!message) return null;
 
-  return <Text className="text-red-400 text-xs mt-1 mb-2">{message}</Text>;
+  return (
+    <View className="flex-row items-center gap-1.5 mt-1 mb-2">
+      <MaterialIcons
+        name="error-outline"
+        size={16}
+        className="text-red-500 dark:text-red-400"
+      />
+      <Text className="text-xs text-red-500 dark:text-red-400 font-medium">
+        {message}
+      </Text>
+    </View>
+  );
 }

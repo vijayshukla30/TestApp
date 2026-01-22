@@ -20,7 +20,13 @@ export default function AgentLayout({
         onBack={onBack}
       />
 
-      <View className="flex-1 px-5 pt-3">{children}</View>
+      <View
+        className="flex-1 
+          px-5 pt-3 
+          bg-background dark:bg-dark-background"
+      >
+        {children}
+      </View>
     </Screen>
   );
 }

@@ -8,18 +8,26 @@ type Props = {
 export default function ToolChip({ label, available }: Props) {
   return (
     <Pressable
-      className={[
-        "px-3.5 py-2 rounded-full border",
-        available
-          ? "bg-emerald-950 border-emerald-400"
-          : "bg-red-950 border-red-400",
-      ].join(" ")}
+      className={`
+  px-3.5 py-1.5 rounded-full border
+  shadow-sm dark:shadow-md
+  ${
+    available
+      ? "bg-primary/15 dark:bg-dark-primary/25 border-primary/40 dark:border-dark-primary/50"
+      : "bg-surface-secondary dark:bg-dark-surface/70 border-border dark:border-dark-border/60"
+  }
+  active:opacity-85
+`}
     >
       <Text
-        className={[
-          "text-xs font-medium",
-          available ? "text-emerald-300" : "text-red-300",
-        ].join(" ")}
+        className={`
+          text-xs font-medium
+          ${
+            available
+              ? "text-primary dark:text-dark-primary"
+              : "text-subText dark:text-dark-subText"
+          }
+        `}
       >
         {label}
       </Text>

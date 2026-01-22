@@ -74,22 +74,22 @@ export default function Login() {
   return (
     <Screen center>
       <AuthCard>
-        <View className="rounded-2xl bg-surface border border-border p-6">
+        <View className="rounded-2xl bg-surface dark:bg-dark-surface border border-border dark:border-dark-border p-6">
           <View className="items-center mb-4">
             <Image
               source={require("../../../assets/logo.png")}
               className="w-14 h-14 mb-2"
               resizeMode="contain"
             />
-            <Text className="text-text text-lg font-semibold tracking-wide">
+            <Text className="text-text dark:text-dark-text text-lg font-semibold tracking-wide">
               gennie
             </Text>
           </View>
 
-          <Text className="text-text text-xl font-semibold text-center mt-3">
+          <Text className="text-text dark:text-dark-text text-xl font-semibold text-center mt-3">
             Sign In
           </Text>
-          <Text className="text-subText text-center mb-6">
+          <Text className="text-subText dark:text-dark-subtext text-center mb-6">
             Get access to your account
           </Text>
 
@@ -109,7 +109,7 @@ export default function Login() {
 
           <View className="items-end mb-5">
             <Link href="/(auth)/forgot-password">
-              <Text className="text-primary font-semibold">
+              <Text className="text-primary dark:text-dark-primary font-semibold">
                 Forgot Password?
               </Text>
             </Link>
@@ -118,9 +118,11 @@ export default function Login() {
           <PrimaryButton title="Sign In" onPress={onLogin} loading={loading} />
 
           <View className="mt-5 items-center">
-            <Text className="text-subText">Don’t have an account?</Text>
+            <Text className="text-subText dark:text-dark-subtext">
+              Don’t have an account?
+            </Text>
             <Link href="/(auth)/register">
-              <Text className="text-primary font-semibold mt-1">
+              <Text className="text-primary dark:text-dark-primary font-semibold mt-1">
                 Create an account
               </Text>
             </Link>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import Screen from "../../../components/Screen";
@@ -15,8 +15,15 @@ export default function AgentDetails() {
 
   if (!agent) {
     return (
-      <Screen>
-        <Text className="text-text">Agent details unavailable</Text>
+      <Screen center>
+        <View className="items-center px-6">
+          <Text className="text-text dark:text-dark-text text-lg font-semibold mb-2">
+            Agent details unavailable
+          </Text>
+          <Text className="text-subText dark:text-dark-subText text-center">
+            The selected assistant could not be loaded. Please try again.
+          </Text>
+        </View>
       </Screen>
     );
   }

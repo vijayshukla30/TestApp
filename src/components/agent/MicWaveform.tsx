@@ -1,7 +1,10 @@
 import { Animated, View } from "react-native";
 import { useEffect, useRef } from "react";
+import { useColorScheme } from "nativewind";
 
 export function MicWaveform({ active, color }: any) {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
   const bars = Array.from({ length: 5 });
   const anims = useRef(bars.map(() => new Animated.Value(4))).current;
 
@@ -39,12 +42,15 @@ export function MicWaveform({ active, color }: any) {
       {anims.map((a, i) => (
         <Animated.View
           key={i}
-          style={{
-            width: 4,
-            height: a, // 👈 animated
-            borderRadius: 2,
-            backgroundColor: color, // 👈 dynamic
-          }}
+          className={`
+        w-1 h-8 rounded-sm
+        ${
+          active
+            ? "bg-primary dark:bg-dark-primary"
+            : "bg-subText dark:bg-dark-subText"
+        }
+      `}
+          style={{ height: a }}
         />
       ))}
     </View>
