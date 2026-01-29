@@ -6,6 +6,7 @@ export type Agent = {
   platform?: {
     name: string;
     type: string;
+    isConfigRequired: string;
   } | null;
   phoneId?: {
     uuid?: string;

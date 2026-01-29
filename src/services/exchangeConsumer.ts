@@ -4,10 +4,9 @@ export const exchangeConsumerApi = {
   getConsumerDetails: async (
     agentId: string,
     seoName: string,
-    token: string
+    token: string,
   ) => {
     const exchange = getExchangeInstance(seoName);
-    console.log("Loading consumer api");
     const res = await exchange.get("/api/v1/consumer/userId", {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -22,12 +21,9 @@ export const exchangeConsumerApi = {
     agentId: string,
     seoName: string,
     token: string,
-    data: any
+    data: any,
   ) => {
     const exchange = getExchangeInstance(seoName);
-    console.log("upsertConsumer :>> ", { agentId, seoName, token });
-    console.log("upsertConsumer :>> ", data);
-
     const res = await exchange.post(`/api/v1/consumer/upsert`, data, {
       headers: {
         Authorization: `Bearer ${token}`,

@@ -8,6 +8,9 @@ import useAppDispatch from "../hooks/useAppDispatch";
 import { restoreSession } from "../features/auth/authSlice";
 import "../../global.css";
 import { ThemeProvider } from "../context/ThemeProvider";
+import { Linking } from "react-native";
+import { fetchUserActivity } from "../features/activity/activitySlice";
+import useAuth from "../hooks/useAuth";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,12 +32,33 @@ function AppShell() {
   return <Slot />;
 }
 
+function ReduxBootstrap() {
+  const dispatch = useAppDispatch();
+  const { token } = useAuth()!;
+
+  useEffect(() => {
+    const sub = Linking.addEventListener("url", ({ url }) => {
+      if (url.includes("platform-auth-success")) {
+        dispatch(fetchUserActivity({ token }));
+      }
+    });
+
+    return () => sub.remove();
+  }, [dispatch, token]);
+
+  return (
+    <>
+      <Bootstrap />
+      <AppShell />
+    </>
+  );
+}
+
 export default function RootLayout() {
   return (
     <Provider store={store}>
       <ThemeProvider>
-        <Bootstrap />
-        <AppShell />
+        <ReduxBootstrap />
       </ThemeProvider>
     </Provider>
   );

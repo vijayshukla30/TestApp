@@ -5,9 +5,11 @@ import { createAuthState } from "./auth";
 export const handlePlatformAuth = async ({
   assistant,
   consumer,
+  user,
 }: {
   assistant: Agent;
   consumer: any;
+  user: any;
 }) => {
   if (!consumer?.uuid) {
     throw new Error("Consumer missing");
@@ -23,8 +25,13 @@ export const handlePlatformAuth = async ({
   const state = createAuthState(
     consumer,
     assistant.uuid,
+    assistant,
+    user?.role,
     platformType,
-    assistant.seoName
+    assistant.seoName,
+    assistant.platform?.isConfigRequired,
+    null,
+    "mobile",
   );
 
   let url = `${serverBase}/general-auth/auth/${

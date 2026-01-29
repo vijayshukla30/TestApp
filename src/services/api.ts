@@ -13,6 +13,7 @@ import { showGlobalMessage } from "../context/UIContext";
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 async function request<T>(url: string, options: RequestOptions): Promise<T> {
+  console.log("API_BASE_URL :>> ", API_BASE_URL);
   const res = await fetch(`${API_BASE_URL}/api/v1${url}`, {
     method: options.method,
     headers: {
@@ -80,7 +81,7 @@ export const api = {
   fetchAuthProfile: (state: string) =>
     request<{ profile?: any }>(
       `/general-auth/profile?state=${encodeURIComponent(state)}`,
-      { method: "GET" }
+      { method: "GET" },
     ),
   getUserActivity: (token: string) =>
     request<{ activities: any[] }>("/user/activity", {
@@ -91,7 +92,7 @@ export const api = {
     }),
   createUserActivity: (
     data: { assistantUuid: string; isInstalled: boolean },
-    token: string
+    token: string,
   ) =>
     request(`/user/create-activity`, {
       method: "POST",

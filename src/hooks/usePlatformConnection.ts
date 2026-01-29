@@ -32,7 +32,7 @@ export const usePlatformConnection = () => {
             phoneNumber: user.phoneNumber,
             assistantId: agent.uuid,
           },
-        })
+        }),
       ).unwrap();
 
       consumerToUse = res.consumer;
@@ -46,17 +46,10 @@ export const usePlatformConnection = () => {
     await handlePlatformAuth({
       assistant: agent,
       consumer: consumerToUse,
+      user,
     });
-
-    // 3️⃣ Activity AFTER auth
-    await dispatch(
-      createUserActivity({
-        assistantUuid: agent.uuid,
-        isInstalled: true,
-        token,
-      })
-    ).unwrap();
   };
+
   const disconnectPlatform = async (agent: Agent) => {
     if (!agent || !token) return;
 
@@ -65,7 +58,7 @@ export const usePlatformConnection = () => {
         agentId: agent.uuid,
         seoName: agent.seoName,
         token,
-      })
+      }),
     ).unwrap();
 
     await dispatch(
@@ -73,7 +66,7 @@ export const usePlatformConnection = () => {
         assistantUuid: agent.uuid,
         isInstalled: false,
         token,
-      })
+      }),
     ).unwrap();
   };
 
