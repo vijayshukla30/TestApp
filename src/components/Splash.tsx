@@ -1,4 +1,4 @@
-import { Text, StyleSheet, Image } from "react-native";
+import { Text, Image } from "react-native";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -12,34 +12,17 @@ export default function Splash() {
     <Animated.View
       entering={FadeIn.duration(400)}
       exiting={FadeOut.duration(300)}
-      style={styles.container}
+      className="flex-1 items-center justify-center bg-[#0B1020]"
     >
       <Image
         source={require("../../assets/logo.png")}
-        style={styles.logo}
+        className="w-24 h-24 mb-3"
         resizeMode="contain"
       />
-      <Text style={styles.text}>gennie</Text>
+
+      <Text className="text-gray-200 text-xl font-semibold tracking-wide">
+        gennie
+      </Text>
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0B1020",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logo: {
-    width: 96,
-    height: 96,
-    marginBottom: 12,
-  },
-  text: {
-    color: "#E5E7EB",
-    fontSize: 20,
-    fontWeight: "600",
-    letterSpacing: 1,
-  },
-});

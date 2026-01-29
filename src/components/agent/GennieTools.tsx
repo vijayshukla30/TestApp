@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text } from "react-native";
-import AppCard from "../ui/AppCard";
-import useTheme from "../../hooks/useTheme";
+import { Text, View } from "react-native";
 import { getPlatformCapabilities } from "../../utils/platform";
 import ToolDetails from "./ToolDetails";
 
@@ -11,7 +9,6 @@ type Props = {
 };
 
 const GennieTools = ({ platformName, agentName }: Props) => {
-  const { theme } = useTheme();
   const capabilities = getPlatformCapabilities(platformName);
 
   const [showAvailable, setShowAvailable] = useState(true);
@@ -21,12 +18,12 @@ const GennieTools = ({ platformName, agentName }: Props) => {
   const unavailable = capabilities.filter((t) => !t.available);
 
   return (
-    <AppCard style={styles.toolsCard}>
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+    <View className="rounded-2xl border border-white/10 bg-surface px-5 py-5">
+      <Text className="text-text text-base font-bold mb-2">
         {agentName} Tools
       </Text>
 
-      <Text style={[styles.sectionDesc, { color: theme.subText }]}>
+      <Text className="text-subText text-xs leading-5 mb-4">
         Create, update, delete, and manage tasks using this agent with
         authentication.
       </Text>
@@ -50,24 +47,8 @@ const GennieTools = ({ platformName, agentName }: Props) => {
           onToggle={() => setShowUnavailable((prev) => !prev)}
         />
       )}
-    </AppCard>
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  toolsCard: {
-    paddingVertical: 18,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  sectionDesc: {
-    fontSize: 13,
-    lineHeight: 18,
-    marginBottom: 16,
-  },
-});
 
 export default GennieTools;

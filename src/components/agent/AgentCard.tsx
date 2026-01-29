@@ -1,7 +1,5 @@
-import { Pressable, Image, Text, StyleSheet } from "react-native";
-import AppCard from "../ui/AppCard";
+import { Pressable, Image, Text, View } from "react-native";
 import { getPlatformImage } from "../../utils/platform";
-import useTheme from "../../hooks/useTheme";
 import { Agent } from "../../types/agent";
 
 type Props = {
@@ -10,37 +8,21 @@ type Props = {
 };
 
 export default function AgentCard({ agent, onOpenDetail }: Props) {
-  const { theme } = useTheme();
-
   return (
     <Pressable onPress={onOpenDetail}>
-      <AppCard style={styles.card}>
+      <View className="items-center py-7 rounded-2xl border border-white/10 bg-surface">
         <Image
           source={getPlatformImage(agent.platform?.type)}
-          style={styles.icon}
+          className="w-14 h-14 mb-4"
           resizeMode="contain"
         />
-        <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+        <Text
+          className="text-text text-lg font-bold text-center"
+          numberOfLines={1}
+        >
           {agent.agentName}
         </Text>
-      </AppCard>
+      </View>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    alignItems: "center",
-    paddingVertical: 28,
-  },
-  icon: {
-    width: 56,
-    height: 56,
-    marginBottom: 16,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-});

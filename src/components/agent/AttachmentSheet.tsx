@@ -1,80 +1,48 @@
-import { Modal, Pressable, View, Text, StyleSheet } from "react-native";
+import { Modal, Pressable, View, Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import useTheme from "../../hooks/useTheme";
-
-export function AttachmentSheet({
-  visible,
-  onClose,
-}: {
+import { getIconColor } from "../../theme/colors";
+type Props = {
   visible: boolean;
   onClose: () => void;
-}) {
-  const { theme } = useTheme();
-
+};
+export function AttachmentSheet({ visible, onClose }: Props) {
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <Pressable style={styles.sheetOverlay} onPress={onClose}>
-        <View style={[styles.sheet, { backgroundColor: theme.surface }]}>
-          <AttachmentItem icon="photo" label="Gallery" color="#A5B4FC" />
-          <AttachmentItem icon="camera-alt" label="Camera" color="#86EFAC" />
-          <AttachmentItem icon="attach-file" label="File" color="#FDE68A" />
+      <Pressable className="flex-1 justify-end bg-black/40" onPress={onClose}>
+        <View className="flex-row justify-around px-4 py-6 rounded-t-3xl bg-surface">
+          <AttachmentItem icon="photo" label="Gallery" bgColor="#A5B4FC" />
+          <AttachmentItem icon="camera-alt" label="Camera" bgColor="#86EFAC" />
+          <AttachmentItem icon="attach-file" label="File" bgColor="#FDE68A" />
         </View>
       </Pressable>
     </Modal>
   );
 }
 
-function AttachmentItem({ icon, label, color }: any) {
-  const { theme } = useTheme();
+type ItemProps = {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  label: string;
+  bgColor: string;
+};
+
+function AttachmentItem({ icon, label, bgColor }: ItemProps) {
+  const iconColor = getIconColor(bgColor);
   return (
-    <Pressable style={styles.attachmentItem}>
-      <View style={[styles.attachmentIcon, { backgroundColor: color }]}>
-        <MaterialIcons name={icon} size={26} color="#000" />
-      </View>
-      <Text
+    <Pressable className="items-center w-[90px]">
+      <View
+        className="w-20 h-20 rounded-full items-center justify-center shadow-lg"
         style={{
-          color: theme.text,
-          fontSize: 13,
-          marginTop: 6,
+          backgroundColor: bgColor,
+          shadowColor: bgColor,
+          shadowOpacity: 0.45,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 5,
         }}
       >
-        {label}
-      </Text>
+        <MaterialIcons name={icon} size={26} color={iconColor} />
+      </View>
+      <Text className="text-text text-xs mt-2">{label}</Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  sheetOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-  sheet: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-
-  attachmentItem: {
-    alignItems: "center",
-    width: 90,
-  },
-
-  attachmentIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
-
-    // Depth
-    elevation: 8,
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-  },
-});

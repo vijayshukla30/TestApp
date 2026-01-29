@@ -1,159 +1,92 @@
-import { Pressable, Image, Text, StyleSheet, View } from "react-native";
+import { Pressable, Image, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import AppCard from "../ui/AppCard";
+import * as Linking from "expo-linking";
+import * as Haptics from "expo-haptics";
+
 import { getPlatformImage } from "../../utils/platform";
-import useTheme from "../../hooks/useTheme";
 import { Agent } from "../../types/agent";
+import Card from "../ui/Card";
+import { extractUSLocalNumber, formatPhoneNumberUS } from "../../utils/format";
 
 type Props = {
   agent: Agent;
   onOpenDetail: () => void;
   onUseNow: () => void;
-  onCall?: () => void;
 };
 
 export default function HomeAgentCard({
   agent,
   onOpenDetail,
   onUseNow,
-  onCall,
 }: Props) {
-  const { theme } = useTheme();
+  const dialNumber = async () => {
+    if (!agent.phoneId?.phoneNumber) return;
+
+    const rawPhone = agent.phoneId?.phoneNumber;
+    const countryCode = agent.phoneId?.countryCode ?? "";
+
+    const localDigits = extractUSLocalNumber(rawPhone);
+    const formattedLocal = formatPhoneNumberUS(localDigits);
+
+    const displayPhone =
+      formattedLocal && countryCode
+        ? `${countryCode} ${formattedLocal}`
+        : rawPhone;
+
+    // remove spaces, brackets, dashes
+    const phone = displayPhone.replace(/[^\d+]/g, "");
+    const url = `tel:${phone}`;
+
+    const canOpen = await Linking.canOpenURL(url);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (canOpen) {
+      await Linking.openURL(url);
+    }
+  };
 
   return (
-    <AppCard
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.surface,
-          shadowColor: theme.primary,
-        },
-      ]}
-    >
+    <Card className="p-6 items-center">
       {agent.phoneId && (
         <Pressable
-          style={[styles.cornerIcon, styles.leftIcon]}
-          onPress={onCall}
+          className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/10 items-center justify-center"
+          onPress={dialNumber}
           android_ripple={{ color: "#ffffff20", radius: 18 }}
         >
-          <MaterialIcons name="call" size={18} color={theme.primary} />
+          <MaterialIcons name="call" size={18} color="#8B9CFF" />
         </Pressable>
       )}
 
       {/* Settings icon – TOP RIGHT */}
       <Pressable
-        style={[styles.cornerIcon, styles.rightIcon]}
+        className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/10 items-center justify-center"
         onPress={onOpenDetail}
         android_ripple={{ color: "#ffffff20", radius: 18 }}
       >
-        <MaterialIcons name="settings" size={18} color={theme.subText} />
+        <MaterialIcons name="settings" size={18} color="#9CA3AF" />
       </Pressable>
 
       {/* Platform Icon */}
-      <View style={styles.iconWrap}>
+      <View className="w-16 h-16 rounded-full bg-white/10 items-center justify-center mb-4">
         <Image
           source={getPlatformImage(agent.platform?.type)}
-          style={styles.icon}
+          className="w-10 h-10"
           resizeMode="contain"
         />
       </View>
 
       {/* Agent name */}
-      <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+      <Text className="text-text text-lg font-bold mb-4" numberOfLines={1}>
         {agent.agentName}
       </Text>
 
       {/* CTA */}
       <Pressable
-        style={({ pressed }) => [
-          styles.useBtn,
-          {
-            backgroundColor: theme.primary,
-            opacity: pressed ? 0.85 : 1,
-          },
-        ]}
+        className="flex-row items-center gap-1 bg-primary px-4 py-2 rounded-xl"
         onPress={onUseNow}
       >
         <MaterialIcons name="play-arrow" size={18} color="#000" />
-        <Text style={styles.useText}>Use Now</Text>
+        <Text className="text-black font-bold text-sm">Use Now</Text>
       </Pressable>
-    </AppCard>
+    </Card>
   );
 }
-const styles = StyleSheet.create({
-  card: {
-    paddingVertical: 30,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    alignItems: "center",
-
-    // Depth
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 10,
-  },
-
-  cornerIcon: {
-    position: "absolute",
-    top: 12,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#ffffff08",
-    opacity: 0.85,
-  },
-
-  leftIcon: {
-    left: 12,
-  },
-
-  rightIcon: {
-    right: 12,
-  },
-
-  iconWrap: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: "#ffffff10",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 18,
-  },
-
-  icon: {
-    width: 40,
-    height: 40,
-  },
-
-  name: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
-
-  useBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 14,
-
-    // Button depth
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-
-  useText: {
-    fontWeight: "700",
-    fontSize: 14,
-    color: "#000",
-  },
-});

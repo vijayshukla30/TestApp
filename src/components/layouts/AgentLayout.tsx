@@ -1,5 +1,4 @@
-// components/layouts/AgentLayout.tsx
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import Screen from "../Screen";
 import AgentHeader from "../agent/AgentHeader";
 import { Agent } from "../../types/agent";
@@ -21,15 +20,7 @@ export default function AgentLayout({
         onBack={onBack}
       />
 
-      <View style={styles.body}>{children}</View>
+      <View className="flex-1 px-5 pt-3">{children}</View>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  body: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-  },
-});

@@ -1,6 +1,6 @@
-import { View, FlatList, StyleSheet, RefreshControl } from "react-native";
-import useTheme from "../../hooks/useTheme";
+import { View, FlatList, RefreshControl } from "react-native";
 import AgentCardSkeleton from "../skeltons/AgentCardSkeleton";
+import { colors } from "../../theme/colors";
 
 type Props<T> = {
   data: T[];
@@ -12,7 +12,6 @@ type Props<T> = {
 };
 
 const NUM_COLUMNS = 2;
-const GAP = 16;
 const ROW_GAP = 16;
 
 export default function AgentGrid<T>({
@@ -23,7 +22,6 @@ export default function AgentGrid<T>({
   getId,
   renderItem,
 }: Props<T>) {
-  const { theme } = useTheme();
   const ItemSeparator = () => <View style={{ height: ROW_GAP }} />;
 
   if (loading) {
@@ -33,10 +31,10 @@ export default function AgentGrid<T>({
         keyExtractor={(i) => `skeleton-${i}`}
         numColumns={NUM_COLUMNS}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
-        columnWrapperStyle={styles.columnWrapper}
+        columnWrapperStyle={{ gap: 16 }}
         ItemSeparatorComponent={ItemSeparator}
         renderItem={() => (
-          <View style={styles.cardContainer}>
+          <View className="flex-1">
             <AgentCardSkeleton />
           </View>
         )}
@@ -50,30 +48,21 @@ export default function AgentGrid<T>({
       keyExtractor={getId}
       numColumns={NUM_COLUMNS}
       contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
-      columnWrapperStyle={styles.columnWrapper}
+      columnWrapperStyle={{ gap: 16 }}
       ItemSeparatorComponent={ItemSeparator}
       refreshControl={
         onRefresh ? (
           <RefreshControl
             refreshing={!!refreshing}
             onRefresh={onRefresh}
-            tintColor={theme.primary}
-            colors={[theme.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         ) : undefined
       }
       renderItem={({ item }) => (
-        <View style={styles.cardContainer}>{renderItem(item)}</View>
+        <View className="flex-1">{renderItem(item)}</View>
       )}
     />
   );
 }
-
-const styles = StyleSheet.create({
-  columnWrapper: {
-    gap: GAP,
-  },
-  cardContainer: {
-    flex: 1,
-  },
-});

@@ -1,8 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
-import { Button } from "react-native-paper";
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import AppCard from "../ui/AppCard";
-import useTheme from "../../hooks/useTheme";
+import { colors } from "../../theme/colors";
 
 type Props = {
   onConnect: () => void;
@@ -17,64 +15,34 @@ export default function ConnectionSection({
   installed,
   loading,
 }: Props) {
-  const { theme } = useTheme();
-
   return (
-    <AppCard style={styles.card}>
-      <View style={styles.iconWrap}>
-        <MaterialIcons name="link" size={36} color={theme.primary} />
+    <View className="items-center rounded-2xl border border-white/10 bg-surface px-5 py-7 mb-6">
+      <View className="w-[72px] h-[72px] rounded-full items-center justify-center mb-3 bg-primary/20">
+        <MaterialIcons name="link" size={36} color={colors.primary} />
       </View>
 
-      <Text style={[styles.title, { color: theme.text }]}>
+      <Text className="text-text text-base font-semibold">
         Platform Connection
       </Text>
 
-      <Text style={[styles.subtitle, { color: theme.subText }]}>
+      <Text className="text-subText text-xs text-center mt-1.5 mb-4">
         Connect your platform to enable tools and automation.
       </Text>
 
-      <Button
-        mode="contained"
-        loading={loading}
+      <Pressable
         onPress={installed ? onDisconnect : onConnect}
-        style={styles.button}
+        className={`min-w-[180px] h-11 rounded-xl items-center justify-center ${
+          installed ? "bg-red-500" : "bg-primary"
+        }`}
       >
-        {installed ? "Disconnect" : "Connect Platform"}
-      </Button>
-    </AppCard>
+        {loading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <Text className="text-black font-semibold text-[15px]">
+            {installed ? "Disconnect" : "Connect Platform"}
+          </Text>
+        )}
+      </Pressable>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    alignItems: "center",
-    paddingVertical: 26,
-    marginBottom: 24,
-  },
-
-  iconWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "rgba(129,140,248,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
-  },
-
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  subtitle: {
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 6,
-    marginBottom: 16,
-  },
-
-  button: {
-    minWidth: 180,
-  },
-});

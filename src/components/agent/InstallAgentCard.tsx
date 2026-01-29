@@ -1,87 +1,31 @@
-// components/agent/InstallAgentCard.tsx
-
-import { Pressable, Text, StyleSheet, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import AppCard from "../ui/AppCard";
-import useTheme from "../../hooks/useTheme";
+import Card from "../ui/Card";
 
 type Props = {
   onPress: () => void;
 };
 
 export default function InstallAgentCard({ onPress }: Props) {
-  const { theme } = useTheme();
-
   return (
-    <AppCard
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.surface,
-          borderColor: theme.border,
-        },
-      ]}
-    >
+    <Card className="p-6 items-center border-dashed">
       <Pressable
-        style={styles.content}
         onPress={onPress}
         android_ripple={{ color: "#ffffff10" }}
+        className="items-center"
       >
-        <View style={styles.iconWrap}>
-          <MaterialIcons name="add" size={32} color={theme.primary} />
+        <View className="w-16 h-16 rounded-full bg-white/10 items-center justify-center mb-6">
+          <MaterialIcons name="add" size={32} color="#8B9CFF" />
         </View>
 
-        <Text style={[styles.title, { color: theme.text }]}>
+        <Text className="text-text font-bold text-base mb-3">
           Install Assistant
         </Text>
 
-        <Text style={[styles.subText, { color: theme.subText }]}>
+        <Text className="text-subText text-xs text-center">
           Browse available assistants
         </Text>
       </Pressable>
-    </AppCard>
+    </Card>
   );
 }
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 20,
-    paddingVertical: 28,
-    paddingHorizontal: 18,
-    alignItems: "center",
-
-    // Softer than agent cards
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-
-    borderWidth: 1,
-    borderStyle: "dashed",
-  },
-
-  content: {
-    alignItems: "center",
-  },
-
-  iconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#ffffff10",
-    marginBottom: 30,
-  },
-
-  title: {
-    fontSize: 15,
-    fontWeight: "700",
-    marginBottom: 17,
-  },
-
-  subText: {
-    fontSize: 12,
-    textAlign: "center",
-  },
-});

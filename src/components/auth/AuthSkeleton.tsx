@@ -1,17 +1,10 @@
-import { View, StyleSheet } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
+import { View, ActivityIndicator } from "react-native";
+import { colors } from "../../theme/colors";
 
 export default function AuthSkeleton() {
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" />
+    <View className="py-16 items-center">
+      <ActivityIndicator size="large" color={colors.primary} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 60,
-    alignItems: "center",
-  },
-});

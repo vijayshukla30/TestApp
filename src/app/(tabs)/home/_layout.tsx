@@ -1,27 +1,22 @@
 import { Stack } from "expo-router";
-import useTheme from "../../../hooks/useTheme";
+import { colors } from "../../../theme/colors";
 
 export default function HomeLayout() {
-  const { theme } = useTheme();
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.background,
-        },
-        headerTintColor: theme.text,
-        headerTitleStyle: {
-          color: theme.text,
-          fontWeight: "600",
-        },
-        headerShadowVisible: false,
-        animation: "slide_from_right",
-        animationDuration: 220,
+        headerShown: false,
       }}
     >
       <Stack.Screen
         name="index"
         options={{ headerShown: false, title: "Dashboard" }}
+      />
+      <Stack.Screen
+        name="[agentId]"
+        options={{
+          title: "Agent Details",
+        }}
       />
       <Stack.Screen
         name="use/[agentId]"
