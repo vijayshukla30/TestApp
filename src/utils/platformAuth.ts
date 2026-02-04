@@ -15,6 +15,7 @@ export const handlePlatformAuth = async ({
     throw new Error("Consumer missing");
   }
 
+  console.log("assistant.platform :>> ", assistant.platform);
   const platformType = assistant.platform?.type?.toLowerCase() || "custom";
 
   const serverBase = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -24,15 +25,15 @@ export const handlePlatformAuth = async ({
 
   const state = createAuthState(
     consumer,
-    assistant.uuid,
     assistant,
     user?.role,
     platformType,
-    assistant.seoName,
     assistant.platform?.isConfigRequired,
     null,
     "mobile",
   );
+
+  console.log("state install agent :>> ", state);
 
   let url = `${serverBase}/general-auth/auth/${
     assistant.uuid

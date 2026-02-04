@@ -38,7 +38,8 @@ function ReduxBootstrap() {
 
   useEffect(() => {
     const sub = Linking.addEventListener("url", ({ url }) => {
-      if (url.includes("platform-auth-success")) {
+      console.log("url :>> ", url);
+      if (url.includes("platform-auth-success") && token) {
         dispatch(fetchUserActivity({ token }));
       }
     });

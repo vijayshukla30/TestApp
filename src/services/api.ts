@@ -42,6 +42,10 @@ async function request<T>(url: string, options: RequestOptions): Promise<T> {
   return data as T;
 }
 
+async function requestRaw<T>(url: string, options: RequestOptions): Promise<T> {
+  return request<T>(url, options);
+}
+
 export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>("/user/login", {
@@ -101,4 +105,5 @@ export const api = {
         Authorization: `Bearer ${token}`,
       },
     }),
+  requestRaw,
 };

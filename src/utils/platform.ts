@@ -3,7 +3,10 @@ export const PLATFORMS = {
   SLACK: "slack",
   TRELLO: "trello",
   TODOIST: "todoist",
-  CUSTOM_PLATFORM: "custom platform",
+  GMAIL: "gmail",
+  OUTLOOK: "outlook",
+  OTHER: "other",
+  NONE: "none",
 };
 
 export function getPlatformImage(type?: string) {
@@ -147,3 +150,6 @@ export const getPlatformCapabilities = (platformName: string | any) => {
       return [];
   }
 };
+export const ASANA_BASE_URL = "https://app.asana.com/api/1.0";
+export const TRELLO_BASE_URL = "https://api.trello.com/1";
+export const TODOIST_BASE_URL = "https://api.todoist.com/sync/v9";

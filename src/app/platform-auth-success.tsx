@@ -4,6 +4,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import useAppDispatch from "../hooks/useAppDispatch";
 import useAuth from "../hooks/useAuth";
 import { fetchUserActivity } from "../features/activity/activitySlice";
+import { fetchConsumerByAgent } from "../features/consumer/consumerSlice";
+import { decodeAuthState } from "../utils/auth";
 
 export default function PlatformAuthSuccess() {
   const router = useRouter();
@@ -11,8 +13,9 @@ export default function PlatformAuthSuccess() {
   const { token } = useAuth()!;
 
   const params = useLocalSearchParams();
+  console.log("params :>> ", params);
   const encodedState = params.state as string | undefined;
-
+  console.log("encodedState :>> ", encodedState);
   useEffect(() => {
     const run = async () => {
       try {
@@ -21,23 +24,39 @@ export default function PlatformAuthSuccess() {
           return;
         }
 
-        const decoded = JSON.parse(atob(decodeURIComponent(encodedState)));
-
-        const { assistantId, isConfigRequired } = decoded;
+        const decoded = decodeAuthState(encodedState);
+        if (!decoded) {
+          router.replace("/");
+          return;
+        }
+        console.log("decoded :>> ", decoded);
+        const { assistantId, isConfigRequired, seoName } = decoded;
 
         // 🔄 Sync install state
-        await dispatch(fetchUserActivity({ token }));
+        if (token) {
+          await dispatch(fetchUserActivity({ token }));
+        }
 
+        if (assistantId && seoName && token) {
+          await dispatch(
+            fetchConsumerByAgent({
+              agentId: assistantId,
+              seoName,
+              token,
+            }),
+          );
+        }
+        console.log("isConfigRequired :>> ", isConfigRequired);
         // 🔀 Decide where to go
         if (isConfigRequired) {
           router.replace({
             pathname: "/agents/[agentId]/config",
-            params: { agentId: assistantId },
+            params: { agentId: assistantId, cState: encodedState },
           });
         } else {
           router.replace({
             pathname: "/agents/[agentId]",
-            params: { agentId: assistantId },
+            params: { agentId: assistantId, cState: encodedState },
           });
         }
       } catch (err) {

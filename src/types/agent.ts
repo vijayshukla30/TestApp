@@ -4,9 +4,11 @@ export type Agent = {
   seoName?: string;
   isPublic: boolean;
   platform?: {
+    uuid: string;
     name: string;
     type: string;
     isConfigRequired: string;
+    clientId: string;
   } | null;
   phoneId?: {
     uuid?: string;
