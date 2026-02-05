@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useAppSelector } from "../../hooks/useAppSelector";
 
 export default function AppStackLayout({
@@ -25,9 +25,11 @@ export default function AppStackLayout({
             onPress={() => {
               router.push("/settings");
             }}
-            className="mr-3 w-9 h-9 rounded-full bg-primary items-center justify-center"
+            className="w-10 h-10 rounded-full bg-primary items-center justify-center"
           >
-            <Text className="text-white font-semibold">{initial}</Text>
+            <View className="h-9 w-9 items-center justify-center rounded-full bg-primary">
+              <Text className="text-white font-semibold">{initial}</Text>
+            </View>
           </Pressable>
         ),
       }}

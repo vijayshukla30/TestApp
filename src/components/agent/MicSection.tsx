@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { View, Text, Pressable, Animated } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";

@@ -5,6 +5,8 @@ export default function RecordNoteStackLayout() {
   return (
     <AppStackLayout title="">
       <Stack.Screen name="index" />
+      <Stack.Screen name="new" />
+      <Stack.Screen name="[id]" />
     </AppStackLayout>
   );
 }

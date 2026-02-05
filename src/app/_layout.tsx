@@ -2,6 +2,7 @@ import { Slot } from "expo-router";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { Provider } from "react-redux";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { ThemeProvider } from "../context/ThemeContext";
 import { store } from "../store";
@@ -10,10 +11,14 @@ import { restoreSession } from "../features/auth/authSlice";
 import "../../global.css";
 import { useAppSelector } from "../hooks/useAppSelector";
 import useAutoLogout from "../hooks/useAutoLogout";
+import { bootstrapStorage } from "../utils/bootstrapStorage";
+import useAuth from "../hooks/useAuth";
+
 SplashScreen.preventAutoHideAsync();
 
 function Bootstrap() {
   const dispatch = useAppDispatch();
+  const { user } = useAuth()!;
 
   const loading = useAppSelector((state) => state.auth.loading);
 
@@ -27,6 +32,16 @@ function Bootstrap() {
     }
   }, [loading]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const init = async () => {
+      await bootstrapStorage();
+    };
+
+    init();
+  }, [user]);
+
   return null;
 }
 
@@ -38,10 +53,12 @@ function AppShell() {
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <ThemeProvider>
-        <Bootstrap />
-        <AppShell />
-      </ThemeProvider>
+      <GestureHandlerRootView>
+        <ThemeProvider>
+          <Bootstrap />
+          <AppShell />
+        </ThemeProvider>
+      </GestureHandlerRootView>
     </Provider>
   );
 }
