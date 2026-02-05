@@ -1,17 +1,10 @@
 import { Stack } from "expo-router";
 import AppStackLayout from "../../../components/layouts/AppStackLayout";
 
-export default function HomeStackLayout() {
+export default function RecordNoteStackLayout() {
   return (
     <AppStackLayout title="">
       <Stack.Screen name="index" />
-      <Stack.Screen name="[agentId]" />
-      <Stack.Screen
-        name="use/[agentId]"
-        options={{
-          presentation: "card",
-        }}
-      />
     </AppStackLayout>
   );
 }

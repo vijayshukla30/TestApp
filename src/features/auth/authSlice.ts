@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 import { getSession, clearSession } from "../../services/session";
 import { User, JwtPayload } from "../../types/auth";
+import { isTokenExpired } from "../../utils/tokenExpiry";
 
 type AuthState = {
   user: User | null;
@@ -23,6 +24,11 @@ export const restoreSession = createAsyncThunk(
 
     const decoded = jwtDecode<JwtPayload>(session.token);
 
+    if (isTokenExpired(decoded.exp)) {
+      await clearSession();
+      return null;
+    }
+
     return {
       token: session.token,
       user: {
@@ -32,7 +38,7 @@ export const restoreSession = createAsyncThunk(
         role: decoded.role,
       } as User,
     };
-  }
+  },
 );
 
 const authSlice = createSlice({

@@ -78,12 +78,9 @@ export default function Login() {
           <View className="items-center mb-4">
             <Image
               source={require("../../../assets/logo.png")}
-              className="w-14 h-14 mb-2"
+              className="w-28 h-14 mb-1"
               resizeMode="contain"
             />
-            <Text className="text-text text-lg font-semibold tracking-wide">
-              gennie
-            </Text>
           </View>
 
           <Text className="text-text text-xl font-semibold text-center mt-3">

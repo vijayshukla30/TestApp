@@ -82,12 +82,9 @@ export default function Register() {
           <View className="items-center mb-3">
             <Image
               source={require("../../../assets/logo.png")}
-              className="w-14 h-14 mb-2"
+              className="w-28 h-14 mb-2"
               resizeMode="contain"
             />
-            <Text className="text-text text-lg font-semibold tracking-wide">
-              gennie
-            </Text>
           </View>
 
           {/* Title */}

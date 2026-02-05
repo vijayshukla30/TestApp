@@ -33,7 +33,7 @@ export default function Home() {
   const installed = list.filter((x) => x.isInstalled && x.assistantId?.uuid);
 
   return (
-    <Screen>
+    <Screen withHeader>
       <View className="mt-2 mb-6 mx-6">
         <Text className="text-subText text-sm">Welcome back 👋</Text>
         <Text className="text-text text-lg font-semibold mt-1">
