@@ -59,3 +59,28 @@ export function getDefaultRecordingName() {
 
   return `recording_${yyyy}_${mm}_${dd}_${hh}_${min}`;
 }
+
+export function formatDate(date: string) {
+  const d = new Date(date);
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function formatTime(date: string) {
+  const d = new Date(date);
+  return d.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function formatDuration(ms?: number) {
+  if (!ms) return "00:00";
+  const total = Math.floor(ms / 1000);
+  const mm = String(Math.floor(total / 60)).padStart(2, "0");
+  const ss = String(total % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}

@@ -1,4 +1,4 @@
-import { Text, Pressable } from "react-native";
+import { Text, Pressable, View } from "react-native";
 import ReanimatedSwipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -6,14 +6,20 @@ import Reanimated, {
   SharedValue,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useRef } from "react";
+import { formatDate, formatDuration, formatTime } from "../../utils/format";
+import MiniWaveform from "./MiniWaveform";
 
 type Props = {
   rec: any;
   onPress: () => void;
   onDelete: () => void;
   onOpen: (ref: SwipeableMethods) => void;
+  onPlay: () => void;
+  progress: number;
+  isPlaying: boolean;
+  isPaused: boolean;
 };
 
 function RightAction(
@@ -34,7 +40,7 @@ function RightAction(
         onPress={onDelete}
         className="h-14 w-14 rounded-full bg-red-500/90 justify-center items-center"
       >
-        <Ionicons name="trash-outline" size={22} color="white" />
+        <MaterialIcons name="delete-outline" size={22} color="white" />
       </Pressable>
     </Reanimated.View>
   );
@@ -45,6 +51,10 @@ export default function RecordingCard({
   onPress,
   onDelete,
   onOpen,
+  onPlay,
+  progress,
+  isPlaying,
+  isPaused,
 }: Props) {
   const swipeRef = useRef<SwipeableMethods>(null);
 
@@ -74,9 +84,39 @@ export default function RecordingCard({
           border-white/10
         "
       >
-        <Text className="text-base font-medium text-text">
-          {rec.name || "Recording"}
-        </Text>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1 pr-3">
+            <Text
+              className="text-white text-[15px] font-medium"
+              numberOfLines={1}
+            >
+              {rec.name || "Recording"}
+            </Text>
+
+            <Text className="text-white/50 text-[13px] mt-1">
+              {formatDate(rec.createdAt)} · {formatTime(rec.createdAt)} ·{" "}
+              {formatDuration(rec.duration)}
+            </Text>
+            {progress > 0 && <MiniWaveform progress={progress} />}
+          </View>
+          <Pressable
+            onPress={onPlay}
+            hitSlop={12}
+            className="
+            h-10 w-10
+            rounded-full
+            bg-green-500/90
+            items-center
+            justify-center
+          "
+          >
+            <MaterialIcons
+              name={isPlaying && !isPaused ? "pause" : "play-arrow"}
+              size={22}
+              color="#000"
+            />
+          </Pressable>
+        </View>
       </Pressable>
     </ReanimatedSwipeable>
   );

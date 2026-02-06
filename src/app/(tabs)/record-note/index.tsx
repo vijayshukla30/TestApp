@@ -1,5 +1,5 @@
 import { Text, Pressable, FlatList, View } from "react-native";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { File } from "expo-file-system";
 import { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -8,10 +8,17 @@ import { getRecordings, setRecordings } from "../../../utils/storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { groupByDate } from "../../../utils/groupByDate";
 import RecordingCard from "../../../components/recorder/RecordingCard";
+import { Audio } from "expo-av";
 
 export default function Recording() {
   const router = useRouter();
   const [groups, setGroups] = useState<any[]>([]);
+
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(0); // 0 → 1
 
   async function load() {
     const data = await getRecordings();
@@ -23,6 +30,12 @@ export default function Recording() {
       load();
     }, []),
   );
+
+  useEffect(() => {
+    return () => {
+      stopPlayback();
+    };
+  }, []);
 
   async function deleteRecording(rec: any) {
     // delete file
@@ -45,6 +58,56 @@ export default function Recording() {
       openSwipeRef.current.close();
     }
     openSwipeRef.current = ref;
+  }
+
+  async function stopPlayback() {
+    if (soundRef.current) {
+      await soundRef.current.stopAsync();
+      await soundRef.current.unloadAsync();
+      soundRef.current = null;
+    }
+    setPlayingId(null);
+    setIsPaused(false);
+    setProgress(0);
+  }
+
+  async function playRecording(rec: any) {
+    // If same recording → pause
+    if (playingId === rec.id && soundRef.current && !isPaused) {
+      await soundRef.current.pauseAsync();
+      setIsPaused(true);
+      return;
+    }
+
+    if (playingId === rec.id && soundRef.current && isPaused) {
+      await soundRef.current.playAsync();
+      setIsPaused(false);
+      return;
+    }
+
+    // Stop any existing playback
+    await stopPlayback();
+
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: rec.uri },
+      { shouldPlay: true },
+    );
+
+    soundRef.current = sound;
+    setPlayingId(rec.id);
+    setIsPaused(false);
+
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (!status.isLoaded) return;
+
+      if (status.durationMillis) {
+        setProgress(status.positionMillis / status.durationMillis);
+      }
+
+      if (status.didJustFinish) {
+        stopPlayback();
+      }
+    });
   }
 
   return (
@@ -75,6 +138,10 @@ export default function Recording() {
                   }}
                   onDelete={() => deleteRecording(rec)}
                   onOpen={handleOpen}
+                  onPlay={() => playRecording(rec)}
+                  isPlaying={playingId === rec.id}
+                  isPaused={playingId === rec.id && isPaused}
+                  progress={playingId === rec.id ? progress : 0}
                 />
               ))}
             </View>
