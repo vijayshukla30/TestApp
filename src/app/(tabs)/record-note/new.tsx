@@ -1,6 +1,13 @@
-import { View, Text, Pressable, Modal, TextInput } from "react-native";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "expo-router";
+import {
+  View,
+  Text,
+  Pressable,
+  Modal,
+  TextInput,
+  BackHandler,
+} from "react-native";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
+import { useRouter, useNavigation } from "expo-router";
 import { File } from "expo-file-system";
 import { startRecording, stopRecording } from "../../../utils/audioRecorder";
 import { saveRecording } from "../../../utils/storage";
@@ -21,6 +28,24 @@ export default function NewRecording() {
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const [fileName, setFileName] = useState("");
+  const [isPaused, setIsPaused] = useState(false);
+
+  const navigation = useNavigation();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      gestureEnabled: !recording,
+      headerBackVisible: !recording,
+    });
+  }, [recording]);
+
+  useEffect(() => {
+    if (!recording) return;
+
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => true);
+
+    return () => sub.remove();
+  }, [recording]);
 
   useEffect(() => {
     let mounted = true;
@@ -40,25 +65,15 @@ export default function NewRecording() {
     };
   }, []);
 
-  // async function onStop() {
-  //   if (!recording) return;
-
-  //   const res = await stopRecording(recording);
-  //   setRecording(null);
-  //   setResult(res);
-
-  //   setFileName(getDefaultRecordingName());
-  //   setConfirmVisible(true);
-  // }
-
   const handleStop = async () => {
     const rec = recordingRef.current;
     if (!rec) return;
 
-    const res = await stopRecording(recording);
+    const res = await stopRecording(rec);
 
     recordingRef.current = null;
     setRecording(null);
+    setIsPaused(false);
 
     if (!res) {
       router.back();
@@ -68,6 +83,28 @@ export default function NewRecording() {
     setResult(res);
     setFileName(getDefaultRecordingName());
     setConfirmVisible(true);
+  };
+
+  const handlePause = async () => {
+    if (!recording || isPaused) return;
+
+    try {
+      await recording.pauseAsync();
+      setIsPaused(true);
+    } catch (e) {
+      console.warn("Pause failed", e);
+    }
+  };
+
+  const handleResume = async () => {
+    if (!recording || !isPaused) return;
+
+    try {
+      await recording.startAsync(); // resume
+      setIsPaused(false);
+    } catch (e) {
+      console.warn("Resume failed", e);
+    }
   };
 
   async function onSave() {
@@ -108,7 +145,13 @@ export default function NewRecording() {
     <View className="flex-1 justify-center items-center bg-black">
       <Text className="text-white text-lg mb-4">Recording…</Text>
 
-      <RecordMicSection recording={recording} onStop={handleStop} />
+      <RecordMicSection
+        recording={recording}
+        onStop={handleStop}
+        isPaused={isPaused}
+        onPause={handlePause}
+        onResume={handleResume}
+      />
 
       <Modal transparent visible={confirmVisible} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/60">

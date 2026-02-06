@@ -8,44 +8,34 @@ import { colors } from "../../theme/colors";
 
 type Props = {
   recording: Audio.Recording | null;
+  isPaused: boolean;
   onStop: () => void;
+  onPause: () => void;
+  onResume: () => void;
 };
 
-const RecordMicSection = ({ recording, onStop }: Props) => {
+const RecordMicSection = ({
+  recording,
+  onStop,
+  isPaused,
+  onPause,
+  onResume,
+}: Props) => {
   const [seconds, setSeconds] = useState(0);
-
-  const pulseAnim = useRef(new Animated.Value(1)).current;
   const isListening = !!recording;
 
   useEffect(() => {
-    if (recording) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.spring(pulseAnim, {
-            toValue: 1.15,
-            useNativeDriver: true,
-          }),
-          Animated.spring(pulseAnim, {
-            toValue: 1,
-            useNativeDriver: true,
-          }),
-        ]),
-      ).start();
-    } else {
-      pulseAnim.stopAnimation();
-      pulseAnim.setValue(1);
-    }
-  }, [isListening]);
+    if (!isListening || isPaused) return;
 
-  useEffect(() => {
-    if (!isListening) return;
-
-    setSeconds(0);
     const t = setInterval(() => {
       setSeconds((s) => s + 1);
     }, 1000);
 
     return () => clearInterval(t);
+  }, [isListening, isPaused]);
+
+  useEffect(() => {
+    if (!isListening) setSeconds(0);
   }, [isListening]);
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
@@ -56,26 +46,61 @@ const RecordMicSection = ({ recording, onStop }: Props) => {
     onStop();
   };
 
+  const handlePauseResume = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    isPaused ? onResume() : onPause();
+  };
+
   return (
-    <View className="flex-1 items-center justify-center">
-      <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-        <Pressable
-          onPress={handleStop}
-          hitSlop={20}
-          className="w-[140px] h-[140px] rounded-full items-center justify-center shadow-2xl"
-          style={{
-            backgroundColor: isListening ? colors.primary : "#EF4444",
-          }}
+    <View className="flex-1 bg-black">
+      <View className="flex-1 justify-center items-center">
+        <View className="scale-[2.2] opacity-90">
+          <MicWaveform
+            active={isListening}
+            color={isPaused ? "#64748b" : colors.primary}
+          />
+        </View>
+        <Text className="mt-10 text-[28px] font-semibold text-white">
+          {mm}:{ss}
+        </Text>
+
+        <Text className="mt-2 text-white/50 text-sm">
+          {isPaused ? "Paused" : "Recording…"}
+        </Text>
+      </View>
+
+      <View className="px-6 pb-8">
+        <View
+          className="
+          flex-row items-center justify-center gap-12
+          rounded-3xl
+          py-6
+          shadow-2xl
+        "
         >
-          <MaterialIcons name="stop" size={56} color="#000" />
-        </Pressable>
-      </Animated.View>
+          <Pressable
+            onPress={handlePauseResume}
+            hitSlop={20}
+            className={`
+              h-16 w-16 rounded-full items-center justify-center
+              ${isPaused ? "bg-green-500" : "bg-yellow-500"}
+            `}
+          >
+            <MaterialIcons
+              name={isPaused ? "play-arrow" : "pause"}
+              size={34}
+              color="#000"
+            />
+          </Pressable>
 
-      <Text className="mt-4 text-[18px] text-white opacity-90">
-        {mm}:{ss}
-      </Text>
-
-      {isListening && <MicWaveform active color={colors.primary} />}
+          <Pressable
+            onPress={handleStop}
+            className="h-14 w-14 rounded-full bg-red-500 items-center justify-center"
+          >
+            <MaterialIcons name="stop" size={28} color="#000" />
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 };
