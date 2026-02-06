@@ -10,7 +10,7 @@ import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
 
 import useAssistantSocket from "../../hooks/useAssistantSocket";
-import MicSection from "./MicSection";
+import ChatMicSection from "./ChatMicSection";
 import ChatComposer from "./ChatComposer";
 import HistoryModal from "./HistoryModal";
 import ChatContextCard from "./ChatContextCard";
@@ -192,7 +192,7 @@ function AgentChat({ agent, consumer, userId }: Props, ref: any) {
     <View style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ flex: 1 }}>
-          <MicSection
+          <ChatMicSection
             recording={recording}
             thinking={thinking}
             onToggle={toggleRecording}

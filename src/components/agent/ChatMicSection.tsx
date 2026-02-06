@@ -12,7 +12,7 @@ type Props = {
   onToggle: () => void;
 };
 
-const MicSection = ({ recording, thinking, onToggle }: Props) => {
+const ChatMicSection = ({ recording, thinking, onToggle }: Props) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const isListening = !!recording;
 
@@ -80,4 +80,4 @@ const MicSection = ({ recording, thinking, onToggle }: Props) => {
   );
 };
 
-export default MicSection;
+export default ChatMicSection;

@@ -1,5 +1,5 @@
 import { View, Text, Pressable, Modal, TextInput } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { File } from "expo-file-system";
 import { startRecording, stopRecording } from "../../../utils/audioRecorder";
@@ -9,36 +9,66 @@ import {
   getDefaultRecordingName,
 } from "../../../utils/format";
 import { STORAGE_PATHS } from "../../../utils/storagePath";
+import RecordMicSection from "../../../components/agent/RecordMicSection";
+import { Audio } from "expo-av";
 
 export default function NewRecording() {
   const router = useRouter();
   const [recording, setRecording] = useState<any>(null);
+  const recordingRef = useRef<Audio.Recording | null>(null);
+
   const [result, setResult] = useState<any>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const [fileName, setFileName] = useState("");
 
   useEffect(() => {
+    let mounted = true;
+
     (async () => {
       const rec = await startRecording();
+      if (!mounted) return;
+
+      recordingRef.current = rec;
       setRecording(rec);
     })();
 
     return () => {
+      mounted = false;
       recording?.stopAndUnloadAsync?.();
+      recordingRef.current = null;
     };
   }, []);
 
-  async function onStop() {
-    if (!recording) return;
+  // async function onStop() {
+  //   if (!recording) return;
+
+  //   const res = await stopRecording(recording);
+  //   setRecording(null);
+  //   setResult(res);
+
+  //   setFileName(getDefaultRecordingName());
+  //   setConfirmVisible(true);
+  // }
+
+  const handleStop = async () => {
+    const rec = recordingRef.current;
+    if (!rec) return;
 
     const res = await stopRecording(recording);
-    setRecording(null);
-    setResult(res);
 
+    recordingRef.current = null;
+    setRecording(null);
+
+    if (!res) {
+      router.back();
+      return;
+    }
+
+    setResult(res);
     setFileName(getDefaultRecordingName());
     setConfirmVisible(true);
-  }
+  };
 
   async function onSave() {
     if (!result) return;
@@ -78,13 +108,7 @@ export default function NewRecording() {
     <View className="flex-1 justify-center items-center bg-black">
       <Text className="text-white text-lg mb-4">Recording…</Text>
 
-      {/* Stop button */}
-      <Pressable
-        onPress={onStop}
-        className="absolute bottom-10 bg-red-600 p-6 rounded-full"
-      >
-        <Text className="text-white text-xl">Stop</Text>
-      </Pressable>
+      <RecordMicSection recording={recording} onStop={handleStop} />
 
       <Modal transparent visible={confirmVisible} animationType="fade">
         <View className="flex-1 justify-center items-center bg-black/60">
