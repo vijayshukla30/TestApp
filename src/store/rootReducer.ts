@@ -3,10 +3,12 @@ import authReducer from "../features/auth/authSlice";
 import agentsReducer from "../features/agent/agentsSlice";
 import activityReducer from "../features/activity/activitySlice";
 import consumerReducer from "../features/consumer/consumerSlice";
+import recordingReducer from "../features/recording/recordingSlice";
 
 export default combineReducers({
   auth: authReducer,
   agents: agentsReducer,
   activity: activityReducer,
   consumer: consumerReducer,
+  recording: recordingReducer,
 });

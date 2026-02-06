@@ -7,7 +7,8 @@ export type RecordingItem = {
   duration?: number;
 };
 
-type GroupedRecordings = {
-  date: string; // yyyy-mm-dd
-  items: RecordingItem[];
+export type InitUploadResponse = {
+  resourceId: string;
+  uploadUrl: string;
+  s3Key: string;
 };

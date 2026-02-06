@@ -9,6 +9,7 @@ import {
 import { store } from "../store";
 import { logoutSuccess } from "../features/auth/authSlice";
 import { showGlobalMessage } from "../context/UIContext";
+import { InitUploadResponse } from "../types/recording";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -80,7 +81,7 @@ export const api = {
   fetchAuthProfile: (state: string) =>
     request<{ profile?: any }>(
       `/general-auth/profile?state=${encodeURIComponent(state)}`,
-      { method: "GET" }
+      { method: "GET" },
     ),
   getUserActivity: (token: string) =>
     request<{ activities: any[] }>("/user/activity", {
@@ -91,7 +92,7 @@ export const api = {
     }),
   createUserActivity: (
     data: { assistantUuid: string; isInstalled: boolean },
-    token: string
+    token: string,
   ) =>
     request(`/user/create-activity`, {
       method: "POST",
@@ -101,3 +102,52 @@ export const api = {
       },
     }),
 };
+
+export const initResourceUpload = (
+  token: string,
+  mimeType: string,
+  originalName: string,
+) =>
+  request<InitUploadResponse>(`/resources`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: {
+      mimeType,
+      originalName,
+    },
+  });
+
+export const completeResourceUpload = (
+  token: string,
+  resourceId: string,
+  size: number,
+) =>
+  request(`/resources/upload-complete`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: {
+      resourceId,
+      size,
+    },
+  });
+
+export const createRecordingApi = (
+  token: string,
+  payload: {
+    name: string;
+    seoName: string;
+    duration: number;
+    resource: string;
+  },
+) =>
+  request(`/recordings`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: payload,
+  });

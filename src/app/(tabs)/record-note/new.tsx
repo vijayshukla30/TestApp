@@ -18,11 +18,18 @@ import {
 import { STORAGE_PATHS } from "../../../utils/storagePath";
 import RecordMicSection from "../../../components/agent/RecordMicSection";
 import { Audio } from "expo-av";
+import useAuth from "../../../hooks/useAuth";
+import { uploadRecording } from "../../../features/recording/recordingSlice";
+import useAppDispatch from "../../../hooks/useAppDispatch";
 
 export default function NewRecording() {
   const router = useRouter();
+  const { token } = useAuth();
   const [recording, setRecording] = useState<any>(null);
+
   const recordingRef = useRef<Audio.Recording | null>(null);
+  const recordStartRef = useRef<number | null>(null);
+  const pausedAtRef = useRef<number | null>(null);
 
   const [result, setResult] = useState<any>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -30,6 +37,7 @@ export default function NewRecording() {
   const [fileName, setFileName] = useState("");
   const [isPaused, setIsPaused] = useState(false);
 
+  const dispatch = useAppDispatch();
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
@@ -51,10 +59,11 @@ export default function NewRecording() {
     let mounted = true;
 
     (async () => {
-      const rec = await startRecording();
       if (!mounted) return;
-
+      const rec = await startRecording();
       recordingRef.current = rec;
+      recordStartRef.current = Date.now();
+      pausedAtRef.current = null;
       setRecording(rec);
     })();
 
@@ -67,11 +76,16 @@ export default function NewRecording() {
 
   const handleStop = async () => {
     const rec = recordingRef.current;
-    if (!rec) return;
+    const startedAt = recordStartRef.current;
+    if (!rec || !startedAt) return;
 
-    const res = await stopRecording(rec);
+    const res = await stopRecording(rec, startedAt);
+    console.log("res handleStop:>> ", res);
 
     recordingRef.current = null;
+    recordStartRef.current = null;
+    pausedAtRef.current = null;
+
     setRecording(null);
     setIsPaused(false);
 
@@ -90,6 +104,7 @@ export default function NewRecording() {
 
     try {
       await recording.pauseAsync();
+      pausedAtRef.current = Date.now();
       setIsPaused(true);
     } catch (e) {
       console.warn("Pause failed", e);
@@ -101,6 +116,12 @@ export default function NewRecording() {
 
     try {
       await recording.startAsync(); // resume
+
+      if (pausedAtRef.current && recordStartRef.current) {
+        recordStartRef.current += Date.now() - pausedAtRef.current;
+      }
+
+      pausedAtRef.current = null;
       setIsPaused(false);
     } catch (e) {
       console.warn("Resume failed", e);
@@ -108,7 +129,7 @@ export default function NewRecording() {
   };
 
   async function onSave() {
-    if (!result) return;
+    if (!result || !token) return;
 
     const safeName = fileName.trim() || getDefaultRecordingName();
     const seoName = generateSeoName(safeName);
@@ -118,14 +139,28 @@ export default function NewRecording() {
     const file = new File(result.uri);
     await file.move(new File(finalUri));
 
-    await saveRecording({
+    const recordingObj = {
       id: Date.now().toString(),
       uri: finalUri,
       name: safeName,
       seoName,
       createdAt: result.createdAt,
       duration: result.duration,
-    });
+    };
+
+    await saveRecording(recordingObj);
+
+    dispatch(
+      uploadRecording({
+        token,
+        fileUri: finalUri,
+        mimeType: "audio/m4a",
+        originalName: `${seoName}`,
+        name: safeName,
+        seoName,
+        duration: result.duration,
+      }),
+    );
 
     setConfirmVisible(false);
     router.back();
