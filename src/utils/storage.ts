@@ -19,16 +19,3 @@ export async function getTheme(): Promise<ThemeMode | null> {
   }
   return null;
 }
-
-export async function getRecordings(): Promise<RecordingItem[]> {
-  const raw = await AsyncStorage.getItem(KEY);
-  return raw ? JSON.parse(raw) : [];
-}
-
-export async function saveRecording(rec: RecordingItem) {
-  const list = await getRecordings();
-  await AsyncStorage.setItem(KEY, JSON.stringify([rec, ...list]));
-}
-export async function setRecordings(list: any[]) {
-  await AsyncStorage.setItem(KEY, JSON.stringify(list));
-}

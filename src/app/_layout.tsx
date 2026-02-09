@@ -34,7 +34,6 @@ function Bootstrap() {
 
   useEffect(() => {
     if (!user) return;
-
     const init = async () => {
       await bootstrapStorage();
     };

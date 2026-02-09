@@ -1,18 +1,32 @@
-export async function uploadToS3(uploadUrl: string, fileUri: string) {
-  const res = await fetch(fileUri);
-  const blob = await res.blob();
+import * as FileSystem from "expo-file-system/legacy";
 
-  const uploadRes = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {},
-    body: blob,
+export async function uploadToS3(
+  uploadUrl: string,
+  fileUri: string,
+  onProgress?: (p: number) => void,
+) {
+  return new Promise<number>(async (resolve, reject) => {
+    const file = await FileSystem.getInfoAsync(fileUri);
+    if (!file.exists) return reject("File missing");
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(e.loaded / e.total);
+      }
+    };
+
+    xhr.onload = () =>
+      xhr.status === 200 ? resolve(file.size ?? 0) : reject("Upload failed");
+
+    xhr.onerror = reject;
+
+    xhr.send({
+      uri: fileUri,
+      type: "audio/m4a",
+      name: "recording.m4a",
+    });
   });
-
-  if (!uploadRes.ok) {
-    const text = await uploadRes.text();
-    console.error("S3 PUT failed:", uploadRes.status, text);
-    throw new Error("S3 upload failed");
-  }
-
-  return blob.size;
 }

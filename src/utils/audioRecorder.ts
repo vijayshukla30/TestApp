@@ -26,28 +26,14 @@ export async function stopRecording(
     await recording.stopAndUnloadAsync();
   } catch {}
 
-  const tempUri = recording.getURI();
-  if (!tempUri) return null;
+  const uri = recording.getURI();
+  if (!uri) return null;
 
-  const duration = Math.floor((Date.now() - startedAt) / 1000);
+  const duration = Math.max(1, Math.floor((Date.now() - startedAt) / 1000));
 
   return {
-    uri: tempUri,
-    createdAt: new Date().toISOString(),
+    uri,
     duration,
+    createdAt: new Date().toISOString(),
   };
-
-  // const sourceFile = new File(tempUri);
-  // const ext = tempUri.split(".").pop() ?? "m4a";
-  // const fileName = `rec-${Date.now()}.${ext}`;
-  // const targetUri = `${STORAGE_PATHS.recordings}${fileName}`;
-  // console.log("targetUri :>> ", targetUri);
-
-  // await sourceFile.move(new File(targetUri));
-
-  // return {
-  //   uri: targetUri,
-  //   createdAt: new Date().toISOString(),
-  //   duration,
-  // };
 }

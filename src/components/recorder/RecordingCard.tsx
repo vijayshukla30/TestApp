@@ -1,4 +1,4 @@
-import { Text, Pressable, View } from "react-native";
+import { Text, Pressable, View, ActivityIndicator } from "react-native";
 import ReanimatedSwipeable, {
   SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -20,6 +20,7 @@ type Props = {
   progress: number;
   isPlaying: boolean;
   isPaused: boolean;
+  onUpload?: () => void;
 };
 
 function RightAction(
@@ -52,6 +53,7 @@ export default function RecordingCard({
   onDelete,
   onOpen,
   onPlay,
+  onUpload,
   progress,
   isPlaying,
   isPaused,
@@ -61,54 +63,45 @@ export default function RecordingCard({
   return (
     <ReanimatedSwipeable
       ref={swipeRef}
-      rightThreshold={48}
-      friction={2}
-      onSwipeableOpen={() => {
-        if (swipeRef.current) {
-          onOpen(swipeRef.current);
-        }
-      }}
-      renderRightActions={(progress, dragX) =>
-        RightAction(progress, dragX, onDelete)
-      }
+      renderRightActions={(p, d) => RightAction(p, d, onDelete)}
+      onSwipeableOpen={() => swipeRef.current && onOpen(swipeRef.current)}
     >
       <Pressable
         onPress={onPress}
-        className="
-          bg-slate-900/80
-          backdrop-blur
-          p-4
-          rounded-2xl
-          mb-3
-          border
-          border-white/10
-        "
+        className="bg-slate-900 p-4 rounded-2xl mb-3"
       >
-        <View className="flex-row items-center justify-between">
+        <View className="flex-row justify-between">
           <View className="flex-1 pr-3">
-            <Text
-              className="text-white text-[15px] font-medium"
-              numberOfLines={1}
-            >
-              {rec.name || "Recording"}
+            <Text className="text-white font-medium" numberOfLines={1}>
+              {rec.name}
             </Text>
 
-            <Text className="text-white/50 text-[13px] mt-1">
+            <Text className="text-white/50 text-xs mt-1">
               {formatDate(rec.createdAt)} · {formatTime(rec.createdAt)} ·{" "}
               {formatDuration(rec.duration)}
             </Text>
-            {progress > 0 && <MiniWaveform progress={progress} />}
+
+            {rec.uploadStatus === "UPLOADING" && (
+              <MiniWaveform progress={rec.progress ?? 0} />
+            )}
+
+            {rec.uploadStatus === "PENDING" && (
+              <Pressable onPress={onUpload} className="mt-2">
+                <Text className="text-blue-400 text-xs">Upload</Text>
+              </Pressable>
+            )}
+
+            {rec.uploadStatus === "FAILED" && (
+              <Pressable onPress={onUpload} className="mt-2">
+                <Text className="text-red-400 text-xs">Retry upload</Text>
+              </Pressable>
+            )}
           </View>
+
           <Pressable
+            disabled={rec.uploadStatus !== "UPLOADED"}
             onPress={onPlay}
-            hitSlop={12}
-            className="
-            h-10 w-10
-            rounded-full
-            bg-green-500/90
-            items-center
-            justify-center
-          "
+            className="h-10 w-10 rounded-full bg-green-500 items-center justify-center"
           >
             <MaterialIcons
               name={isPlaying && !isPaused ? "pause" : "play-arrow"}

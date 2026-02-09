@@ -1,53 +1,99 @@
-import { Text, Pressable, FlatList, View } from "react-native";
+import {
+  Text,
+  Pressable,
+  FlatList,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { File } from "expo-file-system";
 import { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { MaterialIcons } from "@expo/vector-icons";
 import Screen from "../../../components/Screen";
-import { getRecordings, setRecordings } from "../../../utils/storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { groupByDate } from "../../../utils/groupByDate";
 import RecordingCard from "../../../components/recorder/RecordingCard";
 import { Audio } from "expo-av";
+import { getUploadQueue } from "../../../utils/uploadQueue";
+import useAuth from "../../../hooks/useAuth";
+import { api } from "../../../services/api";
+import useAppDispatch from "../../../hooks/useAppDispatch";
+import { uploadRecording } from "../../../features/recording/recordingSlice";
 
 export default function Recording() {
   const router = useRouter();
+  const { token } = useAuth();
+  const dispatch = useAppDispatch();
+
   const [groups, setGroups] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const soundRef = useRef<Audio.Sound | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
-
   const [isPaused, setIsPaused] = useState(false);
-  const [progress, setProgress] = useState(0); // 0 → 1
+  const [progress, setProgress] = useState(0);
 
   async function load() {
-    const data = await getRecordings();
-    setGroups(groupByDate(data));
+    if (!token) return;
+
+    try {
+      setLoading(true);
+
+      const remote = await api.getAllRecordings(token);
+      const queue = await getUploadQueue();
+      const queueMap = new Map(queue.map((q) => [q.recordingId, q]));
+
+      const hydrated = remote.map((r: any) => {
+        const local = queueMap.get(r.uuid);
+        return {
+          ...r,
+          uploadStatus: local?.uploadStatus ?? "UPLOADED",
+          progress: local?.progress,
+          localUri: local?.localUri,
+          uploadUrl: local?.uploadUrl,
+          resourceId: local?.resourceId,
+        };
+      });
+
+      setGroups(groupByDate(hydrated));
+    } finally {
+      setLoading(false);
+    }
   }
 
   useFocusEffect(
     useCallback(() => {
       load();
-    }, []),
+    }, [token]),
   );
 
   useEffect(() => {
     return () => {
-      stopPlayback();
+      void stopPlayback();
     };
   }, []);
 
+  function manualUpload(rec: any) {
+    if (!token || !rec.localUri || !rec.uploadUrl || !rec.resourceId) return;
+
+    dispatch(
+      uploadRecording({
+        token,
+        recordingId: rec.uuid,
+        resourceId: rec.resourceId,
+        uploadUrl: rec.uploadUrl,
+        fileUri: rec.localUri,
+      }),
+    );
+  }
+
   async function deleteRecording(rec: any) {
-    // delete file
-    if (rec.uri) {
-      const file = new File(rec.uri);
-      await file.delete();
+    if (rec.localUri) {
+      try {
+        await new File(rec.localUri).delete();
+      } catch {}
     }
-
-    const all = await getRecordings();
-    const filtered = all.filter((r) => r.id !== rec.id);
-    await setRecordings(filtered);
-
+    await api.deleteRecording(rec.uuid, token);
     load();
   }
 
@@ -72,85 +118,81 @@ export default function Recording() {
   }
 
   async function playRecording(rec: any) {
-    // If same recording → pause
-    if (playingId === rec.id && soundRef.current && !isPaused) {
+    if (rec.uploadStatus !== "UPLOADED") return;
+
+    if (playingId === rec.uuid && soundRef.current && !isPaused) {
       await soundRef.current.pauseAsync();
       setIsPaused(true);
       return;
     }
 
-    if (playingId === rec.id && soundRef.current && isPaused) {
+    if (playingId === rec.uuid && soundRef.current && isPaused) {
       await soundRef.current.playAsync();
       setIsPaused(false);
       return;
     }
 
-    // Stop any existing playback
     await stopPlayback();
 
+    const { url } = await api.getSignedPlaybackUrl(token, rec.resource);
+
     const { sound } = await Audio.Sound.createAsync(
-      { uri: rec.uri },
+      { uri: url },
       { shouldPlay: true },
     );
 
     soundRef.current = sound;
-    setPlayingId(rec.id);
+    setPlayingId(rec.uuid);
     setIsPaused(false);
 
     sound.setOnPlaybackStatusUpdate((status) => {
       if (!status.isLoaded) return;
-
       if (status.durationMillis) {
         setProgress(status.positionMillis / status.durationMillis);
       }
-
-      if (status.didJustFinish) {
-        stopPlayback();
-      }
+      if (status.didJustFinish) stopPlayback();
     });
   }
 
   return (
     <Screen>
-      <Pressable
-        className="flex-1"
-        onPress={() => {
-          openSwipeRef.current?.close();
-          openSwipeRef.current = null;
-        }}
-      >
-        <FlatList
-          data={groups}
-          keyExtractor={(item) => item.date}
-          renderItem={({ item }) => (
-            <View className="p-4">
-              <Text className="text-gray-500 font-semibold mb-3">
-                {item.date}
-              </Text>
+      {loading && (
+        <View className="p-4">
+          <ActivityIndicator />
+        </View>
+      )}
 
-              {item.items.map((rec: any) => (
-                <RecordingCard
-                  key={rec.id}
-                  rec={rec}
-                  onPress={() => {
-                    openSwipeRef.current?.close();
-                    router.push(`/record-note/${rec.id}`);
-                  }}
-                  onDelete={() => deleteRecording(rec)}
-                  onOpen={handleOpen}
-                  onPlay={() => playRecording(rec)}
-                  isPlaying={playingId === rec.id}
-                  isPaused={playingId === rec.id && isPaused}
-                  progress={playingId === rec.id ? progress : 0}
-                />
-              ))}
-            </View>
-          )}
-        />
-      </Pressable>
+      <FlatList
+        data={groups}
+        keyExtractor={(item) => item.date}
+        renderItem={({ item }) => (
+          <View className="p-4">
+            <Text className="text-gray-500 font-semibold mb-3">
+              {item.date}
+            </Text>
+
+            {item.items.map((rec: any) => (
+              <RecordingCard
+                key={rec.uuid}
+                rec={rec}
+                onPress={() => router.push(`/record-note/${rec.uuid}`)}
+                onDelete={() => deleteRecording(rec)}
+                onOpen={handleOpen}
+                onPlay={() => playRecording(rec)}
+                onUpload={() => manualUpload(rec)}
+                isPlaying={playingId === rec.uuid}
+                isPaused={playingId === rec.uuid && isPaused}
+                progress={
+                  playingId === rec.uuid ? progress : (rec.progress ?? 0)
+                }
+              />
+            ))}
+          </View>
+        )}
+      />
 
       <Pressable
-        className="absolute bottom-6 right-6 bg-green-600 p-5 rounded-full shadow-lg"
+        className="absolute bottom-6 right-6 bg-green-600 p-5 rounded-full"
         onPress={() => router.push("/record-note/new")}
       >
         <MaterialIcons name="mic" size={30} color="white" />

@@ -1,63 +1,45 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import {
-  completeResourceUpload,
-  createRecordingApi,
-  initResourceUpload,
-} from "../../services/api";
 import { uploadToS3 } from "../../services/uploadToS3";
+import { api } from "../../services/api";
+import {
+  removeUploadItem,
+  updateUploadProgress,
+  updateUploadStatus,
+} from "../../utils/uploadQueue";
 
 type UploadRecordingArgs = {
   token: string;
+  recordingId: string;
+  resourceId: string;
+  uploadUrl: string;
   fileUri: string;
-  mimeType: string;
-  originalName: string;
-  name: string;
-  seoName: string;
-  duration: number;
 };
 
 export const uploadRecording = createAsyncThunk(
   "recordings/uploadRecording",
   async (
-    {
-      token,
-      fileUri,
-      mimeType,
-      originalName,
-      name,
-      seoName,
-      duration,
-    }: UploadRecordingArgs,
+    { token, recordingId, resourceId, uploadUrl, fileUri }: UploadRecordingArgs,
     { rejectWithValue },
   ) => {
     try {
-      // 1️⃣ Init upload (backend)
-      const { resourceId, uploadUrl } = await initResourceUpload(
-        token,
-        mimeType,
-        originalName,
-      );
+      await updateUploadStatus(recordingId, "UPLOADING");
 
-      // 2️⃣ Upload file to S3
-      const size = await uploadToS3(uploadUrl, fileUri);
-
-      // 3️⃣ Notify backend upload complete
-      await completeResourceUpload(token, resourceId, size);
-
-      // 4️⃣ Create recording
-      const recording = await createRecordingApi(token, {
-        name,
-        seoName,
-        duration,
-        resource: resourceId,
+      const size = await uploadToS3(uploadUrl, fileUri, (progress) => {
+        updateUploadProgress(recordingId, progress);
       });
 
-      return recording;
+      await api.completeResourceUpload(token, resourceId, size);
+
+      await removeUploadItem(recordingId);
+
+      return { recordingId };
     } catch (err: any) {
+      await updateUploadStatus(recordingId, "FAILED");
       return rejectWithValue(err.message || "Upload failed");
     }
   },
 );
+
 const recordingSlice = createSlice({
   name: "recordings",
   initialState: {
