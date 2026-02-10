@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { Provider } from "react-redux";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
+import { Audio } from "expo-av";
 import { ThemeProvider } from "../context/ThemeContext";
 import { store } from "../store";
 import useAppDispatch from "../hooks/useAppDispatch";
@@ -36,6 +36,11 @@ function Bootstrap() {
     if (!user) return;
     const init = async () => {
       await bootstrapStorage();
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        allowsRecordingIOS: false,
+        staysActiveInBackground: false,
+      });
     };
 
     init();

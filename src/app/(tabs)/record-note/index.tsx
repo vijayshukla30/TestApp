@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import { useState, useCallback, useRef, useEffect } from "react";
 import * as FileSystem from "expo-file-system/legacy";
-import { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { MaterialIcons } from "@expo/vector-icons";
 import Screen from "../../../components/Screen";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -27,11 +26,19 @@ export default function Recording() {
 
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const soundRef = useRef<Audio.Sound | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  async function onRefresh() {
+    if (!token) return;
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }
 
   async function load() {
     if (!token) return;
@@ -104,15 +111,6 @@ export default function Recording() {
     load();
   }
 
-  const openSwipeRef = useRef<SwipeableMethods | null>(null);
-
-  function handleOpen(ref: SwipeableMethods) {
-    if (openSwipeRef.current && openSwipeRef.current !== ref) {
-      openSwipeRef.current.close();
-    }
-    openSwipeRef.current = ref;
-  }
-
   async function stopPlayback() {
     if (soundRef.current) {
       await soundRef.current.stopAsync();
@@ -125,6 +123,7 @@ export default function Recording() {
   }
 
   async function playRecording(rec: any) {
+    console.log("rec :>> ", rec);
     if (rec.uploadStatus !== "UPLOADED") return;
 
     if (playingId === rec.uuid && soundRef.current && !isPaused) {
@@ -140,9 +139,26 @@ export default function Recording() {
     }
 
     await stopPlayback();
-    const { url } = await api.getSignedPlaybackUrl(token, rec.resource);
+    let uri: string;
+
+    // 🔑 prefer local file if still exists
+    if (rec.localUri) {
+      const info = await FileSystem.getInfoAsync(rec.localUri);
+      if (info.exists) {
+        uri = rec.localUri;
+      } else {
+        // fallback to remote
+        const res = await api.getSignedPlaybackUrl(token, rec.uuid);
+        uri = res.url;
+      }
+    } else {
+      // remote only
+      const res = await api.getSignedPlaybackUrl(token, rec.resource);
+      uri = res.url;
+    }
+    console.log("uri :>> ", uri);
     const { sound } = await Audio.Sound.createAsync(
-      { uri: url },
+      { uri },
       { shouldPlay: true },
     );
 
@@ -152,10 +168,10 @@ export default function Recording() {
 
     sound.setOnPlaybackStatusUpdate((status) => {
       if (!status.isLoaded) return;
-      if (status.durationMillis) {
-        setProgress(status.positionMillis / status.durationMillis);
+
+      if (status.didJustFinish) {
+        stopPlayback();
       }
-      if (status.didJustFinish) stopPlayback();
     });
   }
 
@@ -170,6 +186,8 @@ export default function Recording() {
       <FlatList
         data={groups}
         keyExtractor={(item) => item.date}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <View className="p-4">
             <Text className="text-gray-500 font-semibold mb-3">
@@ -180,9 +198,8 @@ export default function Recording() {
               <RecordingCard
                 key={rec.uuid}
                 rec={rec}
-                onPress={() => router.push(`/record-note/${rec.uuid}`)}
+                onScript={() => router.push(`/record-note/${rec.uuid}`)}
                 onDelete={() => deleteRecording(rec)}
-                onOpen={handleOpen}
                 onPlay={() => playRecording(rec)}
                 onUpload={() => manualUpload(rec)}
                 isPlaying={playingId === rec.uuid}

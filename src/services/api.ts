@@ -23,6 +23,7 @@ export type SignedPlaybackUrlResponse = {
 /* Core request helper */
 /* ------------------------------------------------------------------ */
 async function request<T>(url: string, options: RequestOptions): Promise<T> {
+  console.log("url :>> ", url);
   const res = await fetch(`${API_BASE_URL}/api/v1${url}`, {
     method: options.method,
     headers: {
