@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { File } from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { MaterialIcons } from "@expo/vector-icons";
 import Screen from "../../../components/Screen";
@@ -39,11 +39,11 @@ export default function Recording() {
     try {
       setLoading(true);
 
-      const remote = await api.getAllRecordings(token);
+      const recordings = await api.getAllRecordings(token);
       const queue = await getUploadQueue();
       const queueMap = new Map(queue.map((q) => [q.recordingId, q]));
 
-      const hydrated = remote.map((r: any) => {
+      const hydrated = recordings.map((r: any) => {
         const local = queueMap.get(r.uuid);
         return {
           ...r,
@@ -74,6 +74,13 @@ export default function Recording() {
   }, []);
 
   function manualUpload(rec: any) {
+    console.log("UPLOAD CLICK", {
+      token: !!token,
+      localUri: rec.localUri,
+      uploadUrl: rec.uploadUrl,
+      resourceId: rec.resourceId,
+    });
+
     if (!token || !rec.localUri || !rec.uploadUrl || !rec.resourceId) return;
 
     dispatch(
@@ -90,7 +97,7 @@ export default function Recording() {
   async function deleteRecording(rec: any) {
     if (rec.localUri) {
       try {
-        await new File(rec.localUri).delete();
+        await FileSystem.deleteAsync(rec.localUri, { idempotent: true });
       } catch {}
     }
     await api.deleteRecording(rec.uuid, token);
@@ -133,9 +140,7 @@ export default function Recording() {
     }
 
     await stopPlayback();
-
     const { url } = await api.getSignedPlaybackUrl(token, rec.resource);
-
     const { sound } = await Audio.Sound.createAsync(
       { uri: url },
       { shouldPlay: true },

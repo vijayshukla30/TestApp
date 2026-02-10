@@ -54,7 +54,6 @@ export default function RecordingCard({
   onOpen,
   onPlay,
   onUpload,
-  progress,
   isPlaying,
   isPaused,
 }: Props) {

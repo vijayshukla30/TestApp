@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import * as FileSystem from "expo-file-system/legacy";
 import { uploadToS3 } from "../../services/uploadToS3";
 import { api } from "../../services/api";
 import {
@@ -23,15 +24,18 @@ export const uploadRecording = createAsyncThunk(
   ) => {
     try {
       await updateUploadStatus(recordingId, "UPLOADING");
-
       const size = await uploadToS3(uploadUrl, fileUri, (progress) => {
         updateUploadProgress(recordingId, progress);
       });
 
       await api.completeResourceUpload(token, resourceId, size);
+      try {
+        await FileSystem.deleteAsync(fileUri, { idempotent: true });
+      } catch (err) {
+        console.warn("Failed to delete local file", err);
+      }
 
       await removeUploadItem(recordingId);
-
       return { recordingId };
     } catch (err: any) {
       await updateUploadStatus(recordingId, "FAILED");

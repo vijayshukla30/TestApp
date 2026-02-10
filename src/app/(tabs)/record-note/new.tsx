@@ -68,8 +68,6 @@ export default function NewRecording() {
     };
   }, []);
 
-  /* ---------- Controls ---------- */
-
   const handleStop = async () => {
     if (!recordingRef.current || !startedAtRef.current) return;
 
@@ -108,8 +106,6 @@ export default function NewRecording() {
     setIsPaused(false);
   };
 
-  /* ---------- Save ---------- */
-
   async function onSave() {
     if (!result || !token) return;
 
@@ -125,7 +121,6 @@ export default function NewRecording() {
         mimeType: "audio/m4a",
       });
 
-    // 3️⃣ move file
     const finalUri = `${STORAGE_PATHS.recordings}${seoName}`;
     await new File(result.uri).move(new File(finalUri));
 
@@ -136,16 +131,6 @@ export default function NewRecording() {
       localUri: finalUri,
       uploadStatus: "PENDING",
     });
-
-    dispatch(
-      uploadRecording({
-        token,
-        recordingId: recording.uuid,
-        resourceId: resource.uuid,
-        uploadUrl,
-        fileUri: finalUri,
-      }),
-    );
 
     setConfirmVisible(false);
     router.back();

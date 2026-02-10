@@ -5,10 +5,10 @@ export async function uploadToS3(
   fileUri: string,
   onProgress?: (p: number) => void,
 ) {
-  return new Promise<number>(async (resolve, reject) => {
-    const file = await FileSystem.getInfoAsync(fileUri);
-    if (!file.exists) return reject("File missing");
+  const file = await FileSystem.getInfoAsync(fileUri);
+  if (!file.exists) throw new Error("File missing");
 
+  return new Promise<number>(async (resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", uploadUrl);
 
@@ -18,9 +18,15 @@ export async function uploadToS3(
       }
     };
 
-    xhr.onload = () =>
-      xhr.status === 200 ? resolve(file.size ?? 0) : reject("Upload failed");
-
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        resolve(file.size ?? 0);
+      } else {
+        reject(
+          new Error(`S3 upload failed: ${xhr.status} ${xhr.responseText}`),
+        );
+      }
+    };
     xhr.onerror = reject;
 
     xhr.send({
