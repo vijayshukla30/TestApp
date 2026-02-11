@@ -98,7 +98,7 @@ export const api = {
 
   /** List recordings (remote source of truth) */
   getAllRecordings: (token: string) =>
-    request<{ recordings: any[] }>("/recordings", {
+    request<any[]>("/recordings", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

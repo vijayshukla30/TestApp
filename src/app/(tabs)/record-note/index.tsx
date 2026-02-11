@@ -5,7 +5,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import * as FileSystem from "expo-file-system/legacy";
 import { MaterialIcons } from "@expo/vector-icons";
 import Screen from "../../../components/Screen";
@@ -13,19 +13,22 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { groupByDate } from "../../../utils/groupByDate";
 import RecordingCard from "../../../components/recorder/RecordingCard";
 import { Audio } from "expo-av";
-import { getUploadQueue } from "../../../utils/uploadQueue";
 import useAuth from "../../../hooks/useAuth";
 import { api } from "../../../services/api";
 import useAppDispatch from "../../../hooks/useAppDispatch";
-import { uploadRecording } from "../../../features/recording/recordingSlice";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  fetchRecordings,
+  uploadRecording,
+} from "../../../features/recording/recordingSlice";
 
 export default function Recording() {
   const router = useRouter();
   const { token } = useAuth();
   const dispatch = useAppDispatch();
 
-  const [groups, setGroups] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const items = useAppSelector((state) => state.recording.items);
+  const loading = useAppSelector((state) => state.recording.loading);
   const [refreshing, setRefreshing] = useState(false);
 
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -42,30 +45,7 @@ export default function Recording() {
 
   async function load() {
     if (!token) return;
-
-    try {
-      setLoading(true);
-
-      const recordings = await api.getAllRecordings(token);
-      const queue = await getUploadQueue();
-      const queueMap = new Map(queue.map((q) => [q.recordingId, q]));
-
-      const hydrated = recordings.map((r: any) => {
-        const local = queueMap.get(r.uuid);
-        return {
-          ...r,
-          uploadStatus: local?.uploadStatus ?? "UPLOADED",
-          progress: local?.progress,
-          localUri: local?.localUri,
-          uploadUrl: local?.uploadUrl,
-          resourceId: local?.resourceId,
-        };
-      });
-
-      setGroups(groupByDate(hydrated));
-    } finally {
-      setLoading(false);
-    }
+    await dispatch(fetchRecordings({ token }));
   }
 
   useFocusEffect(
@@ -73,6 +53,8 @@ export default function Recording() {
       load();
     }, [token]),
   );
+
+  const groups = useMemo(() => groupByDate(items), [items]);
 
   useEffect(() => {
     return () => {
