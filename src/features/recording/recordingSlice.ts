@@ -240,6 +240,37 @@ export const uploadRecording = createAsyncThunk(
   },
 );
 
+export const startTranscription = createAsyncThunk(
+  "recordings/startTranscription",
+  async (
+    { recordingId, token }: { recordingId: string; token: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      await api.startTranscription(recordingId, token);
+      return { recordingId };
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Failed to start transcription");
+    }
+  },
+);
+
+export const fetchRecordingById = createAsyncThunk(
+  "recordings/fetchRecordingById",
+  async (
+    { recordingId, token }: { recordingId: string; token: string | null },
+    { rejectWithValue },
+  ) => {
+    try {
+      const { recording } = await api.getRecordingById(recordingId, token);
+
+      return recording;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Failed to load recording");
+    }
+  },
+);
+
 const recordingSlice = createSlice({
   name: "recordings",
   initialState: {
@@ -332,6 +363,27 @@ const recordingSlice = createSlice({
       .addCase(uploadRecording.rejected, (state, action) => {
         state.uploading = false;
         state.error = action.payload as string;
+      })
+      .addCase(fetchRecordingById.fulfilled, (state, action) => {
+        const updated = action.payload;
+
+        state.items = state.items.map((item) =>
+          item.uuid === updated.uuid
+            ? {
+                ...item,
+                ...updated,
+              }
+            : item,
+        );
+      })
+      .addCase(startTranscription.fulfilled, (state, action) => {
+        const { recordingId } = action.payload;
+
+        state.items = state.items.map((item) =>
+          item.uuid === recordingId
+            ? { ...item, transcriptionStatus: "PROCESSING" }
+            : item,
+        );
       });
   },
 });

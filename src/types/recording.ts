@@ -8,6 +8,7 @@ export type RecordingItem = {
 };
 
 export type UploadStatus = "PENDING" | "UPLOADING" | "FAILED" | "UPLOADED";
+export type TranscriptionStatus = "PENDING" | "PROCESSING" | "DONE" | "FAILED";
 
 export type RecordingApiItem = {
   uuid: string;
@@ -15,6 +16,9 @@ export type RecordingApiItem = {
   createdAt: string;
   duration?: number;
   resource?: string;
+
+  transcriptionStatus?: TranscriptionStatus;
+  transcript?: string;
 };
 
 export type RecordingListItem = RecordingApiItem & {

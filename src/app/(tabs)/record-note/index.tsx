@@ -157,6 +157,8 @@ export default function Recording() {
     });
   }
 
+  console.log("groups :>> ", groups[0]?.items);
+
   return (
     <Screen>
       {loading && (
