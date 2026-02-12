@@ -98,7 +98,7 @@ export const api = {
 
   /** List recordings (remote source of truth) */
   getAllRecordings: (token: string) =>
-    request<{ recordings: any[] }>("/recordings", {
+    request<any[]>("/recordings", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -106,7 +106,7 @@ export const api = {
     }),
 
   /** Get single recording */
-  getRecordingById: (recordingUuid: string, token: string) =>
+  getRecordingById: (recordingUuid: string, token: string | null) =>
     request<{ recording: any }>(`/recordings/${recordingUuid}`, {
       method: "GET",
       headers: {
@@ -213,5 +213,14 @@ export const api = {
         Authorization: `Bearer ${token}`,
       },
       body: payload,
+    }),
+
+  // Transcription Related
+  startTranscription: (recordingId: string, token: string | null) =>
+    request(`/recordings/${recordingId}/transcribe`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }),
 };

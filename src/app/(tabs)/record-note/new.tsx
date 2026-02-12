@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { useRouter, useNavigation } from "expo-router";
-import { File } from "expo-file-system";
 import { Audio } from "expo-av";
 
 import { startRecording, stopRecording } from "../../../utils/audioRecorder";
@@ -16,13 +15,13 @@ import {
   generateSeoName,
   getDefaultRecordingName,
 } from "../../../utils/format";
-import { STORAGE_PATHS } from "../../../utils/storagePath";
 import RecordMicSection from "../../../components/agent/RecordMicSection";
 import useAuth from "../../../hooks/useAuth";
 import useAppDispatch from "../../../hooks/useAppDispatch";
-import { uploadRecording } from "../../../features/recording/recordingSlice";
-import { upsertUploadItem } from "../../../utils/uploadQueue";
-import { api } from "../../../services/api";
+import {
+  initRecordingUpload,
+  uploadRecording,
+} from "../../../features/recording/recordingSlice";
 
 export default function NewRecording() {
   const router = useRouter();
@@ -112,28 +111,33 @@ export default function NewRecording() {
     const name = fileName.trim() || getDefaultRecordingName();
     const seoName = generateSeoName(name);
 
-    // 1️⃣ init upload
-    const { recording, resource, uploadUrl } =
-      await api.createRecordingAndInitUpload(token, {
-        name: name,
+    setConfirmVisible(false);
+    const uploadResult = await dispatch(
+      initRecordingUpload({
+        token,
+        name,
         seoName,
         duration: result.duration,
         mimeType: "audio/m4a",
-      });
+        fileUri: result.uri,
+      }),
+    );
 
-    const finalUri = `${STORAGE_PATHS.recordings}${seoName}`;
-    await new File(result.uri).move(new File(finalUri));
+    if (initRecordingUpload.fulfilled.match(uploadResult)) {
+      const item = uploadResult.payload;
 
-    await upsertUploadItem({
-      recordingId: recording.uuid,
-      resourceId: resource.uuid,
-      uploadUrl,
-      localUri: finalUri,
-      uploadStatus: "PENDING",
-    });
+      dispatch(
+        uploadRecording({
+          token,
+          recordingId: item.recordingId,
+          resourceId: item.resourceId,
+          uploadUrl: item.uploadUrl,
+          fileUri: item.localUri,
+        }),
+      );
+    }
 
-    setConfirmVisible(false);
-    router.back();
+    router.replace("/record-note");
   }
 
   return (

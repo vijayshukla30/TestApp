@@ -1,7 +1,7 @@
-import { RecordingItem } from "../types/recording";
+type DatedItem = { createdAt: string };
 
-export function groupByDate(items: RecordingItem[]) {
-  const map: Record<string, RecordingItem[]> = {};
+export function groupByDate<T extends DatedItem>(items: T[]) {
+  const map: Record<string, T[]> = {};
 
   items.forEach((item) => {
     const date = item.createdAt.split("T")[0];
